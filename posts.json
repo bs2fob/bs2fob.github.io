@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "stamp": "26w376v154_0912",
+    "series": {
+      "ko": "확보된 거점",
+      "en": "Established Foothold"
+    },
+    "ko": {
+      "title": "확보된 거점",
+      "lede": "완결은 완벽이 아니다. 작업을 어떤 단위로 끊어 쌓을 것인가에 대한 절차.",
+      "file": "p/26w376v154_foothold.ko.html"
+    },
+    "en": {
+      "title": "Established Foothold",
+      "lede": "Finishing is not perfecting. A procedure for deciding what unit of work counts as done.",
+      "file": "p/26w376v154_foothold.en.html"
+    }
+  }
+]
