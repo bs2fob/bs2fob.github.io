@@ -8,52 +8,46 @@
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#111110;--surface:#1c1c1a;--surface2:#252522;
-  --border:#2e2e2a;--border2:#3e3e38;
-  --text:#e8e8e0;--text2:#8a8a80;--text3:#5a5a54;
-  --accent:#7a9ee8;
-  --radius:10px;--radius-sm:6px;
-}
-html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
-
-.wrap{max-width:918px;margin:0 auto;padding:0 16px}
+.wrap{max-width:918px}
 
 .site-head{border-bottom:1px solid var(--border);padding-block:40px 24px;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .head-left{min-width:0}
 .site-title{font-size:26px;font-weight:700;letter-spacing:.02em}
 .site-sub{font-size:13px;color:var(--text2);margin-top:8px}
+.head-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 
-.lang-switch{display:flex;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0}
+.lang-switch{display:flex;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden}
 .lang-btn{background:none;border:none;color:var(--text3);font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.06em;padding:6px 12px;cursor:pointer}
 .lang-btn+.lang-btn{border-left:1px solid var(--border2)}
 .lang-btn.active{background:var(--surface2);color:var(--text)}
 .lang-btn:hover:not(.active){color:var(--text2)}
-.feed-link{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;text-decoration:none;flex-shrink:0}
+
+.feed-link{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;text-decoration:none}
 .feed-link:hover{color:var(--accent);border-color:var(--accent)}
-.head-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 
 .series{margin-bottom:34px}
 .series-name{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
 
-.post{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;text-decoration:none;color:inherit;transition:border-color .15s}
+.post{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;transition:border-color .15s;cursor:pointer}
 .post:hover{border-color:var(--accent)}
 .post-stamp{font-family:'Courier New',monospace;font-size:12px;color:var(--accent);letter-spacing:.04em}
-.post-title{font-size:17px;font-weight:600;margin:6px 0 6px}
+.card-title{font-size:17px;font-weight:600;margin:6px 0 6px}
 .post-lede{font-size:13px;color:var(--text2);line-height:1.7}
-.post-foot{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card-foot{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .tag{font-size:11px;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:2px 8px}
 .tag.fallback{color:var(--accent);border-color:var(--accent)}
-.pdf-link{font-size:11px;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:2px 8px;text-decoration:none}
-.pdf-link:hover{color:var(--accent);border-color:var(--accent)}
+
+.empty{color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--radius);padding:22px;text-align:center}
+
+.reader{max-width:680px;margin:0 auto}
+.reader-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:22px;border-bottom:1px solid var(--border)}
+.back-btn{background:none;border:none;color:var(--text3);font-family:inherit;font-size:13px;padding:0;cursor:pointer}
+.back-btn:hover{color:var(--accent)}
 
 #latest{max-width:680px;margin:0 auto;padding-top:34px;border-top:1px solid var(--border)}
 #latest .post-head{padding-block:0 12px}
 #latest .post-title{font-size:26px}
 .latest-mark{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;text-align:center}
-.empty{color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--radius);padding:22px;text-align:center}
-
 </style>
 </head>
 <body>
@@ -73,48 +67,71 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
     </div>
   </header>
 
-  <main id="list"></main>
-  <section id="latest" hidden></section>
+  <div id="index-view">
+    <main id="list"></main>
+    <section id="latest" hidden></section>
+  </div>
 
+  <div id="reader" class="reader" hidden>
+    <nav class="reader-bar"><button class="back-btn" id="back"></button></nav>
+    <div id="reader-body"></div>
+  </div>
 
 </div>
 
 <script>
-// posts.json 을 읽어 선택된 언어로 목록을 그린다
+// 글을 목록 안에서 펼치고 주소는 바꾸지 않는다
 (function(){
   var STORE = 'bs2fob-lang';
 
   var UI = {
-    ko: { sub:'확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
-          empty:'아직 게시된 글이 없습니다.',
-          fail:'목록을 불러오지 못했습니다.',
-          fallback:'한국어 원문' },
-    en: { sub:'Established footholds &mdash; each one becomes the next starting point',
-          empty:'No posts yet.',
-          fail:'Failed to load the index.',
-          fallback:'Korean original' }
+    ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
+          empty: '아직 게시된 글이 없습니다.',
+          fail: '목록을 불러오지 못했습니다.',
+          fallback: '한국어 원문', latest: '최근 글', back: '← 목록' },
+    en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
+          empty: 'No posts yet.',
+          fail: 'Failed to load the index.',
+          fallback: 'Korean original', latest: 'Latest', back: '← Index' }
   };
 
-  var list = document.getElementById('list');
-  var latest = document.getElementById('latest');
-  var listOnly = /(^|[?&])list(=|&|$)/.test(location.search);
-  var sub  = document.getElementById('site-sub');
+  var listEl = document.getElementById('list');
+  var latestEl = document.getElementById('latest');
+  var indexEl = document.getElementById('index-view');
+  var readerEl = document.getElementById('reader');
+  var bodyEl = document.getElementById('reader-body');
+  var subEl = document.getElementById('site-sub');
+  var backEl = document.getElementById('back');
+
   var lang = pickLang();
   var posts = null;
+  var current = null;
+  var cache = {};
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
   });
+  backEl.addEventListener('click', function(){ history.back(); });
+  window.addEventListener('popstate', function(e){
+    apply(e.state && e.state.stamp ? e.state.stamp : null);
+  });
 
-  apply();
+  paintChrome();
   fetch('posts.json?t=' + Date.now())
     .then(function(r){ return r.json(); })
-    .then(function(d){ posts = d; render(); })
-    .catch(function(){ list.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>'; });
+    .then(function(d){
+      posts = d;
+      posts.sort(function(a, b){ return (b.stamp || '').localeCompare(a.stamp || ''); });
+      if (!history.state) history.replaceState({ stamp: null }, '', location.pathname);
+      apply(history.state && history.state.stamp);
+    })
+    .catch(function(){
+      listEl.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>';
+    });
 
   function pickLang(){
     var saved;
-    try { saved = localStorage.getItem(STORE); } catch(e) {}
+    try { saved = localStorage.getItem(STORE); } catch (e) {}
     if (saved === 'ko' || saved === 'en') return saved;
     return /^ko/i.test(navigator.language || '') ? 'ko' : 'en';
   }
@@ -122,55 +139,126 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   function setLang(next){
     if (next === lang) return;
     lang = next;
-    try { localStorage.setItem(STORE, next); } catch(e) {}
-    apply();
-    render();
+    try { localStorage.setItem(STORE, next); } catch (e) {}
+    cache = {};
+    paintChrome();
+    apply(current);
   }
 
-  function apply(){
+  function paintChrome(){
     document.documentElement.lang = lang;
-    sub.innerHTML = UI[lang].sub;
+    subEl.innerHTML = UI[lang].sub;
+    backEl.textContent = UI[lang].back;
+    document.getElementById('feed-link').href = 'feed.' + lang + '.xml';
     document.querySelectorAll('.lang-btn').forEach(function(b){
       b.classList.toggle('active', b.dataset.lang === lang);
     });
-    document.getElementById('feed-link').href = 'feed.' + lang + '.xml';
   }
 
-  function render(){
+  function find(stamp){
+    for (var i = 0; i < posts.length; i++) {
+      if (posts[i].stamp === stamp) return posts[i];
+    }
+    return null;
+  }
+
+  function apply(stamp){
     if (!posts) return;
-    if (!posts.length){
-      list.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
+    var post = stamp ? find(stamp) : null;
+    current = post ? post.stamp : null;
+
+    if (post) {
+      indexEl.hidden = true;
+      readerEl.hidden = false;
+      load(post, bodyEl);
+    } else {
+      readerEl.hidden = true;
+      indexEl.hidden = false;
+      renderList();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  function openPost(post){
+    if (!post) return;
+    history.pushState({ stamp: post.stamp }, '', location.pathname);
+    apply(post.stamp);
+  }
+
+  function renderList(){
+    if (!posts.length) {
+      listEl.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
       return;
     }
-    posts.sort(function(a,b){ return (b.stamp||'').localeCompare(a.stamp||''); });
 
     var groups = [], index = {};
     posts.forEach(function(p){
       var key = seriesName(p);
-      if (!(key in index)){ index[key] = groups.length; groups.push({ name:key, items:[] }); }
+      if (!(key in index)) { index[key] = groups.length; groups.push({ name: key, items: [] }); }
       groups[index[key]].items.push(p);
     });
 
-    list.innerHTML = groups.map(function(g){
+    listEl.innerHTML = groups.map(function(g){
       return '<section class="series">'
         + (g.name ? '<div class="series-name">' + esc(g.name) + '</div>' : '')
         + g.items.map(card).join('')
         + '</section>';
     }).join('');
 
-    showLatest(posts[0]);
+    listEl.querySelectorAll('.post').forEach(function(el){
+      el.addEventListener('click', function(){ openPost(find(el.dataset.stamp)); });
+    });
+
+    latestEl.hidden = true;
+    latestEl.innerHTML = '';
+    if (posts[0]) {
+      var mark = document.createElement('div');
+      mark.className = 'latest-mark';
+      mark.textContent = UI[lang].latest;
+      latestEl.appendChild(mark);
+      load(posts[0], latestEl, function(){ latestEl.hidden = false; });
+    }
   }
 
-  // 최근 한 편만 목록 아래에 펼친다. ?list 로 들어오면 목록만 남긴다
-  function showLatest(post){
-    latest.hidden = true;
-    latest.innerHTML = '';
-    if (listOnly || !post) return;
+  function seriesName(p){
+    var s = p.series;
+    if (!s) return '';
+    return typeof s === 'string' ? s : (s[lang] || s.ko || s.en || '');
+  }
 
-    var v = post[lang] || post.ko || post.en;
-    if (!v || !v.file) return;
+  function pick(p){
+    var v = p[lang];
+    if (v && v.file) return { v: v, fell: false };
+    v = p.ko || p.en;
+    return v && v.file ? { v: v, fell: true } : null;
+  }
 
-    fetch(v.file)
+  function card(p){
+    var got = pick(p);
+    if (!got) return '';
+    var v = got.v;
+
+    var foot = [];
+    if (got.fell) foot.push('<span class="tag fallback">' + UI[lang].fallback + '</span>');
+    (p.tags || []).forEach(function(t){ foot.push('<span class="tag">' + esc(t) + '</span>'); });
+
+    return '<div class="post" data-stamp="' + esc(p.stamp) + '">'
+      + '<div class="post-stamp">' + esc(p.stamp || '') + '</div>'
+      + '<div class="card-title">' + esc(v.title || '') + '</div>'
+      + (v.lede ? '<div class="post-lede">' + esc(v.lede) + '</div>' : '')
+      + (foot.length ? '<div class="card-foot">' + foot.join('') + '</div>' : '')
+      + '</div>';
+  }
+
+  // 글 HTML 에서 본문만 떼어 온다. 이미지 경로는 목록 기준으로 옮긴다
+  function load(post, target, done){
+    var got = pick(post);
+    if (!got) return;
+    var file = got.v.file;
+
+    if (cache[file]) { paint(target, cache[file], done); return; }
+
+    fetch(file)
       .then(function(r){ return r.text(); })
       .then(function(html){
         var doc = new DOMParser().parseFromString(html, 'text/html');
@@ -182,50 +270,29 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
           frag.appendChild(document.importNode(el, true));
         });
 
-        var mark = document.createElement('div');
-        mark.className = 'latest-mark';
-        mark.textContent = lang === 'ko' ? '최근 글' : 'Latest';
-        latest.appendChild(mark);
-        latest.appendChild(frag);
-        latest.querySelectorAll('img[src^="img/"]').forEach(function(img){
-          img.setAttribute('src', 'p/' + img.getAttribute('src'));
+        var base = file.replace(/[^/]+$/, '');
+        Array.prototype.forEach.call(frag.querySelectorAll('img'), function(img){
+          var src = img.getAttribute('src') || '';
+          if (src && src.charAt(0) !== '/' && src.indexOf('://') < 0) {
+            img.setAttribute('src', base + src);
+          }
         });
-        latest.hidden = false;
+
+        cache[file] = frag;
+        paint(target, frag, done);
       })
       .catch(function(){});
   }
 
-  function seriesName(p){
-    var s = p.series;
-    if (!s) return '';
-    return typeof s === 'string' ? s : (s[lang] || s.ko || s.en || '');
-  }
-
-  // 선택 언어판이 없으면 원문으로 대신 보여주고 표시를 단다
-  function card(p){
-    var v = p[lang], fell = false;
-    if (!v || !v.file){ v = p.ko || p.en; fell = true; }
-    if (!v || !v.file) return '';
-
-    var foot = [];
-    if (fell) foot.push('<span class="tag fallback">' + UI[lang].fallback + '</span>');
-    (p.tags || []).forEach(function(t){ foot.push('<span class="tag">' + esc(t) + '</span>'); });
-
-    var pdf = v.pdf
-      ? '<a class="pdf-link" href="' + esc(v.pdf) + '" onclick="event.stopPropagation()">PDF</a>'
-      : '';
-
-    return '<a class="post" href="' + esc(v.file) + '">'
-      + '<div class="post-stamp">' + esc(p.stamp || '') + '</div>'
-      + '<div class="post-title">' + esc(v.title || '') + '</div>'
-      + (v.lede ? '<div class="post-lede">' + esc(v.lede) + '</div>' : '')
-      + (foot.length || pdf ? '<div class="post-foot">' + foot.join('') + pdf + '</div>' : '')
-      + '</a>';
+  function paint(target, frag, done){
+    if (target === bodyEl) target.innerHTML = '';
+    target.appendChild(frag.cloneNode(true));
+    if (done) done();
   }
 
   function esc(s){
     return String(s).replace(/[&<>"']/g, function(c){
-      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
 })();

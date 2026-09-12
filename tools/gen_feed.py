@@ -7,7 +7,7 @@ import re
 import sys
 from datetime import datetime, timedelta, timezone
 
-SITE_URL = "https://bs2fob.github.io/text/"
+SITE_URL = "https://bs2fob.github.io/"
 SITE_TITLE = {"ko": "Bs2FoB", "en": "Bs2FoB"}
 SITE_DESC = {
     "ko": "확보된 거점 — 세운 것을 다음 출발점으로 넘긴다",
