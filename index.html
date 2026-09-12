@@ -65,6 +65,14 @@
 #latest .post-head{padding-block:0 12px}
 #latest .post-title{font-size:26px}
 .latest-mark{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;text-align:center}
+
+#notice{max-width:680px;margin:38px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px 26px}
+#notice .post-head{padding-block:0 10px}
+#notice .post-title{font-size:17px}
+#notice .post-stamp{font-size:11px}
+#notice p{font-size:14px;color:var(--text2);margin-bottom:.9em}
+#notice p:last-child{margin-bottom:0}
+.notice-mark{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -89,6 +97,7 @@
     <main id="list"></main>
     <nav class="pager" id="pager" hidden></nav>
     <section id="latest" hidden></section>
+    <section id="notice" hidden></section>
   </div>
 
   <div id="reader" class="reader" hidden>
@@ -110,16 +119,17 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', latest: '최근 글', back: '← 목록',
+          fallback: '한국어 원문', latest: '최근 글', back: '← 목록', notice: '공지',
           tab: { notice: '공지', write: '작문', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', latest: 'Latest', back: '← Index',
+          fallback: 'Korean original', latest: 'Latest', back: '← Index', notice: 'Notice',
           tab: { notice: 'Notice', write: 'Writing', code: 'Code' } }
   };
 
   var tabbarEl = document.getElementById('tabbar');
+  var noticeEl = document.getElementById('notice');
   var listEl = document.getElementById('list');
   var pagerEl = document.getElementById('pager');
   var latestEl = document.getElementById('latest');
@@ -271,6 +281,7 @@
     pagerEl.hidden = true;
     pagerEl.innerHTML = '';
     renderTabs();
+    renderNotice();
 
     var mine = tabPosts();
     if (!mine.length) {
@@ -342,6 +353,22 @@
       if (!off && !on) b.addEventListener('click', function(){ goPage(target); });
       pagerEl.appendChild(b);
     }
+  }
+
+  // 가장 최근 공지를 목록 맨 아래에 걸어 둔다. 공지 탭에서는 위에 이미 있으므로 건다
+  function renderNotice(){
+    noticeEl.hidden = true;
+    noticeEl.innerHTML = '';
+    if (tab === 'notice') return;
+
+    var latest = tabPosts('notice')[0];
+    if (!latest || !pick(latest)) return;
+
+    var mark = document.createElement('div');
+    mark.className = 'notice-mark';
+    mark.textContent = UI[lang].notice;
+    noticeEl.appendChild(mark);
+    load(latest, noticeEl, function(){ noticeEl.hidden = false; });
   }
 
   function seriesName(p){
