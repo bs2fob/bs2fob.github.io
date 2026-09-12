@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bs2FoB</title>
+<link rel="stylesheet" href="post.css">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
@@ -47,6 +48,10 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .pdf-link{font-size:11px;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:2px 8px;text-decoration:none}
 .pdf-link:hover{color:var(--accent);border-color:var(--accent)}
 
+#latest{max-width:680px;margin:0 auto;padding-top:34px;border-top:1px solid var(--border)}
+#latest .post-head{padding-block:0 12px}
+#latest .post-title{font-size:26px}
+.latest-mark{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;text-align:center}
 .empty{color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--radius);padding:22px;text-align:center}
 
 </style>
@@ -69,6 +74,7 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   </header>
 
   <main id="list"></main>
+  <section id="latest" hidden></section>
 
 
 </div>
@@ -90,6 +96,8 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
   };
 
   var list = document.getElementById('list');
+  var latest = document.getElementById('latest');
+  var listOnly = /(^|[?&])list(=|&|$)/.test(location.search);
   var sub  = document.getElementById('site-sub');
   var lang = pickLang();
   var posts = null;
@@ -149,6 +157,42 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
         + g.items.map(card).join('')
         + '</section>';
     }).join('');
+
+    showLatest(posts[0]);
+  }
+
+  // 최근 한 편만 목록 아래에 펼친다. ?list 로 들어오면 목록만 남긴다
+  function showLatest(post){
+    latest.hidden = true;
+    latest.innerHTML = '';
+    if (listOnly || !post) return;
+
+    var v = post[lang] || post.ko || post.en;
+    if (!v || !v.file) return;
+
+    fetch(v.file)
+      .then(function(r){ return r.text(); })
+      .then(function(html){
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var parts = doc.querySelectorAll('.post-head, .epigraph, .ep-trans, main');
+        if (!parts.length) return;
+
+        var frag = document.createDocumentFragment();
+        Array.prototype.forEach.call(parts, function(el){
+          frag.appendChild(document.importNode(el, true));
+        });
+
+        var mark = document.createElement('div');
+        mark.className = 'latest-mark';
+        mark.textContent = lang === 'ko' ? '최근 글' : 'Latest';
+        latest.appendChild(mark);
+        latest.appendChild(frag);
+        latest.querySelectorAll('img[src^="img/"]').forEach(function(img){
+          img.setAttribute('src', 'p/' + img.getAttribute('src'));
+        });
+        latest.hidden = false;
+      })
+      .catch(function(){});
   }
 
   function seriesName(p){
