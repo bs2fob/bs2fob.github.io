@@ -40,7 +40,7 @@ p{margin:0 0 1.15em}
 code{font-family:'Courier New',monospace;font-size:.92em;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--accent)}
 
 figure{margin:36px 0}
-figure img{display:block;width:100%;border-radius:var(--radius);border:1px solid var(--border)}
+figure img{display:block;width:100%;height:auto;border-radius:var(--radius);border:1px solid var(--border)}
 figcaption{font-size:12px;color:var(--text3);margin-top:9px}
 .img-todo{display:flex;align-items:center;justify-content:center;text-align:center;min-height:200px;border:1px dashed var(--border2);border-radius:var(--radius);color:var(--text3);font-size:12px;padding:20px;line-height:1.7}
 
