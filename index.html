@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bs2FoB</title>
+<link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
+<link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -27,6 +29,9 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .lang-btn+.lang-btn{border-left:1px solid var(--border2)}
 .lang-btn.active{background:var(--surface2);color:var(--text)}
 .lang-btn:hover:not(.active){color:var(--text2)}
+.feed-link{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;text-decoration:none;flex-shrink:0}
+.feed-link:hover{color:var(--accent);border-color:var(--accent)}
+.head-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 
 .series{margin-bottom:34px}
 .series-name{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
@@ -54,9 +59,12 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
       <div class="site-title">Bs2FoB</div>
       <div class="site-sub" id="site-sub"></div>
     </div>
-    <div class="lang-switch">
-      <button class="lang-btn" data-lang="ko">KO</button>
-      <button class="lang-btn" data-lang="en">EN</button>
+    <div class="head-right">
+      <div class="lang-switch">
+        <button class="lang-btn" data-lang="ko">KO</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
     </div>
   </header>
 
@@ -117,6 +125,7 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
     document.querySelectorAll('.lang-btn').forEach(function(b){
       b.classList.toggle('active', b.dataset.lang === lang);
     });
+    document.getElementById('feed-link').href = 'feed.' + lang + '.xml';
   }
 
   function render(){
