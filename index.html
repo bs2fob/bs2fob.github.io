@@ -39,6 +39,13 @@
 
 .empty{color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--radius);padding:22px;text-align:center}
 
+.pager{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;margin:26px 0 34px}
+.pg{background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text3);font-family:inherit;font-size:13px;min-width:34px;padding:6px 10px;cursor:pointer}
+.pg:hover:not(:disabled):not(.on){color:var(--text);border-color:var(--text3)}
+.pg.on{background:var(--surface2);color:var(--text);border-color:var(--border2);cursor:default}
+.pg:disabled{opacity:.35;cursor:default}
+.pg-gap{color:var(--text3);font-size:13px;padding:0 2px}
+
 .reader{max-width:680px;margin:0 auto}
 .reader-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:22px;border-bottom:1px solid var(--border)}
 .back-btn{background:none;border:none;color:var(--text3);font-family:inherit;font-size:13px;padding:0;cursor:pointer}
@@ -69,6 +76,7 @@
 
   <div id="index-view">
     <main id="list"></main>
+    <nav class="pager" id="pager" hidden></nav>
     <section id="latest" hidden></section>
   </div>
 
@@ -83,6 +91,7 @@
 // 글을 목록 안에서 펼치고 주소는 바꾸지 않는다
 (function(){
   var STORE = 'bs2fob-lang';
+  var PER_PAGE = 10;
 
   var UI = {
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
@@ -96,6 +105,7 @@
   };
 
   var listEl = document.getElementById('list');
+  var pagerEl = document.getElementById('pager');
   var latestEl = document.getElementById('latest');
   var indexEl = document.getElementById('index-view');
   var readerEl = document.getElementById('reader');
@@ -106,6 +116,7 @@
   var lang = pickLang();
   var posts = null;
   var current = null;
+  var page = 0;
   var cache = {};
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
@@ -113,7 +124,7 @@
   });
   backEl.addEventListener('click', function(){ history.back(); });
   window.addEventListener('popstate', function(e){
-    apply(e.state && e.state.stamp ? e.state.stamp : null);
+    apply(e.state || {});
   });
 
   paintChrome();
@@ -122,8 +133,8 @@
     .then(function(d){
       posts = d;
       posts.sort(function(a, b){ return (b.stamp || '').localeCompare(a.stamp || ''); });
-      if (!history.state) history.replaceState({ stamp: null }, '', location.pathname);
-      apply(history.state && history.state.stamp);
+      if (!history.state) history.replaceState({ stamp: null, page: 0 }, '', location.pathname);
+      apply(history.state || {});
     })
     .catch(function(){
       listEl.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>';
@@ -142,7 +153,7 @@
     try { localStorage.setItem(STORE, next); } catch (e) {}
     cache = {};
     paintChrome();
-    apply(current);
+    apply({ stamp: current, page: page });
   }
 
   function paintChrome(){
@@ -162,10 +173,11 @@
     return null;
   }
 
-  function apply(stamp){
+  function apply(state){
     if (!posts) return;
-    var post = stamp ? find(stamp) : null;
+    var post = state.stamp ? find(state.stamp) : null;
     current = post ? post.stamp : null;
+    page = clampPage(state.page || 0);
 
     if (post) {
       indexEl.hidden = true;
@@ -179,20 +191,43 @@
     window.scrollTo(0, 0);
   }
 
+  function pageCount(){
+    return Math.max(1, Math.ceil(posts.length / PER_PAGE));
+  }
+
+  function clampPage(n){
+    if (!posts) return 0;
+    return Math.min(Math.max(0, n | 0), pageCount() - 1);
+  }
+
   function openPost(post){
     if (!post) return;
-    history.pushState({ stamp: post.stamp }, '', location.pathname);
-    apply(post.stamp);
+    history.pushState({ stamp: post.stamp, page: page }, '', location.pathname);
+    apply({ stamp: post.stamp, page: page });
+  }
+
+  function goPage(n){
+    n = clampPage(n);
+    if (n === page && !current) return;
+    history.pushState({ stamp: null, page: n }, '', location.pathname);
+    apply({ stamp: null, page: n });
   }
 
   function renderList(){
+    latestEl.hidden = true;
+    latestEl.innerHTML = '';
+    pagerEl.hidden = true;
+    pagerEl.innerHTML = '';
+
     if (!posts.length) {
       listEl.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
       return;
     }
 
+    // 페이지를 먼저 자르고 그 안에서 시리즈를 묶는다
+    var slice = posts.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
     var groups = [], index = {};
-    posts.forEach(function(p){
+    slice.forEach(function(p){
       var key = seriesName(p);
       if (!(key in index)) { index[key] = groups.length; groups.push({ name: key, items: [] }); }
       groups[index[key]].items.push(p);
@@ -209,14 +244,46 @@
       el.addEventListener('click', function(){ openPost(find(el.dataset.stamp)); });
     });
 
-    latestEl.hidden = true;
-    latestEl.innerHTML = '';
-    if (posts[0]) {
+    renderPager();
+
+    if (page === 0 && posts[0]) {
       var mark = document.createElement('div');
       mark.className = 'latest-mark';
       mark.textContent = UI[lang].latest;
       latestEl.appendChild(mark);
       load(posts[0], latestEl, function(){ latestEl.hidden = false; });
+    }
+  }
+
+  // 앞뒤 두 칸과 양 끝만 남기고 사이는 생략표로 접는다
+  function renderPager(){
+    var total = pageCount();
+    if (total < 2) return;
+
+    add('‹', page - 1, false, page === 0);
+    var last = -1;
+    for (var i = 0; i < total; i++) {
+      if (i > 1 && i < total - 2 && Math.abs(i - page) > 1) continue;
+      if (last >= 0 && i - last > 1) {
+        var gap = document.createElement('span');
+        gap.className = 'pg-gap';
+        gap.textContent = '…';
+        pagerEl.appendChild(gap);
+      }
+      add(String(i + 1), i, i === page, false);
+      last = i;
+    }
+    add('›', page + 1, false, page === total - 1);
+
+    pagerEl.hidden = false;
+
+    function add(label, target, on, off){
+      var b = document.createElement('button');
+      b.className = 'pg' + (on ? ' on' : '');
+      b.textContent = label;
+      b.disabled = !!off || !!on;
+      if (!off && !on) b.addEventListener('click', function(){ goPage(target); });
+      pagerEl.appendChild(b);
     }
   }
 
