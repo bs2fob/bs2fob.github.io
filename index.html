@@ -25,6 +25,12 @@
 .feed-link{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;text-decoration:none}
 .feed-link:hover{color:var(--accent);border-color:var(--accent)}
 
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:26px}
+.tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);font-family:inherit;font-size:14px;font-weight:600;padding:10px 16px;margin-bottom:-1px;cursor:pointer}
+.tab:hover:not(.on){color:var(--text2)}
+.tab.on{color:var(--text);border-bottom-color:var(--accent)}
+.tab-count{font-size:11px;font-weight:500;color:var(--text3);margin-left:6px}
+
 .series{margin-bottom:34px}
 .series-name{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
 
@@ -36,6 +42,10 @@
 .card-foot{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .tag{font-size:11px;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:2px 8px}
 .tag.fallback{color:var(--accent);border-color:var(--accent)}
+.dl{font-size:11px;color:var(--accent);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:2px 8px;text-decoration:none}
+.dl:hover{background:var(--surface2)}
+.post.flat{cursor:default}
+.post.flat:hover{border-color:var(--border)}
 
 .empty{color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--radius);padding:22px;text-align:center}
 
@@ -75,6 +85,7 @@
   </header>
 
   <div id="index-view">
+    <nav class="tabbar" id="tabbar"></nav>
     <main id="list"></main>
     <nav class="pager" id="pager" hidden></nav>
     <section id="latest" hidden></section>
@@ -92,18 +103,23 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 10;
+  var TABS = ['notice', 'write', 'code'];
+  var DEFAULT_TAB = 'write';
 
   var UI = {
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', latest: '최근 글', back: '← 목록' },
+          fallback: '한국어 원문', latest: '최근 글', back: '← 목록',
+          tab: { notice: '공지', write: '작문', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', latest: 'Latest', back: '← Index' }
+          fallback: 'Korean original', latest: 'Latest', back: '← Index',
+          tab: { notice: 'Notice', write: 'Writing', code: 'Code' } }
   };
 
+  var tabbarEl = document.getElementById('tabbar');
   var listEl = document.getElementById('list');
   var pagerEl = document.getElementById('pager');
   var latestEl = document.getElementById('latest');
@@ -116,6 +132,7 @@
   var lang = pickLang();
   var posts = null;
   var current = null;
+  var tab = DEFAULT_TAB;
   var page = 0;
   var cache = {};
 
@@ -133,7 +150,9 @@
     .then(function(d){
       posts = d;
       posts.sort(function(a, b){ return (b.stamp || '').localeCompare(a.stamp || ''); });
-      if (!history.state) history.replaceState({ stamp: null, page: 0 }, '', location.pathname);
+      if (!history.state) {
+        history.replaceState({ stamp: null, tab: DEFAULT_TAB, page: 0 }, '', location.pathname);
+      }
       apply(history.state || {});
     })
     .catch(function(){
@@ -153,7 +172,7 @@
     try { localStorage.setItem(STORE, next); } catch (e) {}
     cache = {};
     paintChrome();
-    apply({ stamp: current, page: page });
+    apply({ stamp: current, tab: tab, page: page });
   }
 
   function paintChrome(){
@@ -177,6 +196,7 @@
     if (!posts) return;
     var post = state.stamp ? find(state.stamp) : null;
     current = post ? post.stamp : null;
+    tab = TABS.indexOf(state.tab) >= 0 ? state.tab : DEFAULT_TAB;
     page = clampPage(state.page || 0);
 
     if (post) {
@@ -191,8 +211,16 @@
     window.scrollTo(0, 0);
   }
 
+  function tabOf(p){
+    return TABS.indexOf(p.tab) >= 0 ? p.tab : DEFAULT_TAB;
+  }
+
+  function tabPosts(which){
+    return posts.filter(function(p){ return tabOf(p) === (which || tab); });
+  }
+
   function pageCount(){
-    return Math.max(1, Math.ceil(posts.length / PER_PAGE));
+    return Math.max(1, Math.ceil(tabPosts().length / PER_PAGE));
   }
 
   function clampPage(n){
@@ -202,15 +230,39 @@
 
   function openPost(post){
     if (!post) return;
-    history.pushState({ stamp: post.stamp, page: page }, '', location.pathname);
-    apply({ stamp: post.stamp, page: page });
+    history.pushState({ stamp: post.stamp, tab: tab, page: page }, '', location.pathname);
+    apply({ stamp: post.stamp, tab: tab, page: page });
   }
 
   function goPage(n){
     n = clampPage(n);
     if (n === page && !current) return;
-    history.pushState({ stamp: null, page: n }, '', location.pathname);
-    apply({ stamp: null, page: n });
+    history.pushState({ stamp: null, tab: tab, page: n }, '', location.pathname);
+    apply({ stamp: null, tab: tab, page: n });
+  }
+
+  function goTab(t){
+    if (t === tab && !current) return;
+    history.pushState({ stamp: null, tab: t, page: 0 }, '', location.pathname);
+    apply({ stamp: null, tab: t, page: 0 });
+  }
+
+  function renderTabs(){
+    tabbarEl.innerHTML = '';
+    TABS.forEach(function(t){
+      var n = tabPosts(t).length;
+      var b = document.createElement('button');
+      b.className = 'tab' + (t === tab ? ' on' : '');
+      b.textContent = UI[lang].tab[t];
+      if (n) {
+        var c = document.createElement('span');
+        c.className = 'tab-count';
+        c.textContent = n;
+        b.appendChild(c);
+      }
+      b.addEventListener('click', function(){ goTab(t); });
+      tabbarEl.appendChild(b);
+    });
   }
 
   function renderList(){
@@ -218,14 +270,16 @@
     latestEl.innerHTML = '';
     pagerEl.hidden = true;
     pagerEl.innerHTML = '';
+    renderTabs();
 
-    if (!posts.length) {
+    var mine = tabPosts();
+    if (!mine.length) {
       listEl.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
       return;
     }
 
     // 페이지를 먼저 자르고 그 안에서 시리즈를 묶는다
-    var slice = posts.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+    var slice = mine.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
     var groups = [], index = {};
     slice.forEach(function(p){
       var key = seriesName(p);
@@ -240,18 +294,21 @@
         + '</section>';
     }).join('');
 
-    listEl.querySelectorAll('.post').forEach(function(el){
+    listEl.querySelectorAll('.post:not(.flat)').forEach(function(el){
       el.addEventListener('click', function(){ openPost(find(el.dataset.stamp)); });
+    });
+    listEl.querySelectorAll('.dl').forEach(function(el){
+      el.addEventListener('click', function(e){ e.stopPropagation(); });
     });
 
     renderPager();
 
-    if (page === 0 && posts[0]) {
+    if (page === 0 && mine[0] && pick(mine[0])) {
       var mark = document.createElement('div');
       mark.className = 'latest-mark';
       mark.textContent = UI[lang].latest;
       latestEl.appendChild(mark);
-      load(posts[0], latestEl, function(){ latestEl.hidden = false; });
+      load(mine[0], latestEl, function(){ latestEl.hidden = false; });
     }
   }
 
@@ -300,19 +357,23 @@
     return v && v.file ? { v: v, fell: true } : null;
   }
 
+  // 본문 없이 내려받을 것만 있는 항목도 카드로 선다
   function card(p){
     var got = pick(p);
-    if (!got) return '';
-    var v = got.v;
-
+    var meta = got ? got.v : (p[lang] || p.ko || p.en || {});
     var foot = [];
-    if (got.fell) foot.push('<span class="tag fallback">' + UI[lang].fallback + '</span>');
-    (p.tags || []).forEach(function(t){ foot.push('<span class="tag">' + esc(t) + '</span>'); });
 
-    return '<div class="post" data-stamp="' + esc(p.stamp) + '">'
+    if (got && got.fell) foot.push('<span class="tag fallback">' + UI[lang].fallback + '</span>');
+    (p.tags || []).forEach(function(t){ foot.push('<span class="tag">' + esc(t) + '</span>'); });
+    if (p.download) {
+      foot.push('<a class="dl" href="' + esc(p.download) + '" download>'
+        + esc(p.downloadLabel || 'DOWNLOAD') + '</a>');
+    }
+
+    return '<div class="post' + (got ? '' : ' flat') + '" data-stamp="' + esc(p.stamp) + '">'
       + '<div class="post-stamp">' + esc(p.stamp || '') + '</div>'
-      + '<div class="card-title">' + esc(v.title || '') + '</div>'
-      + (v.lede ? '<div class="post-lede">' + esc(v.lede) + '</div>' : '')
+      + '<div class="card-title">' + esc(meta.title || '') + '</div>'
+      + (meta.lede ? '<div class="post-lede">' + esc(meta.lede) + '</div>' : '')
       + (foot.length ? '<div class="card-foot">' + foot.join('') + '</div>' : '')
       + '</div>';
   }
