@@ -17,7 +17,8 @@
 .head-left{min-width:0}
 .site-title{font-size:26px;font-weight:700;letter-spacing:.02em}
 .site-sub{font-size:13px;color:var(--text2);margin-top:8px}
-.head-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.head-right{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0}
+.head-btns{display:flex;align-items:center;gap:8px}
 
 .lang-switch{display:flex;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden}
 .lang-btn{background:none;border:none;color:var(--text3);font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.06em;padding:6px 12px;cursor:pointer}
@@ -27,6 +28,10 @@
 
 .feed-link{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;text-decoration:none}
 .feed-link:hover{color:var(--accent);border-color:var(--accent)}
+
+.hits{display:flex;gap:10px;align-items:center;font-size:11px;color:var(--text3);letter-spacing:.04em}
+.hits b{font-family:'Courier New',monospace;font-size:12px;font-weight:600;color:var(--text2);margin-left:4px}
+.hits .today b{color:var(--accent)}
 
 .tabbar{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:26px}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);font-family:inherit;font-size:14px;font-weight:600;padding:10px 16px;margin-bottom:-1px;cursor:pointer}
@@ -87,11 +92,17 @@
       <div class="site-sub" id="site-sub"></div>
     </div>
     <div class="head-right">
-      <div class="lang-switch">
-        <button class="lang-btn" data-lang="ko">KO</button>
-        <button class="lang-btn" data-lang="en">EN</button>
+      <div class="head-btns">
+        <div class="lang-switch">
+          <button class="lang-btn" data-lang="ko">KO</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
       </div>
-      <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
+      <div class="hits" id="hits" hidden>
+        <span class="today">TODAY<b id="hit-today">-</b></span>
+        <span class="total">TOTAL<b id="hit-total">-</b></span>
+      </div>
     </div>
   </header>
 
@@ -158,6 +169,7 @@
   });
 
   paintChrome();
+  loadHits();
   fetch('posts.json?t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -171,6 +183,24 @@
     .catch(function(){
       listEl.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>';
     });
+
+  // 방문 수는 GoatCounter 가 내주며 응답이 최대 네 시간 캐시된다
+  function loadHits(){
+    var base = 'https://bs2fob.goatcounter.com/counter/TOTAL.json';
+    var d = new Date();
+    var today = d.getFullYear() + '-'
+      + String(d.getMonth() + 1).padStart(2, '0') + '-'
+      + String(d.getDate()).padStart(2, '0');
+
+    Promise.all([
+      fetch(base).then(function(r){ return r.json(); }),
+      fetch(base + '?start=' + today).then(function(r){ return r.json(); })
+    ]).then(function(r){
+      document.getElementById('hit-total').textContent = r[0].count_unique;
+      document.getElementById('hit-today').textContent = r[1].count_unique;
+      document.getElementById('hits').hidden = false;
+    }).catch(function(){});
+  }
 
   function pickLang(){
     var saved;
