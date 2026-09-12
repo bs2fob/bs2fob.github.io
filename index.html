@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bs2FoB</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#111110;--surface:#1c1c1a;--surface2:#252522;
+  --border:#2e2e2a;--border2:#3e3e38;
+  --text:#e8e8e0;--text2:#8a8a80;--text3:#5a5a54;
+  --accent:#7a9ee8;
+  --radius:10px;--radius-sm:6px;
+}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+.wrap{max-width:1020px;margin:0 auto;padding:0 16px}
+
+.site-head{border-bottom:1px solid var(--border);padding-block:40px 24px;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head-left{min-width:0}
+.site-title{font-size:26px;font-weight:700;letter-spacing:.02em}
+.site-sub{font-size:13px;color:var(--text2);margin-top:8px}
+
+.lang-switch{display:flex;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0}
+.lang-btn{background:none;border:none;color:var(--text3);font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.06em;padding:6px 12px;cursor:pointer}
+.lang-btn+.lang-btn{border-left:1px solid var(--border2)}
+.lang-btn.active{background:var(--surface2);color:var(--text)}
+.lang-btn:hover:not(.active){color:var(--text2)}
+
+.series{margin-bottom:34px}
+.series-name{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+
+.post{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;text-decoration:none;color:inherit;transition:border-color .15s}
+.post:hover{border-color:var(--accent)}
+.post-stamp{font-family:'Courier New',monospace;font-size:12px;color:var(--accent);letter-spacing:.04em}
+.post-title{font-size:17px;font-weight:600;margin:6px 0 6px}
+.post-lede{font-size:13px;color:var(--text2);line-height:1.7}
+.post-foot{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag{font-size:11px;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:2px 8px}
+.tag.fallback{color:var(--accent);border-color:var(--accent)}
+.pdf-link{font-size:11px;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:2px 8px;text-decoration:none}
+.pdf-link:hover{color:var(--accent);border-color:var(--accent)}
+
+.empty{color:var(--text3);font-size:13px;border:1px dashed var(--border2);border-radius:var(--radius);padding:22px;text-align:center}
+
+.site-foot{border-top:1px solid var(--border);margin-top:40px;padding-block:20px 48px;font-size:12px;color:var(--text3);display:flex;gap:14px;flex-wrap:wrap}
+.site-foot a{color:var(--text3);text-decoration:none;border-bottom:1px dotted var(--border2)}
+.site-foot a:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="site-head">
+    <div class="head-left">
+      <div class="site-title">Bs2FoB</div>
+      <div class="site-sub" id="site-sub"></div>
+    </div>
+    <div class="lang-switch">
+      <button class="lang-btn" data-lang="ko">KO</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <main id="list"></main>
+
+  <footer class="site-foot">
+    <a href="https://github.com/bs2fob">github.com/bs2fob</a>
+  </footer>
+
+</div>
+
+<script>
+// posts.json 을 읽어 선택된 언어로 목록을 그린다
+(function(){
+  var STORE = 'bs2fob-lang';
+
+  var UI = {
+    ko: { sub:'확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
+          empty:'아직 게시된 글이 없습니다.',
+          fail:'목록을 불러오지 못했습니다.',
+          fallback:'한국어 원문' },
+    en: { sub:'Established footholds &mdash; each one becomes the next starting point',
+          empty:'No posts yet.',
+          fail:'Failed to load the index.',
+          fallback:'Korean original' }
+  };
+
+  var list = document.getElementById('list');
+  var sub  = document.getElementById('site-sub');
+  var lang = pickLang();
+  var posts = null;
+
+  document.querySelectorAll('.lang-btn').forEach(function(b){
+    b.addEventListener('click', function(){ setLang(b.dataset.lang); });
+  });
+
+  apply();
+  fetch('posts.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(d){ posts = d; render(); })
+    .catch(function(){ list.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>'; });
+
+  function pickLang(){
+    var saved;
+    try { saved = localStorage.getItem(STORE); } catch(e) {}
+    if (saved === 'ko' || saved === 'en') return saved;
+    return /^ko/i.test(navigator.language || '') ? 'ko' : 'en';
+  }
+
+  function setLang(next){
+    if (next === lang) return;
+    lang = next;
+    try { localStorage.setItem(STORE, next); } catch(e) {}
+    apply();
+    render();
+  }
+
+  function apply(){
+    document.documentElement.lang = lang;
+    sub.innerHTML = UI[lang].sub;
+    document.querySelectorAll('.lang-btn').forEach(function(b){
+      b.classList.toggle('active', b.dataset.lang === lang);
+    });
+  }
+
+  function render(){
+    if (!posts) return;
+    if (!posts.length){
+      list.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
+      return;
+    }
+    posts.sort(function(a,b){ return (b.stamp||'').localeCompare(a.stamp||''); });
+
+    var groups = [], index = {};
+    posts.forEach(function(p){
+      var key = seriesName(p);
+      if (!(key in index)){ index[key] = groups.length; groups.push({ name:key, items:[] }); }
+      groups[index[key]].items.push(p);
+    });
+
+    list.innerHTML = groups.map(function(g){
+      return '<section class="series">'
+        + (g.name ? '<div class="series-name">' + esc(g.name) + '</div>' : '')
+        + g.items.map(card).join('')
+        + '</section>';
+    }).join('');
+  }
+
+  function seriesName(p){
+    var s = p.series;
+    if (!s) return '';
+    return typeof s === 'string' ? s : (s[lang] || s.ko || s.en || '');
+  }
+
+  // 선택 언어판이 없으면 원문으로 대신 보여주고 표시를 단다
+  function card(p){
+    var v = p[lang], fell = false;
+    if (!v || !v.file){ v = p.ko || p.en; fell = true; }
+    if (!v || !v.file) return '';
+
+    var foot = [];
+    if (fell) foot.push('<span class="tag fallback">' + UI[lang].fallback + '</span>');
+    (p.tags || []).forEach(function(t){ foot.push('<span class="tag">' + esc(t) + '</span>'); });
+
+    var pdf = v.pdf
+      ? '<a class="pdf-link" href="' + esc(v.pdf) + '" onclick="event.stopPropagation()">PDF</a>'
+      : '';
+
+    return '<a class="post" href="' + esc(v.file) + '">'
+      + '<div class="post-stamp">' + esc(p.stamp || '') + '</div>'
+      + '<div class="post-title">' + esc(v.title || '') + '</div>'
+      + (v.lede ? '<div class="post-lede">' + esc(v.lede) + '</div>' : '')
+      + (foot.length || pdf ? '<div class="post-foot">' + foot.join('') + pdf + '</div>' : '')
+      + '</a>';
+  }
+
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+})();
+</script>
+</body>
+</html>
