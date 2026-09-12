@@ -205,6 +205,20 @@
     return null;
   }
 
+  // 주소가 바뀌지 않으므로 화면이 바뀔 때마다 직접 집계를 부른다
+  var pending = [];
+  function count(path, title){
+    var hit = { path: path, title: title, event: false };
+    var gc = window.goatcounter;
+    if (gc && gc.count) gc.count(hit);
+    else pending.push(hit);          // 스크립트가 아직 안 왔으면 모아 둔다
+  }
+  window.addEventListener('load', function(){
+    var gc = window.goatcounter;
+    if (!gc || !gc.count) return;
+    while (pending.length) gc.count(pending.shift());
+  });
+
   function apply(state){
     if (!posts) return;
     var post = state.stamp ? find(state.stamp) : null;
@@ -222,6 +236,14 @@
       renderList();
     }
     window.scrollTo(0, 0);
+
+    if (post) {
+      var v = pick(post);
+      if (v) count('/' + v.v.file, v.v.title);
+    } else {
+      count('/' + tab + (page ? '/p' + (page + 1) : ''),
+            UI[lang].tab[tab] + (page ? ' ' + (page + 1) : ''));
+    }
   }
 
   function tabOf(p){
@@ -455,5 +477,8 @@
   }
 })();
 </script>
+<script data-goatcounter="https://bs2fob.goatcounter.com/count"
+        data-goatcounter-settings='{"no_onload": true}'
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
