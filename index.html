@@ -256,6 +256,7 @@
     tab = TABS.indexOf(state.tab) >= 0 ? state.tab : DEFAULT_TAB;
     page = clampPage(state.page || 0);
 
+    fitViewport(!!post);
     if (post) {
       indexEl.hidden = true;
       readerEl.hidden = false;
@@ -274,6 +275,15 @@
       count('/' + tab + (page ? '/p' + (page + 1) : ''),
             UI[lang].tab[tab] + (page ? ' ' + (page + 1) : ''));
     }
+  }
+
+  // 폰에서 글을 열면 시구가 줄바꿈되지 않는 폭으로 그린 뒤 화면에 맞춰 줄인다
+  var READ_WIDTH = 500;
+  function fitViewport(reading){
+    var m = document.querySelector('meta[name=viewport]');
+    m.content = reading && screen.width < READ_WIDTH
+      ? 'width=' + READ_WIDTH
+      : 'width=device-width, initial-scale=1.0';
   }
 
   function tabOf(p){
