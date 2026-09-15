@@ -126,20 +126,20 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 10;
-  var TABS = ['notice', 'write', 'code'];
+  var TABS = ['notice', 'write', 'review', 'code'];
   var DEFAULT_TAB = 'write';
 
   var UI = {
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', latest: '최근 글', back: '← 목록', notice: '공지',
-          tab: { notice: '공지', write: '작문', code: '코딩' } },
+          fallback: '한국어 원문', latest: '최근 글', back: '← 목록', notice: '로그',
+          tab: { notice: '로그', write: '작문', review: '리뷰', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', latest: 'Latest', back: '← Index', notice: 'Notice',
-          tab: { notice: 'Notice', write: 'Writing', code: 'Code' } }
+          fallback: 'Korean original', latest: 'Latest', back: '← Index', notice: 'Log',
+          tab: { notice: 'Log', write: 'Writing', review: 'Review', code: 'Code' } }
   };
 
   var tabbarEl = document.getElementById('tabbar');
