@@ -429,6 +429,7 @@
 
     var latest = tabPosts('notice')[0];
     if (!latest || !pick(latest)) return;
+    fitViewport(true);
 
     var mark = document.createElement('div');
     mark.className = 'notice-mark';
