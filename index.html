@@ -380,6 +380,7 @@
     renderPager();
 
     if (page === 0 && mine[0] && pick(mine[0])) {
+      fitViewport(true);
       var mark = document.createElement('div');
       mark.className = 'latest-mark';
       mark.textContent = UI[lang].latest;
