@@ -32,7 +32,7 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .ep-title{font-family:NBG,sans-serif;font-size:27px;font-weight:700;color:#1a1a1a;letter-spacing:-.01em}
 .ep-stamp{display:block;text-align:right;font-family:D2,Consolas,monospace;font-size:14px;font-weight:700;color:#98a6b2;letter-spacing:.02em;margin-top:5px;margin-bottom:30px}
 .ep-body{font-family:IB,serif;font-size:19px;line-height:1.8;color:#1f1f1f}
-.ep-body p{margin:0 0 1.05em;color:#1f1f1f;font-family:IB,serif;font-size:19px;line-height:1.8;letter-spacing:0}
+.ep-body p{margin:0 0 1.05em;color:#1f1f1f;font-family:IB,serif;font-size:19px;line-height:1.8;letter-spacing:0;text-align:left;text-align-last:left}
 .ep-body p:last-child{margin-bottom:0}
 .ep-em{font-weight:700;color:#000}
 .ep-dim{color:#6d6d6d}
@@ -40,8 +40,10 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 h2{font-size:20px;font-weight:700;line-height:1.45;margin:48px 0 18px;padding-top:26px;border-top:1px solid var(--border)}
 h2:first-of-type{border-top:none;padding-top:0}
 /* 본문 문단만 명조로. 제목과 카드, 캡션은 고딕으로 둔다 */
-p{margin:0 0 1.15em;font-family:'Noto Serif KR',serif;font-size:17px;line-height:1.9;letter-spacing:-.005em}
+p{margin:0 0 1.15em;font-family:'Noto Serif KR',serif;font-size:17px;line-height:1.9;letter-spacing:-.005em;text-align:justify;text-justify:inter-character;text-align-last:left;word-break:keep-all}
 p strong{font-weight:600}
+/* 영문은 낱말 사이를 벌려 채운다. 글자 단위 균등분배는 한글에만 맞는다 */
+html[lang="en"] p{text-justify:auto;word-break:normal}
 code{font-family:'Courier New',monospace;font-size:.92em;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--accent)}
 
 figure{margin:36px 0}
@@ -56,6 +58,6 @@ figcaption{font-size:12px;color:var(--text3);margin-top:9px}
 
 /* 제사 번역. 원문 카드 아래에 낮은 톤으로 붙는다 */
 .ep-trans{margin:-28px 0 46px;padding-left:18px;border-left:2px solid var(--border2);color:var(--text2);font-size:15px;line-height:1.8}
-.ep-trans p{margin:0 0 1.05em;color:var(--text2);font-size:15px;line-height:1.85}
+.ep-trans p{margin:0 0 1.05em;color:var(--text2);font-size:15px;line-height:1.85;text-align:left;text-align-last:left}
 .ep-trans p:last-child{margin-bottom:0}
 .ep-trans strong{color:var(--text)}
