@@ -421,11 +421,11 @@
     }
   }
 
-  // 가장 최근 공지를 목록 맨 아래에 걸어 둔다. 공지 탭에서는 위에 이미 있으므로 건다
+  // 가장 최근 로그를 기본 탭 목록 아래에만 걸어 둔다
   function renderNotice(){
     noticeEl.hidden = true;
     noticeEl.innerHTML = '';
-    if (tab === 'notice') return;
+    if (tab !== DEFAULT_TAB) return;
 
     var latest = tabPosts('notice')[0];
     if (!latest || !pick(latest)) return;
