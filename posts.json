@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w383v121_0916",
+    "tab": "notice",
+    "ko": {
+      "title": "인지공리001 수정과 몇 가지 설정변경",
+      "lede": "문체를 다시 잡고 비료 이야기를 붙였다. 양쪽정렬과 모바일 레이아웃, 연작 번호 체계를 정했다.",
+      "file": "p/26w383v121_log.ko.html"
+    },
+    "en": {
+      "title": "Rewriting 001, and a few settings",
+      "lede": "The tone got reset and the fertilizer section went in. Justified text, mobile layout, and the numbering scheme are now decided.",
+      "file": "p/26w383v121_log.en.html"
+    }
+  },
+  {
     "stamp": "26w376v181_0912",
     "tab": "notice",
     "ko": {
