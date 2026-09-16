@@ -480,7 +480,7 @@
 
     if (cache[file]) { paint(target, cache[file], done); return; }
 
-    fetch(file)
+    fetch(file + '?t=' + Date.now())
       .then(function(r){ return r.text(); })
       .then(function(html){
         var doc = new DOMParser().parseFromString(html, 'text/html');
