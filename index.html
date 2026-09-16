@@ -194,10 +194,10 @@
 
     Promise.all([
       fetch(base).then(function(r){ return r.json(); }),
-      fetch(base + '?start=' + today).then(function(r){ return r.json(); })
+      fetch(base + '?start=' + today + '&end=' + today).then(function(r){ return r.json(); })
     ]).then(function(r){
-      document.getElementById('hit-total').textContent = r[0].count_unique;
-      document.getElementById('hit-today').textContent = r[1].count_unique;
+      document.getElementById('hit-total').textContent = r[0].count;
+      document.getElementById('hit-today').textContent = r[1].count;
       document.getElementById('hits').hidden = false;
     }).catch(function(){});
   }
