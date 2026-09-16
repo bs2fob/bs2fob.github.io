@@ -46,6 +46,13 @@ p strong{font-weight:600}
 html[lang="en"] p{text-justify:auto;word-break:normal}
 code{font-family:'Courier New',monospace;font-size:.92em;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--accent)}
 
+/* 연도와 값을 한 줄에 둘씩. 폰 폭에서도 줄이 깨지지 않게 폭을 묶는다 */
+.pop-table{width:100%;max-width:490px;margin:0 auto 1.3em;border-collapse:collapse;font-family:'Noto Serif KR',serif;font-size:15px;line-height:1.6}
+.pop-table td{padding:7px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+.pop-table td.y{color:var(--text2);width:15%}
+.pop-table td.v{text-align:right;width:35%;padding-right:18px}
+.pop-table td.v:last-child{padding-right:8px}
+
 figure{margin:36px 0}
 figure img{display:block;width:100%;height:auto;border-radius:var(--radius);border:1px solid var(--border)}
 figcaption{font-size:12px;color:var(--text3);margin-top:9px}
