@@ -14,11 +14,12 @@
 <style>
 .wrap{max-width:918px}
 
-.site-head{position:relative;border-bottom:1px solid var(--border);padding-block:40px 24px;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.head-left{min-width:0;padding-right:156px}
-.site-title{font-size:26px;font-weight:700;letter-spacing:.02em}
+.site-head{position:relative;border-bottom:1px solid var(--border);padding-block:40px 24px;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:nowrap}
+.head-left{order:1;min-width:0;flex:1 1 auto}
+.site-title{font-size:26px;font-weight:700;letter-spacing:.02em;cursor:pointer;display:inline-block}
+.site-title:hover{color:var(--accent)}
 .site-sub{font-size:13px;color:var(--text2);margin-top:8px}
-.head-right{position:absolute;right:0;top:40px;display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0}
+.head-right{order:3;display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0;flex-grow:0}
 .head-btns{display:flex;align-items:center;gap:8px}
 .head-clock{position:absolute;left:50%;top:40px;transform:translateX(-50%);line-height:48px;font-family:D2,Consolas,monospace;font-size:17px;font-weight:700;color:var(--text);letter-spacing:.04em;white-space:nowrap;pointer-events:none}
 @media (max-width:620px){.head-clock{display:none}}
@@ -41,6 +42,7 @@
 .tab:hover:not(.on){color:var(--text2)}
 .tab.on{color:var(--text);border-bottom-color:var(--accent)}
 .tab-count{font-size:11px;font-weight:500;color:var(--text3);margin-left:6px}
+@media (max-width:520px){.tabbar{flex-wrap:wrap;row-gap:0}.tab{font-size:13px;padding:9px 9px}.tab-count{margin-left:3px}}
 
 .lex-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
 .lex-item:hover{border-color:var(--accent)}
@@ -102,11 +104,6 @@
 <div class="wrap">
 
   <header class="site-head">
-    <div class="head-left">
-      <div class="site-title">Bs2FoB</div>
-      <div class="site-sub" id="site-sub"></div>
-    </div>
-    <div class="head-clock" id="clock"></div>
     <div class="head-right">
       <div class="head-btns">
         <div class="lang-switch">
@@ -120,6 +117,11 @@
         <span class="total">TOTAL<b id="hit-total">-</b></span>
       </div>
     </div>
+    <div class="head-left">
+      <div class="site-title" id="home" title="처음 화면">Bs2FoB</div>
+      <div class="site-sub" id="site-sub"></div>
+    </div>
+    <div class="head-clock" id="clock"></div>
   </header>
 
   <div id="index-view">
@@ -184,6 +186,7 @@
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
   });
   backEl.addEventListener('click', function(){ history.back(); });
+  document.getElementById('home').addEventListener('click', goHome);
   window.addEventListener('popstate', function(e){
     apply(e.state || {});
   });
@@ -391,6 +394,14 @@
     if (n === page && !current) return;
     history.pushState({ stamp: null, tab: tab, page: n }, '', location.pathname);
     apply({ stamp: null, tab: tab, page: n });
+  }
+
+  // 표제를 누르면 처음 들어왔을 때의 화면으로 돌아간다
+  function goHome(){
+    if (!posts) return;
+    if (!current && tab === DEFAULT_TAB && page === 0) { window.scrollTo(0, 0); return; }
+    history.pushState({ stamp: null, tab: DEFAULT_TAB, page: 0 }, '', location.pathname);
+    apply({ stamp: null, tab: DEFAULT_TAB, page: 0 });
   }
 
   function goTab(t){
