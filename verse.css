@@ -20,3 +20,5 @@
 
 /* 대조는 · 조각 단위로만 끊는다. 조각 중간이 갈리면 뜻 덩어리가 깨진다 */
 .gl-en .g{display:inline-block}
+/* 낱말 대조를 영어 어순으로 다시 늘어놓은 줄 */
+.gl-flow{display:block;font-family:'Noto Serif KR',serif;font-size:15px;color:var(--text2);line-height:1.6;margin-top:3px}
