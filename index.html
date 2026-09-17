@@ -20,6 +20,8 @@
 .site-sub{font-size:13px;color:var(--text2);margin-top:8px}
 .head-right{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0}
 .head-btns{display:flex;align-items:center;gap:8px}
+.head-clock{align-self:center;font-family:'Courier New',monospace;font-size:12px;color:var(--text3);letter-spacing:.06em;white-space:nowrap;order:0}
+@media (max-width:620px){.head-clock{order:3;width:100%;text-align:left;align-self:flex-start}}
 
 .lang-switch{display:flex;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden}
 .lang-btn{background:none;border:none;color:var(--text3);font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.06em;padding:6px 12px;cursor:pointer}
@@ -104,6 +106,7 @@
       <div class="site-title">Bs2FoB</div>
       <div class="site-sub" id="site-sub"></div>
     </div>
+    <div class="head-clock" id="clock"></div>
     <div class="head-right">
       <div class="head-btns">
         <div class="lang-switch">
@@ -157,6 +160,7 @@
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', lexicon: 'Lexicon', snap: 'Snap', code: 'Code' } }
   };
 
+  var clockEl = document.getElementById('clock');
   var tabbarEl = document.getElementById('tabbar');
   var noticeEl = document.getElementById('notice');
   var listEl = document.getElementById('list');
@@ -185,6 +189,7 @@
   });
 
   paintChrome();
+  startClock();
   loadHits();
   fetch('lexicon.json?t=' + Date.now())
     .then(function(r){ return r.json(); })
@@ -204,6 +209,49 @@
     .catch(function(){
       listEl.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>';
     });
+
+  // 머리글 시계. 주차코드와 음력 일자를 필자의 좌표인 서울 시각으로 그린다
+  function startClock(){
+    tick();
+    setTimeout(function(){ tick(); setInterval(tick, 1000); }, 1000 - Date.now() % 1000);
+  }
+
+  function tick(){
+    var p = seoulParts(new Date());
+    clockEl.textContent = weekStamp(p) + '_' + p.month + p.day
+      + ' m' + lunarDay(p) + ' ' + p.hour + ':' + p.minute + ':' + p.second;
+  }
+
+  function seoulParts(d){
+    var f = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    }).formatToParts(d);
+    var o = {};
+    f.forEach(function(x){ if (x.type !== 'literal') o[x.type] = x.value; });
+    if (o.hour === '24') o.hour = '00';
+    o.at = new Date(o.year + '-' + o.month + '-' + o.day + 'T12:00:00Z');
+    return o;
+  }
+
+  // 그 해 1월 1일이 속한 주의 일요일부터 몇 주 지났는지로 주차를 센다
+  function weekStamp(p){
+    var jan1 = new Date(Date.UTC(+p.year, 0, 1, 12));
+    var firstSunday = new Date(jan1.getTime() - jan1.getUTCDay() * 86400000);
+    var week = Math.floor((p.at - firstSunday) / 604800000) + 1;
+    return p.year.slice(2) + 'w' + pad2(week) + p.at.getUTCDay();
+  }
+
+  // 음력 일자가 곧 달의 위상이다. 1 이 삭, 15 가 망이다
+  function lunarDay(p){
+    try {
+      return pad2(+new Intl.DateTimeFormat('en-u-ca-chinese', {
+        timeZone: 'UTC', day: 'numeric'
+      }).format(p.at));
+    } catch (e) { return '--'; }
+  }
+
+  function pad2(n){ return (n < 10 ? '0' : '') + n; }
 
   // 방문 수는 GoatCounter 가 내주며 응답이 최대 네 시간 캐시된다
   function loadHits(){
