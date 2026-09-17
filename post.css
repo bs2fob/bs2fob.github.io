@@ -39,7 +39,14 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .verse{margin:40px 0 48px}
 .verse p{font-family:IB,serif;font-size:21px;line-height:2;letter-spacing:.01em;margin:0 0 1.6em;text-align:left;text-align-last:left;word-break:keep-all}
 .verse p:last-child{margin-bottom:0}
-html[lang="en"] .verse p{font-family:'Noto Serif KR',serif;font-size:20px;line-height:1.95;word-break:normal}
+/* 시문 영문판의 낱말 대조. 해석을 붙이지 않고 조각만 늘어놓는다 */
+.gloss{margin:0 0 48px;padding-left:18px;border-left:2px solid var(--border2)}
+.gloss-mark{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;margin-bottom:12px}
+.gl-line{margin-bottom:10px}
+.gl-line:last-child{margin-bottom:0}
+.gl-src{display:block;font-family:IB,serif;font-size:15px;color:var(--text2);line-height:1.6}
+.gl-en{display:block;font-size:14px;color:var(--text3);line-height:1.7}
+
 
 .ep-dim{color:#6d6d6d}
 
