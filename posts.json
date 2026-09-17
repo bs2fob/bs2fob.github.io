@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w384v135_0917",
+    "tab": "notice",
+    "ko": {
+      "title": "탭구조 리뉴얼",
+      "lede": "기존의 리뷰를 스냅으로 바꾸었고 술어라는 탭을 추가했다.",
+      "file": "p/26w384v135_tabs.ko.html"
+    },
+    "en": {
+      "title": "Reworking the Tabs",
+      "lede": "Review became Snap, and a Lexicon tab went in.",
+      "file": "p/26w384v135_tabs.en.html"
+    }
+  },
+  {
     "stamp": "26w383v121_0916",
     "tab": "notice",
     "ko": {
