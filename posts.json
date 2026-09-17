@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w384v193_0917",
+    "tab": "snap",
+    "ko": {
+      "title": "클레이모어 이야기",
+      "lede": "요력을 몇 퍼센트까지 열 것인가. 계기판 하나에서 출발해 식인을 대가로 건 서사의 틀이 어디서 시작되어 어디까지 퍼졌는지 짚는다.",
+      "file": "p/26w384v193_claymore.ko.html"
+    },
+    "en": {
+      "title": "A Word About Claymore",
+      "lede": "How far do you open it? One gauge, and from there the template that charges cannibalism as the price — where it started and how far it spread.",
+      "file": "p/26w384v193_claymore.en.html"
+    }
+  },
+  {
     "stamp": "26w384v161_0917",
     "tab": "notice",
     "ko": {
