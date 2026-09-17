@@ -35,6 +35,12 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .ep-body p{margin:0 0 1.05em;color:#1f1f1f;font-family:IB,serif;font-size:19px;line-height:1.8;letter-spacing:0;text-align:left;text-align-last:left}
 .ep-body p:last-child{margin-bottom:0}
 .ep-em{font-weight:700;color:#000}
+/* 시문은 행을 직접 끊어 쓴 글이라 양쪽정렬을 걸지 않는다 */
+.verse{margin:40px 0 48px}
+.verse p{font-family:IB,serif;font-size:21px;line-height:2;letter-spacing:.01em;margin:0 0 1.6em;text-align:left;text-align-last:left;word-break:keep-all}
+.verse p:last-child{margin-bottom:0}
+html[lang="en"] .verse p{font-family:'Noto Serif KR',serif;font-size:20px;line-height:1.95;word-break:normal}
+
 .ep-dim{color:#6d6d6d}
 
 h2{font-size:20px;font-weight:700;line-height:1.45;margin:48px 0 18px;padding-top:26px;border-top:1px solid var(--border)}

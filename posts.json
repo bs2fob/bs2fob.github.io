@@ -1,5 +1,21 @@
 [
   {
+    "stamp": "26w384v140_0917",
+    "tab": "verse",
+    "series": {
+      "ko": "Bs2FoB詩文",
+      "en": "Bs2FoB詩文"
+    },
+    "ko": {
+      "title": "우리는.지금여기",
+      "file": "p/26w384v140_verse0001.ko.html"
+    },
+    "en": {
+      "title": "We have never once",
+      "file": "p/26w384v140_verse0001.en.html"
+    }
+  },
+  {
     "stamp": "26w384v135_0917",
     "tab": "notice",
     "ko": {

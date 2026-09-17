@@ -7,7 +7,7 @@
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="post.css?v=4">
+<link rel="stylesheet" href="post.css?v=5">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
@@ -52,7 +52,7 @@
 .lex-see span{font-size:11px;color:var(--text3);border:1px solid var(--border);border-radius:4px;padding:2px 8px}
 
 .series{margin-bottom:34px}
-.series-name{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.series-name{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;margin-bottom:12px}
 
 .post{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;transition:border-color .15s;cursor:pointer}
 .post:hover{border-color:var(--accent)}
@@ -138,7 +138,7 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 10;
-  var TABS = ['notice', 'write', 'lexicon', 'snap', 'code'];
+  var TABS = ['notice', 'verse', 'write', 'lexicon', 'snap', 'code'];
   var DEFAULT_TAB = 'write';
 
   var UI = {
@@ -147,13 +147,13 @@
           fail: '목록을 불러오지 못했습니다.',
           fallback: '한국어 원문', latest: '최근 글', back: '← 목록', notice: '로그',
           lexEmpty: '아직 등록된 술어가 없습니다.',
-          tab: { notice: '로그', write: '작문', lexicon: '술어', snap: '스냅', code: '코딩' } },
+          tab: { notice: '로그', verse: '시문', write: '작문', lexicon: '술어', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
           fallback: 'Korean original', latest: 'Latest', back: '← Index', notice: 'Log',
           lexEmpty: 'No entries yet.',
-          tab: { notice: 'Log', write: 'Writing', lexicon: 'Lexicon', snap: 'Snap', code: 'Code' } }
+          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', lexicon: 'Lexicon', snap: 'Snap', code: 'Code' } }
   };
 
   var tabbarEl = document.getElementById('tabbar');
