@@ -17,3 +17,6 @@
 /* 위는 고딕으로 또렷하게 두되 색만 죽이고, 중심인 아래 직역은 명조로 세운다 */
 .gl-src{display:block;font-family:NBG,'Noto Sans KR',sans-serif;font-size:19px;color:var(--text2);line-height:1.6;letter-spacing:.01em}
 .gl-en{display:block;font-family:'Noto Serif KR',serif;font-size:19px;color:var(--text);line-height:1.7;margin-top:4px}
+
+/* 대조는 · 조각 단위로만 끊는다. 조각 중간이 갈리면 뜻 덩어리가 깨진다 */
+.gl-en .g{display:inline-block}
