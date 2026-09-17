@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w384v161_0917",
+    "tab": "notice",
+    "ko": {
+      "title": "시문탭을 추가",
+      "lede": "로그와 작문 사이에 시문탭을 추가했다. 넘버링은 네 자리이며 9999개의 슬롯이다.",
+      "file": "p/26w384v161_versetab.ko.html"
+    },
+    "en": {
+      "title": "A Verse Tab",
+      "lede": "A Verse tab went in between Log and Writing. Four digits, so 9999 slots.",
+      "file": "p/26w384v161_versetab.en.html"
+    }
+  },
+  {
     "stamp": "26w384v154_0917",
     "tab": "verse",
     "series": {
