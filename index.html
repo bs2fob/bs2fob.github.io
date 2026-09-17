@@ -138,7 +138,7 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 10;
-  var TABS = ['notice', 'write', 'lexicon', 'review', 'code'];
+  var TABS = ['notice', 'write', 'lexicon', 'snap', 'code'];
   var DEFAULT_TAB = 'write';
 
   var UI = {
@@ -147,13 +147,13 @@
           fail: '목록을 불러오지 못했습니다.',
           fallback: '한국어 원문', latest: '최근 글', back: '← 목록', notice: '로그',
           lexEmpty: '아직 등록된 술어가 없습니다.',
-          tab: { notice: '로그', write: '작문', lexicon: '술어', review: '리뷰', code: '코딩' } },
+          tab: { notice: '로그', write: '작문', lexicon: '술어', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
           fallback: 'Korean original', latest: 'Latest', back: '← Index', notice: 'Log',
           lexEmpty: 'No entries yet.',
-          tab: { notice: 'Log', write: 'Writing', lexicon: 'Lexicon', review: 'Review', code: 'Code' } }
+          tab: { notice: 'Log', write: 'Writing', lexicon: 'Lexicon', snap: 'Snap', code: 'Code' } }
   };
 
   var tabbarEl = document.getElementById('tabbar');
@@ -173,7 +173,7 @@
   var tab = DEFAULT_TAB;
   var page = 0;
   var cache = {};
-  var terms = null;
+  var lexicon = null;
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
@@ -185,10 +185,10 @@
 
   paintChrome();
   loadHits();
-  fetch('terms.json?t=' + Date.now())
+  fetch('lexicon.json?t=' + Date.now())
     .then(function(r){ return r.json(); })
-    .then(function(d){ terms = d || []; sortTerms(); if (posts) renderTabs(); })
-    .catch(function(){ terms = []; });
+    .then(function(d){ lexicon = d || []; sortTerms(); if (posts) renderTabs(); })
+    .catch(function(){ lexicon = []; });
 
   fetch('posts.json?t=' + Date.now())
     .then(function(r){ return r.json(); })
@@ -234,7 +234,7 @@
     lang = next;
     try { localStorage.setItem(STORE, next); } catch (e) {}
     cache = {};
-    if (terms) sortTerms();
+    if (lexicon) sortTerms();
     paintChrome();
     apply({ stamp: current, tab: tab, page: page });
   }
@@ -346,7 +346,7 @@
   function renderTabs(){
     tabbarEl.innerHTML = '';
     TABS.forEach(function(t){
-      var n = t === 'lexicon' ? (terms ? terms.length : 0) : tabPosts(t).length;
+      var n = t === 'lexicon' ? (lexicon ? lexicon.length : 0) : tabPosts(t).length;
       var b = document.createElement('button');
       b.className = 'tab' + (t === tab ? ' on' : '');
       b.textContent = UI[lang].tab[t];
@@ -412,18 +412,18 @@
     }
   }
 
-  // 술어는 글이 아니라 terms.json 의 항목이며 눌러 펼친다
+  // 술어는 글이 아니라 lexicon.json 의 항목이며 눌러 펼친다
   function renderLexicon(){
-    if (!terms) {
+    if (!lexicon) {
       listEl.innerHTML = '';
-      fetch('terms.json?t=' + Date.now())
+      fetch('lexicon.json?t=' + Date.now())
         .then(function(r){ return r.json(); })
-        .then(function(d){ terms = d || []; sortTerms(); if (tab === 'lexicon') renderList(); })
-        .catch(function(){ terms = []; if (tab === 'lexicon') renderList(); });
+        .then(function(d){ lexicon = d || []; sortTerms(); if (tab === 'lexicon') renderList(); })
+        .catch(function(){ lexicon = []; if (tab === 'lexicon') renderList(); });
       return;
     }
 
-    var mine = terms.filter(function(t){ return t[lang] && t[lang].term; });
+    var mine = lexicon.filter(function(t){ return t[lang] && t[lang].term; });
     if (!mine.length) {
       listEl.innerHTML = '<div class="empty">' + UI[lang].lexEmpty + '</div>';
       return;
@@ -445,7 +445,7 @@
   }
 
   function sortTerms(){
-    terms.sort(function(a, b){
+    lexicon.sort(function(a, b){
       var x = (a[lang] || a.ko || a.en || {}).term || '';
       var y = (b[lang] || b.ko || b.en || {}).term || '';
       return x.localeCompare(y, lang === 'ko' ? 'ko' : 'en');
@@ -479,7 +479,7 @@
   }
 
   function findTerm(key){
-    for (var i = 0; i < (terms || []).length; i++) if (terms[i].key === key) return terms[i];
+    for (var i = 0; i < (lexicon || []).length; i++) if (lexicon[i].key === key) return lexicon[i];
     return null;
   }
 
