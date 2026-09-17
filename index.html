@@ -254,16 +254,23 @@
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
 
   // 방문 수는 GoatCounter 가 내주며 응답이 최대 네 시간 캐시된다
+  // end 는 그 날을 빼고 센다. 하루치를 보려면 다음 날을 끝으로 줘야 한다
   function loadHits(){
     var base = 'https://bs2fob.goatcounter.com/counter/TOTAL.json';
     var d = new Date();
-    var today = d.getFullYear() + '-'
-      + String(d.getMonth() + 1).padStart(2, '0') + '-'
-      + String(d.getDate()).padStart(2, '0');
+
+    function ymd(x){
+      return x.getFullYear() + '-'
+        + String(x.getMonth() + 1).padStart(2, '0') + '-'
+        + String(x.getDate()).padStart(2, '0');
+    }
+
+    var today = ymd(d);
+    var tomorrow = ymd(new Date(d.getTime() + 86400000));
 
     Promise.all([
-      fetch(base).then(function(r){ return r.json(); }),
-      fetch(base + '?start=' + today + '&end=' + today).then(function(r){ return r.json(); })
+      fetch(base + '?start=2026-01-01&end=' + tomorrow).then(function(r){ return r.json(); }),
+      fetch(base + '?start=' + today + '&end=' + tomorrow).then(function(r){ return r.json(); })
     ]).then(function(r){
       document.getElementById('hit-total').textContent = r[0].count;
       document.getElementById('hit-today').textContent = r[1].count;
