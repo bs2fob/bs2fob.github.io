@@ -52,6 +52,11 @@ code{font-family:'Courier New',monospace;font-size:.92em;background:var(--surfac
 .pop-table td{padding:8px 10px;border:1px solid var(--border2);white-space:nowrap}
 .pop-table td.y{color:var(--text2);width:16%;text-align:center}
 .pop-table td.v{text-align:right;width:34%}
+/* 좁은 폭에서는 네 칸이 한 줄에 들어가도록 글자와 안쪽 여백을 줄인다 */
+@media (max-width:520px){
+  .pop-table{font-size:11px}
+  .pop-table td{padding:5px 4px}
+}
 
 figure{margin:36px 0}
 figure img{display:block;width:100%;height:auto;border-radius:var(--radius);border:1px solid var(--border)}
