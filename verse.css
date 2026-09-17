@@ -1,0 +1,19 @@
+/* verse.css — 시문 탭 전용 조판. 이 파일만 고치면 시문 전체에 적용된다 */
+
+/* 시구. 행을 직접 끊어 쓴 글이라 양쪽정렬을 걸지 않는다 */
+.verse{margin:44px 0 56px}
+.verse p{font-family:IB,serif;font-size:26px;line-height:1.95;letter-spacing:.01em;margin:0 0 1.5em;text-align:center;text-align-last:center;word-break:keep-all}
+.verse p:last-child{margin-bottom:0}
+
+/* 표제가 없어 번호와 스탬프가 맞닿는다 */
+.verse-head{text-align:center}
+.verse-head .post-series+.post-stamp{margin-top:2px}
+
+/* 낱말 대조. 해석을 붙이지 않고 조각만 늘어놓는다 */
+.gloss{margin:0 0 52px;text-align:center}
+.gloss-mark{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;margin-bottom:20px}
+.gl-line{margin-bottom:22px}
+.gl-line:last-child{margin-bottom:0}
+/* 위는 고딕으로 또렷하게 두되 색만 죽이고, 중심인 아래 직역은 명조로 세운다 */
+.gl-src{display:block;font-family:NBG,'Noto Sans KR',sans-serif;font-size:19px;color:var(--text2);line-height:1.6;letter-spacing:.01em}
+.gl-en{display:block;font-family:'Noto Serif KR',serif;font-size:19px;color:var(--text);line-height:1.7;margin-top:4px}

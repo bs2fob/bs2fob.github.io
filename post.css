@@ -35,21 +35,6 @@ html,body{background:var(--bg);color:var(--text);font-family:-apple-system,Blink
 .ep-body p{margin:0 0 1.05em;color:#1f1f1f;font-family:IB,serif;font-size:19px;line-height:1.8;letter-spacing:0;text-align:left;text-align-last:left}
 .ep-body p:last-child{margin-bottom:0}
 .ep-em{font-weight:700;color:#000}
-/* 시문은 행을 직접 끊어 쓴 글이라 양쪽정렬을 걸지 않는다 */
-.verse{margin:44px 0 52px}
-.verse p{font-family:IB,serif;font-size:26px;line-height:1.95;letter-spacing:.01em;margin:0 0 1.5em;text-align:center;text-align-last:center;word-break:keep-all}
-.verse p:last-child{margin-bottom:0}
-/* 시문은 표제가 없어 번호와 스탬프가 맞닿는다 */
-.verse-head{text-align:center}
-.verse-head .post-series+.post-stamp{margin-top:2px}
-/* 시문 영문판의 낱말 대조. 해석을 붙이지 않고 조각만 늘어놓는다 */
-.gloss{margin:0 0 52px;text-align:center}
-.gloss-mark{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;margin-bottom:18px}
-.gl-line{margin-bottom:20px}
-.gl-line:last-child{margin-bottom:0}
-.gl-src{display:block;font-family:IB,serif;font-size:14px;color:#6d6d6d;line-height:1.6}
-.gl-en{display:block;font-size:18px;color:var(--text);line-height:1.65;margin-top:2px}
-
 
 .ep-dim{color:#6d6d6d}
 
