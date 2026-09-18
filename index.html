@@ -256,8 +256,7 @@
 
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
 
-  // 방문 수는 GoatCounter 가 내주며 응답이 최대 네 시간 캐시된다
-  // end 는 그 날을 빼고 센다. 하루치를 보려면 다음 날을 끝으로 줘야 한다
+  // 방문 수는 GoatCounter 가 조회 문자열별로 캐시하므로 end 를 분마다 다른 미래 날짜로 준다
   function loadHits(){
     var base = 'https://bs2fob.goatcounter.com/counter/TOTAL.json';
     var d = new Date();
@@ -269,7 +268,7 @@
     }
 
     var today = ymd(d);
-    var tomorrow = ymd(new Date(d.getTime() + 86400000));
+    var tomorrow = ymd(new Date(d.getTime() + 86400000 * (1 + Math.floor(d.getTime() / 60000) % 3000)));
 
     Promise.all([
       fetch(base + '?start=2026-01-01&end=' + tomorrow).then(function(r){ return r.json(); }),
