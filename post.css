@@ -73,3 +73,9 @@ figcaption{font-size:12px;color:var(--text3);margin-top:9px}
 .ep-trans p{margin:0 0 1.05em;color:var(--text2);font-size:15px;line-height:1.85;text-align:left;text-align-last:left}
 .ep-trans p:last-child{margin-bottom:0}
 .ep-trans strong{color:var(--text)}
+
+.tnote{font-family:inherit;font-size:13px;color:var(--text2);margin:-8px 0 14px;text-align:left}
+.dev-table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.6;margin-bottom:8px}
+.dev-table th,.dev-table td{border-bottom:1px solid var(--border);padding:9px 8px;text-align:left;vertical-align:top;word-break:keep-all}
+.dev-table th{background:var(--surface);color:var(--text2);font-weight:600}
+.dev-table td:first-child{white-space:nowrap;font-weight:600}

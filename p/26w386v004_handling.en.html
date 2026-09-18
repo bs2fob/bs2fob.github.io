@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(screen.width<500)document.querySelector('meta[name=viewport]').content='width=500';</script>
+<title>AI Handling Devices — Bs2FoB</title>
+<meta name="description" content="The devices that steer the AI in Claude Code, ordered by how hard they bind.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../post.css?v=10">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topbar">
+    <a class="back" href="../">← List</a>
+    <a class="alt-lang" href="26w386v004_handling.ko.html">KO</a>
+  </nav>
+
+  <header class="post-head">
+    <h1 class="post-title">AI Handling Devices</h1>
+    <div class="post-stamp">26w386v004_0919 Bs2FoB</div>
+  </header>
+
+  <main>
+    <h2>Core devices</h2>
+    <p class="tnote">Ordered by binding force.</p>
+    <table class="dev-table">
+      <thead><tr><th>Device</th><th>Loading</th><th>Applied</th></tr></thead>
+      <tbody>
+        <tr><td>Hooks</td><td>-</td><td>Always run</td></tr>
+        <tr><td>Global instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Project instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Project memory</td><td>Index only</td><td>Consulted when judged relevant</td></tr>
+        <tr><td>Skills</td><td>Description only</td><td>Body loaded when judged relevant or explicitly invoked</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Additional devices</h2>
+    <p class="tnote">Ordered by binding force. Plugins are left out; they are just packaging that bundles the devices above.</p>
+    <table class="dev-table">
+      <thead><tr><th>Device</th><th>Loading</th><th>Applied</th></tr></thead>
+      <tbody>
+        <tr><td>Managed policy</td><td>-</td><td>Enforced, overrides user settings</td></tr>
+        <tr><td>Permissions</td><td>-</td><td>Hard block or allow</td></tr>
+        <tr><td>Sandbox</td><td>-</td><td>Hard isolation of file and network access</td></tr>
+        <tr><td>Output styles</td><td>Replaces part of the system prompt</td><td>Always applied</td></tr>
+        <tr><td>Personal project instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
+        <tr><td>MCP server instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Subfolder instructions</td><td>Loaded when a file in that folder is read</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Path-scoped rules</td><td>Loaded when files on the given paths are touched</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Subagents</td><td>Description only</td><td>Run in a separate context when judged relevant or explicitly invoked</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <footer class="post-foot">26w386v004_0919 Bs2FoB</footer>
+
+</div>
+<script data-goatcounter="https://bs2fob.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

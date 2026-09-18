@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w386v004_0919",
+    "tab": "notice",
+    "ko": {
+      "title": "AI 핸들링 장치들",
+      "lede": "클로드 코드에서 AI를 다루는 장치를 강제력 순서로 정리했다.",
+      "file": "p/26w386v004_handling.ko.html"
+    },
+    "en": {
+      "title": "AI Handling Devices",
+      "lede": "The devices that steer the AI in Claude Code, ordered by how hard they bind.",
+      "file": "p/26w386v004_handling.en.html"
+    }
+  },
+  {
     "stamp": "26w385v094_0918",
     "tab": "notice",
     "ko": {

@@ -5,8 +5,15 @@
 <link>https://bs2fob.com/</link>
 <description>Established footholds — each one becomes the next starting point</description>
 <language>en-us</language>
-<lastBuildDate>Fri, 18 Sep 2026 10:07:00 +0900</lastBuildDate>
+<lastBuildDate>Sat, 19 Sep 2026 00:55:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.en.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>AI Handling Devices</title>
+<link>https://bs2fob.com/p/26w386v004_handling.en.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w386v004_handling.en.html</guid>
+<pubDate>Sat, 19 Sep 2026 00:40:00 +0900</pubDate>
+<description>The devices that steer the AI in Claude Code, ordered by how hard they bind.</description>
+</item>
 <item>
 <title>Delegate Deterministic Operations to External Tools</title>
 <link>https://bs2fob.com/p/26w385v094_delegate.en.html</link>
