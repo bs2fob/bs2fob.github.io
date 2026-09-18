@@ -8,7 +8,7 @@
       "file": "p/26w385v094_delegate.ko.html"
     },
     "en": {
-      "title": "Hand Deterministic Work to Tools",
+      "title": "Delegate Deterministic Operations to External Tools",
       "lede": "One wall an LLM can never climb: answering deterministic operations head-on with nothing but probabilistic inference.",
       "file": "p/26w385v094_delegate.en.html"
     }
