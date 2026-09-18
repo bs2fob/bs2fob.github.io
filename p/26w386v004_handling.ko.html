@@ -30,7 +30,7 @@
     <table class="dev-table">
       <thead><tr><th>장치</th><th>로드</th><th>적용</th></tr></thead>
       <tbody>
-        <tr><td>훅</td><td>-</td><td>강제실행</td></tr>
+        <tr><td>훅</td><td>문맥 밖</td><td>강제실행</td></tr>
         <tr><td>전역지침</td><td>전문 로드</td><td>매칭판단 후 적용</td></tr>
         <tr><td>프젝지침</td><td>전문 로드</td><td>매칭판단 후 적용</td></tr>
         <tr><td>프젝메모리</td><td>목록만 로드</td><td>매칭판단 후 참조</td></tr>
@@ -39,18 +39,17 @@
     </table>
 
     <h2>추가 장치</h2>
-    <p class="tnote">강제력 순서로 배열. 플러그인은 위 장치들을 묶어 배포하는 포장이라 제외.</p>
+    <p class="tnote">강제력 순서로 배열. 개인 프젝지침(CLAUDE.local.md)은 프젝지침과 같은 장치라 제외. 플러그인은 위 장치들을 묶어 배포하는 포장이라 제외.</p>
     <table class="dev-table">
       <thead><tr><th>장치</th><th>로드</th><th>적용</th></tr></thead>
       <tbody>
-        <tr><td>관리 정책</td><td>-</td><td>강제적용.. 사용자 설정보다 우선</td></tr>
-        <tr><td>권한 설정</td><td>-</td><td>강제차단 또는 허용</td></tr>
-        <tr><td>샌드박스</td><td>-</td><td>강제격리.. 파일·네트워크 접근 제한</td></tr>
-        <tr><td>출력 스타일</td><td>시스템 프롬프트 일부 교체</td><td>항상 적용</td></tr>
-        <tr><td>개인 프젝지침</td><td>전문 로드</td><td>매칭판단 후 적용</td></tr>
+        <tr><td>관리 정책</td><td>문맥 밖</td><td>강제적용.. 사용자 설정보다 우선</td></tr>
+        <tr><td>권한 설정</td><td>문맥 밖</td><td>강제차단 또는 허용</td></tr>
+        <tr><td>샌드박스</td><td>문맥 밖</td><td>강제격리.. 파일·네트워크 접근 제한</td></tr>
+        <tr><td>출력 스타일</td><td>전문 로드</td><td>시스템 프롬프트 일부 교체.. 항상 적용</td></tr>
         <tr><td>MCP 서버 지시문</td><td>전문 로드</td><td>매칭판단 후 적용</td></tr>
-        <tr><td>하위폴더 지침</td><td>그 폴더 파일을 읽을 때 로드</td><td>매칭판단 후 적용</td></tr>
-        <tr><td>경로별 규칙</td><td>지정 경로 파일을 다룰 때 로드</td><td>매칭판단 후 적용</td></tr>
+        <tr><td>하위폴더 지침</td><td>그 폴더 파일을 읽을 때 전문 로드</td><td>매칭판단 후 적용</td></tr>
+        <tr><td>경로별 규칙</td><td>지정 경로 파일을 읽을 때 전문 로드</td><td>매칭판단 후 적용</td></tr>
         <tr><td>서브에이전트</td><td>설명만 로드</td><td>매칭판단 또는 명시적호출 시 별도 문맥에서 실행</td></tr>
       </tbody>
     </table>

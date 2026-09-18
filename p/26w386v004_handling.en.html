@@ -30,7 +30,7 @@
     <table class="dev-table">
       <thead><tr><th>Device</th><th>Loading</th><th>Applied</th></tr></thead>
       <tbody>
-        <tr><td>Hooks</td><td>-</td><td>Always run</td></tr>
+        <tr><td>Hooks</td><td>Outside the context</td><td>Always run</td></tr>
         <tr><td>Global instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
         <tr><td>Project instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
         <tr><td>Project memory</td><td>Index only</td><td>Consulted when judged relevant</td></tr>
@@ -39,18 +39,17 @@
     </table>
 
     <h2>Additional devices</h2>
-    <p class="tnote">Ordered by binding force. Plugins are left out; they are just packaging that bundles the devices above.</p>
+    <p class="tnote">Ordered by binding force. Personal project instructions (CLAUDE.local.md) are left out; they are the same device as project instructions. Plugins are left out; they are just packaging that bundles the devices above.</p>
     <table class="dev-table">
       <thead><tr><th>Device</th><th>Loading</th><th>Applied</th></tr></thead>
       <tbody>
-        <tr><td>Managed policy</td><td>-</td><td>Enforced, overrides user settings</td></tr>
-        <tr><td>Permissions</td><td>-</td><td>Hard block or allow</td></tr>
-        <tr><td>Sandbox</td><td>-</td><td>Hard isolation of file and network access</td></tr>
-        <tr><td>Output styles</td><td>Replaces part of the system prompt</td><td>Always applied</td></tr>
-        <tr><td>Personal project instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Managed policy</td><td>Outside the context</td><td>Enforced, overrides user settings</td></tr>
+        <tr><td>Permissions</td><td>Outside the context</td><td>Hard block or allow</td></tr>
+        <tr><td>Sandbox</td><td>Outside the context</td><td>Hard isolation of file and network access</td></tr>
+        <tr><td>Output styles</td><td>Loaded in full</td><td>Replaces part of the system prompt, always applied</td></tr>
         <tr><td>MCP server instructions</td><td>Loaded in full</td><td>Applied when judged relevant</td></tr>
-        <tr><td>Subfolder instructions</td><td>Loaded when a file in that folder is read</td><td>Applied when judged relevant</td></tr>
-        <tr><td>Path-scoped rules</td><td>Loaded when files on the given paths are touched</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Subfolder instructions</td><td>Loaded in full when a file in that folder is read</td><td>Applied when judged relevant</td></tr>
+        <tr><td>Path-scoped rules</td><td>Loaded in full when a file on the given paths is read</td><td>Applied when judged relevant</td></tr>
         <tr><td>Subagents</td><td>Description only</td><td>Run in a separate context when judged relevant or explicitly invoked</td></tr>
       </tbody>
     </table>
