@@ -426,7 +426,7 @@
   }
 
   function goTab(t){
-    if (t === tab && !current) return;
+    if (t === tab && !current && !home) return;
     history.pushState({ stamp: null, tab: t, page: 0 }, '', location.pathname);
     apply({ stamp: null, tab: t, page: 0 });
   }
