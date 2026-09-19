@@ -1,6 +1,6 @@
 [
   {
-    "stamp": "26w386v163_0919",
+    "stamp": "26w386v170_0919",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
@@ -8,12 +8,48 @@
     "ko": {
       "title": "지력삼분법",
       "lede": "HI · SI · PI. 지력이라는 낱말에 뭉쳐 있는 것을 셋으로 가른다.",
-      "file": "p/26w386v163_trichotomy.ko.html"
+      "file": "p/26w386v170_trichotomy.ko.html"
     },
     "en": {
       "title": "The Intelligence Trichotomy",
       "lede": "HI · SI · PI. Splitting what the word intelligence lumps together into three.",
-      "file": "p/26w386v163_trichotomy.en.html"
+      "file": "p/26w386v170_trichotomy.en.html"
+    },
+    "tab": "write"
+  },
+  {
+    "stamp": "26w386v169_0919",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "실용의 격률과 정보이론",
+      "lede": "가추가 연 것을 무엇으로 판정하는가. 퍼스의 격률과 섀넌의 정보량.",
+      "file": "p/26w386v169_maxim.ko.html"
+    },
+    "en": {
+      "title": "The Pragmatic Maxim and Information Theory",
+      "lede": "How to judge what abduction opens: Peirce's maxim and Shannon's information.",
+      "file": "p/26w386v169_maxim.en.html"
+    },
+    "tab": "write"
+  },
+  {
+    "stamp": "26w386v168_0919",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "가추",
+      "lede": "가설 공간을 여는 연산은 가추뿐이다. 연역과 귀납은 그 안에서만 작동한다.",
+      "file": "p/26w386v168_abduction.ko.html"
+    },
+    "en": {
+      "title": "Abduction",
+      "lede": "Only abduction opens a hypothesis space. Deduction and induction work inside it.",
+      "file": "p/26w386v168_abduction.en.html"
     },
     "tab": "write"
   },
