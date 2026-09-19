@@ -207,7 +207,7 @@
       posts = d;
       posts.sort(function(a, b){ return (b.stamp || '').localeCompare(a.stamp || ''); });
       if (!history.state) {
-        history.replaceState({ stamp: null, tab: DEFAULT_TAB, page: 0 }, '', location.pathname);
+        history.replaceState({ stamp: null, tab: DEFAULT_TAB, page: 0, home: true }, '', location.pathname);
       }
       apply(history.state || {});
     })
@@ -330,12 +330,14 @@
     while (pending.length) gc.count(pending.shift());
   });
 
+  var home = false;
   function apply(state){
     if (!posts) return;
     var post = state.stamp ? find(state.stamp) : null;
     current = post ? post.stamp : null;
     tab = TABS.indexOf(state.tab) >= 0 ? state.tab : DEFAULT_TAB;
     page = clampPage(state.page || 0);
+    home = !!state.home && !post;
 
     fitViewport(!!post);
     if (post) {
@@ -418,9 +420,9 @@
   // 표제를 누르면 처음 들어왔을 때의 화면으로 돌아간다
   function goHome(){
     if (!posts) return;
-    if (!current && tab === DEFAULT_TAB && page === 0) { window.scrollTo(0, 0); return; }
-    history.pushState({ stamp: null, tab: DEFAULT_TAB, page: 0 }, '', location.pathname);
-    apply({ stamp: null, tab: DEFAULT_TAB, page: 0 });
+    if (home) { window.scrollTo(0, 0); return; }
+    history.pushState({ stamp: null, tab: DEFAULT_TAB, page: 0, home: true }, '', location.pathname);
+    apply({ stamp: null, tab: DEFAULT_TAB, page: 0, home: true });
   }
 
   function goTab(t){
@@ -601,11 +603,11 @@
     }
   }
 
-  // 가장 최근 로그를 기본 탭 목록 아래에만 걸어 둔다
+  // 가장 최근 로그는 처음 화면에만 걸어 둔다
   function renderNotice(){
     noticeEl.hidden = true;
     noticeEl.innerHTML = '';
-    if (tab !== DEFAULT_TAB) return;
+    if (!home) return;
 
     var latest = tabPosts('notice')[0];
     if (!latest || !pick(latest)) return;
