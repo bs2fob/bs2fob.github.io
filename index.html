@@ -605,6 +605,12 @@
     return typeof s === 'string' ? s : (s[lang] || s.ko || s.en || '');
   }
 
+  function seriesNo(p){
+    var name = seriesName(p);
+    if (!p.no || !name) return '';
+    return '<' + name + (lang === 'en' ? ' ' : '') + p.no + '>';
+  }
+
   function pick(p){
     var v = p[lang];
     if (v && v.file) return { v: v, fell: false };
@@ -626,7 +632,7 @@
     }
 
     return '<div class="post' + (got ? '' : ' flat') + '" data-stamp="' + esc(p.stamp) + '">'
-      + '<div class="post-stamp">' + esc(p.stamp || '') + '</div>'
+      + '<div class="post-stamp">' + esc(seriesNo(p) || p.stamp || '') + '</div>'
       + '<div class="card-title">' + esc(meta.title || '') + '</div>'
       + (meta.lede ? '<div class="post-lede">' + esc(meta.lede) + '</div>' : '')
       + (foot.length ? '<div class="card-foot">' + foot.join('') + '</div>' : '')
