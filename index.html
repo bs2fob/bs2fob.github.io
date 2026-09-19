@@ -7,7 +7,7 @@
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="post.css?v=10">
+<link rel="stylesheet" href="post.css?v=12">
 <link rel="stylesheet" href="verse.css?v=3">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
@@ -187,6 +187,7 @@
   });
   backEl.addEventListener('click', function(){ history.back(); });
   document.getElementById('home').addEventListener('click', goHome);
+  document.addEventListener('click', playClip);
   window.addEventListener('popstate', function(e){
     apply(e.state || {});
   });
@@ -670,6 +671,19 @@
     if (target === bodyEl) target.innerHTML = '';
     target.appendChild(frag.cloneNode(true));
     if (done) done();
+  }
+
+  // 영상 구간은 지정 장면 한 장으로 세워 두고, 누르면 그 자리에 구간 재생 창을 넣는다
+  function playClip(e){
+    var b = e.target.closest && e.target.closest('.clip-play');
+    if (!b) return;
+    var f = document.createElement('iframe');
+    f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.yt + '?start=' + b.dataset.start + '&end=' + b.dataset.end + '&autoplay=1';
+    f.title = b.getAttribute('aria-label');
+    f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    f.allowFullscreen = true;
+    b.replaceWith(f);
   }
 
   function esc(s){

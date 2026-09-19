@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(screen.width<500)document.querySelector('meta[name=viewport]').content='width=500';</script>
+<title>입자물리학과 확보된거점 — Bs2FoB</title>
+<meta name="description" content="박문호 박사 강연의 30분 50초부터 1시간 19분 34초까지. 원자핵의 발견에서 코펜하겐 연구소까지.. 거점이 서고 다음 출발점이 되는 과정.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../post.css?v=12">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topbar">
+    <a class="back" href="../">← 목록</a>
+    <a class="alt-lang" href="26w386v144_fob.en.html">EN</a>
+  </nav>
+
+  <header class="post-head">
+    <h1 class="post-title">입자물리학과 확보된거점</h1>
+    <div class="post-stamp">26w386v144_0919 Bs2FoB</div>
+  </header>
+
+  <main>
+    <figure class="clip">
+      <button class="clip-play" type="button" data-yt="KT98DJznYFY" data-start="1850" data-end="4774" aria-label="양자역학 &amp; 입자 물리학의 모든 것 (박문호 박사 1부) 30:50부터 재생"><img src="img/26w386v144_fob_clip.webp" alt="톰슨의 음극선관을 칠판에 그리는 장면" width="1280" height="720"></button>
+      <figcaption class="clip-src"><span class="clip-stamp">25w361_0901</span>(2시간) 자기 전 들으면 시간 순삭!! 양자역학 &amp; 입자 물리학의 모든 것 (박문호 박사 1부)</figcaption>
+    </figure>
+
+  </main>
+
+</div>
+<script>
+document.addEventListener('click', function(e){
+  var b = e.target.closest('.clip-play');
+  if (!b) return;
+  var f = document.createElement('iframe');
+  f.src = 'https://www.youtube-nocookie.com/embed/' + b.dataset.yt + '?start=' + b.dataset.start + '&end=' + b.dataset.end + '&autoplay=1';
+  f.title = b.getAttribute('aria-label');
+  f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  f.referrerPolicy = 'strict-origin-when-cross-origin';
+  f.allowFullscreen = true;
+  b.replaceWith(f);
+});
+</script>
+</body>
+</html>

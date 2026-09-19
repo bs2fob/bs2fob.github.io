@@ -61,6 +61,14 @@ code{font-family:'Courier New',monospace;font-size:.92em;background:var(--surfac
 figure{margin:36px 0}
 figure img{display:block;width:100%;height:auto;border-radius:var(--radius);border:1px solid var(--border)}
 figcaption{font-size:12px;color:var(--text3);margin-top:9px}
+/* 영상 구간 삽입. 글 머리에 두고 아래에 영상 게시일과 원제목을 단다 */
+.clip{margin:0 0 40px}
+.clip iframe,.clip-play img{display:block;width:100%;aspect-ratio:16/9;height:auto;border:1px solid var(--border);border-radius:var(--radius);background:#000}
+.clip-play{display:block;position:relative;width:100%;padding:0;border:0;background:none;cursor:pointer}
+.clip-play::after{content:'';position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:rgba(0,0,0,.6) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 7l9 5-9 5z' fill='%23fff'/%3E%3C/svg%3E") center/32px no-repeat;transition:background-color .15s}
+.clip-play:hover::after{background-color:rgba(0,0,0,.8)}
+.clip-src{line-height:1.6}
+.clip-stamp{font-family:'Courier New',monospace;color:var(--accent);letter-spacing:.04em;margin-right:8px}
 .img-todo{display:flex;align-items:center;justify-content:center;text-align:center;min-height:200px;border:1px dashed var(--border2);border-radius:var(--radius);color:var(--text3);font-size:12px;padding:20px;line-height:1.7}
 
 .closing{margin-top:52px;padding-top:26px;border-top:1px solid var(--border)}
