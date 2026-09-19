@@ -87,3 +87,25 @@ figcaption{font-size:12px;color:var(--text3);margin-top:9px}
 .dev-table th,.dev-table td{border-bottom:1px solid var(--border);padding:9px 8px;text-align:left;vertical-align:top;word-break:keep-all}
 .dev-table th{background:var(--surface);color:var(--text2);font-weight:600}
 .dev-table td:first-child{white-space:nowrap;font-weight:600}
+
+/* 분기표. 시각·스크립트·판정 세 칸이며 좁은 폭에서는 판정이 스크립트 아래로 내려간다 */
+.fob-range{font-family:'Courier New',monospace;font-size:13px;font-weight:400;color:var(--text3);margin-left:6px;white-space:nowrap}
+.fob{margin:22px 0 18px;border-top:1px solid var(--border2)}
+.fob-h,.fob-r{display:grid;grid-template-columns:62px 1fr 1fr;column-gap:14px;padding:11px 2px;border-bottom:1px solid var(--border)}
+.fob-h{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;padding-block:8px}
+.fob-r .t{font-family:'Courier New',monospace;font-size:12px;color:var(--accent);padding-top:3px;line-height:1.5;word-break:keep-all}
+.fob-r p{margin:0;font-size:14px;line-height:1.75}
+.fob-r .s{color:var(--text2);font-family:'Noto Serif KR',serif}
+.fob-r .b b{color:var(--text)}
+.fob-keep{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px}
+.fob-keep p{margin:0;font-size:14px;line-height:1.75}
+.fob-keep p+p{margin-top:6px}
+.fob-keep b{color:var(--accent);margin-right:6px}
+.fob-tag{font-family:'Courier New',monospace;font-size:12px;color:var(--text2);margin-right:6px}
+.fob-side{font-size:13px;color:var(--text3)}
+@media (max-width:620px){
+  .fob-h{grid-template-columns:52px 1fr}
+  .fob-h span:last-child{display:none}
+  .fob-r{grid-template-columns:52px 1fr;row-gap:6px}
+  .fob-r .b{grid-column:2}
+}
