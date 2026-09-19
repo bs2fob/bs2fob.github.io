@@ -1,5 +1,59 @@
 [
   {
+    "stamp": "26w386v181_0919",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "산자의 디폴트 설정",
+      "lede": "무결 에이전트는 없다. 모호함과 불안은 산자의 디폴트이다.",
+      "file": "p/26w386v181_default.ko.html"
+    },
+    "en": {
+      "title": "The Living Mind's Default Settings",
+      "lede": "There is no flawless agent. Ambiguity and anxiety are the living mind's defaults.",
+      "file": "p/26w386v181_default.en.html"
+    },
+    "tab": "write"
+  },
+  {
+    "stamp": "26w386v180_0919",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "산자의 출현",
+      "lede": "캄브리아 대방사에서 문자까지.. 표상을 다루는 인지체계를 얻은 산것.",
+      "file": "p/26w386v180_mind.ko.html"
+    },
+    "en": {
+      "title": "The Emergence of the Living Mind",
+      "lede": "From the Cambrian explosion to writing: living things that acquired a cognitive system for handling representations.",
+      "file": "p/26w386v180_mind.en.html"
+    },
+    "tab": "write"
+  },
+  {
+    "stamp": "26w386v179_0919",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "산것의 출현",
+      "lede": "엔트로피와 시간.. 끌개와 해밀턴.. 소산가속장치로서의 국지적 질서가 산것으로 출현하기까지.",
+      "file": "p/26w386v179_living.ko.html"
+    },
+    "en": {
+      "title": "The Emergence of Living Things",
+      "lede": "Entropy and time, attractors and Hamilton, and how local order emerged as living things: devices that accelerate dissipation.",
+      "file": "p/26w386v179_living.en.html"
+    },
+    "tab": "write"
+  },
+  {
     "stamp": "26w386v170_0919",
     "series": {
       "ko": "인지공리",
