@@ -95,7 +95,8 @@ figcaption{font-size:12px;color:var(--text3);margin-top:9px}
 .fob-h{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.06em;padding-block:8px}
 .fob-r .t{font-family:'Courier New',monospace;font-size:12px;color:var(--accent);padding-top:3px;line-height:1.5;word-break:keep-all}
 .fob-r p{margin:0;font-size:14px;line-height:1.75;text-align:left}
-.fob-r .s{color:var(--text2);font-family:'Noto Serif KR',serif}
+.fob-r .s{color:#f2d35b;font-family:'Noto Serif KR',serif}
+.fob-r .b{color:var(--text2);font-family:NBG,'Noto Sans KR',sans-serif;font-size:13px}
 .fob-r .b b{color:var(--accent);font-weight:600}
 .fob-keep{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:10px}
 .fob-keep p{margin:0;font-size:14px;line-height:1.75;text-align:left}
