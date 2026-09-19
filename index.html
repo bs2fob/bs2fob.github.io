@@ -341,7 +341,7 @@
     if (post) {
       indexEl.hidden = true;
       readerEl.hidden = false;
-      load(post, bodyEl, jump);
+      load(post, bodyEl);
     } else {
       readerEl.hidden = true;
       indexEl.hidden = false;
@@ -384,8 +384,7 @@
     return Math.min(Math.max(0, n | 0), pageCount() - 1);
   }
 
-  // 본문의 연작 참조 링크는 목록 안에서 그 글을 열고 해당 장으로 내린다
-  var anchor = null;
+  // 본문의 연작 참조 링크는 읽던 자리를 두고 새 창에서 그 글의 해당 장을 연다
   function followXref(e){
     var a = e.target.closest && e.target.closest('a.xref');
     if (!a || !posts) return;
@@ -397,21 +396,10 @@
         if (p[l] && p[l].file && p[l].file.indexOf(name + '.') >= 0) post = p;
       });
     });
-    if (!post) return;
+    var got = post && pick(post);
+    if (!got) return;
     e.preventDefault();
-    anchor = parts[1] || null;
-    if (post.stamp === current) jump();
-    else openPost(post);
-  }
-
-  function jump(){
-    if (!anchor) return;
-    var id = anchor;
-    anchor = null;
-    requestAnimationFrame(function(){
-      var el = document.getElementById(id);
-      if (el) el.scrollIntoView();
-    });
+    window.open(got.v.file + (parts[1] ? '#' + parts[1] : ''), '_blank', 'noopener');
   }
 
   function openPost(post){
