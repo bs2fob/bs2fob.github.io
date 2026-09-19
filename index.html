@@ -413,8 +413,8 @@
   function goPage(n){
     n = clampPage(n);
     if (n === page && !current) return;
-    history.pushState({ stamp: null, tab: tab, page: n }, '', location.pathname);
-    apply({ stamp: null, tab: tab, page: n });
+    history.pushState({ stamp: null, tab: tab, page: n, home: home }, '', location.pathname);
+    apply({ stamp: null, tab: tab, page: n, home: home });
   }
 
   // 표제를 누르면 처음 들어왔을 때의 화면으로 돌아간다
@@ -490,7 +490,7 @@
 
     renderPager();
 
-    if (page === 0 && mine[0] && pick(mine[0])) {
+    if (mine[0] && pick(mine[0])) {
       fitViewport(true);
       var mark = document.createElement('div');
       mark.className = 'latest-mark';
