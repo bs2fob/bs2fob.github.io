@@ -1,5 +1,23 @@
 [
   {
+    "stamp": "26w386v163_0919",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "지력삼분법",
+      "lede": "HI · SI · PI. 지력이라는 낱말에 뭉쳐 있는 것을 셋으로 가른다.",
+      "file": "p/26w386v163_trichotomy.ko.html"
+    },
+    "en": {
+      "title": "The Intelligence Trichotomy",
+      "lede": "HI · SI · PI. Splitting what the word intelligence lumps together into three.",
+      "file": "p/26w386v163_trichotomy.en.html"
+    },
+    "tab": "write"
+  },
+  {
     "stamp": "26w386v144_0919",
     "tab": "snap",
     "ko": {
