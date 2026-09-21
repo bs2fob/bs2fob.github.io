@@ -5,14 +5,14 @@
 <link>https://bs2fob.com/</link>
 <description>확보된 거점 — 세운 것을 다음 출발점으로 넘긴다</description>
 <language>ko-kr</language>
-<lastBuildDate>Mon, 21 Sep 2026 17:09:00 +0900</lastBuildDate>
+<lastBuildDate>Mon, 21 Sep 2026 17:31:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.ko.xml" rel="self" type="application/rss+xml"/>
 <item>
 <title>텐서와 JSON</title>
 <link>https://bs2fob.com/p/26w391v173_tensor.ko.html</link>
 <guid isPermaLink="true">https://bs2fob.com/p/26w391v173_tensor.ko.html</guid>
 <pubDate>Mon, 21 Sep 2026 17:30:00 +0900</pubDate>
-<description>축명을 빼면 텐서.. 축명만 남기면 JSON.</description>
+<description>축좌표계의 초점은 좌표값이다. JSON은 축명을 기준으로 좌표값을 쌍으로 엮어 나르는 그릇이다.</description>
 </item>
 <item>
 <title>동일성은 눈금이다</title>

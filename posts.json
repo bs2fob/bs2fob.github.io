@@ -8,12 +8,12 @@
     },
     "ko": {
       "title": "텐서와 JSON",
-      "lede": "축명을 빼면 텐서.. 축명만 남기면 JSON.",
+      "lede": "축좌표계의 초점은 좌표값이다. JSON은 축명을 기준으로 좌표값을 쌍으로 엮어 나르는 그릇이다.",
       "file": "p/26w391v173_tensor.ko.html"
     },
     "en": {
       "title": "Tensors and JSON",
-      "lede": "Strip out the axis names and you get a tensor. Keep only the axis names and you get JSON.",
+      "lede": "In an axis coordinate system, only the coordinates are in focus. JSON is the container that pairs them with axis names and carries them.",
       "file": "p/26w391v173_tensor.en.html"
     },
     "tab": "write"
