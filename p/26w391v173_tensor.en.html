@@ -26,12 +26,13 @@
   </header>
 
   <main>
-    <p>This piece opens with a story that has no easy way in. Tensor is a word used widely, in physics, engineering and now AI, but only a tiny fraction of everyone on Earth can truly understand it and explain it. So it is fine if the first section doesn't read cleanly the first time. You can reach where this piece is going without understanding tensors all the way. Section 1 only marks where the two kinds of tensor part ways; from Section 2 on, the piece turns to what that split changes in how we read LLMs and JSON.</p>
-
-    <h2 id="tensor-fork">1. Physical tensors and deep learning tensors part ways</h2>
-    <p>You hear the word tensor in two places: physics textbooks and AI news. The shared name makes them sound like one thing, but they do different jobs. A tensor in physics is an arrangement built so that it points to the same thing no matter which direction you look from. A tensor in deep learning is a table of numbers stacked in rows, columns, and layers. If one spreadsheet is two-dimensional, a stack of those sheets is a three-dimensional tensor.</p>
+    <h2 id="tensor-intro">1. A somewhat hard story: tensors</h2>
+    <p>This piece opens with a story that has no easy way in. Tensor is a word used widely, in physics, engineering and now AI, but only a tiny fraction of everyone on Earth can truly understand it and explain it. So it is fine if the first section doesn't read cleanly the first time. You can reach where this piece is going without understanding tensors all the way. This section only marks what a tensor is, Section 2 where the two kinds of tensor part ways, and from Section 3 on the piece turns to what that split changes in how we read LLMs and JSON.</p>
 
     <p>Tensors are layered by how many times coordinate values are laid out, and that count is called the rank. A scalar, rank 0, is a single coordinate value on a one-axis coordinate system. A vector, rank 1, is one set of coordinate values on an n-axis coordinate system. A matrix, rank 2, is those sets laid out in a row again. Each further layer of laying-out raises the rank by one. The axis count only sets how many values go into a set; it does not change the rank. Whether a vector sits in a 3-axis or a 768-axis coordinate system, its rank is 1. Scalar, vector and matrix are nicknames given to the rank-0, rank-1 and rank-2 tensor. Tensor is the general name for all of them, whatever the rank.</p>
+
+    <h2 id="tensor-fork">2. Physical tensors and deep learning tensors part ways</h2>
+    <p>You hear the word tensor in two places: physics textbooks and AI news. The shared name makes them sound like one thing, but they do different jobs. A tensor in physics is an arrangement built so that it points to the same thing no matter which direction you look from. A tensor in deep learning is a table of numbers stacked in rows, columns, and layers. If one spreadsheet is two-dimensional, a stack of those sheets is a three-dimensional tensor.</p>
 
     <p>So the common phrase three-dimensional tensor blurs two questions into one. Read dimension as axis coordinate system and it becomes a three-axis-coordinate-system tensor, which still doesn't tell you whether it means the axis count or the rank. Two things have to be asked. What is the rank of a vector in an n-axis coordinate system? Always 1. What is the axis count of the coordinate system of a rank-r tensor? This is where the two kinds of tensor part ways. The fact that Korean has no native word for tensor also shows that the name came in without these two questions ever being separated.</p>
 
@@ -39,7 +40,7 @@
 
     <p>In a deep learning tensor, each layer has its own axis count. Batch size, token count, and feature count making up the three layers of one tensor is a typical case. With no coordinate system shared across layers, there are no axes to rotate together and no place for a transformation rule to stand. It is usually called a multidimensional array; it shares only the name with the physical tensor, and its purpose and mathematical structure are different. What LLMs use is the deep learning tensor.</p>
 
-    <h2>2. What an LLM tensor is</h2>
+    <h2>3. What an LLM tensor is</h2>
     <p>In terms of my axis coordinate system, an LLM's tensor is a modified, simplified version built to hold the relational components between tokens — position, arrangement, layer, and so on.</p>
     <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
     <p>The only thing dropped is the axis names. Nothing inside an LLM records what each axis points to; the names live at the level of input, output, and interpretation. In this sense the LLM tensor is an axis coordinate system with only the names removed, and it is distinct from the physical tensor, whose definition includes a transformation rule.</p>
@@ -48,7 +49,7 @@
       <figcaption>A grid of drawers with no labels. Many slots, no names.</figcaption>
     </figure>
 
-    <h2>3. JSON converges</h2>
+    <h2>4. JSON converges</h2>
     <p>Many data formats have been tried, but JSON — a plain-text delivery system that pairs axis names with coordinates in the simplest possible form — has settled in as today's general-purpose format for passing data around. JSON started from the goal of defining data and handing it over, and defining data calls for an axis coordinate system. JSON's two structures, objects and arrays, match the two ways an axis coordinate system points at things: by name and by order.</p>
     <p>JSON carries no axis transformation formula, no assumed substance, no coordinate independence. The demand for definition, the match with the two ways of pointing, and the absence of axis transformation and substance: these three made JSON converge on the axis coordinate frame.</p>
     <figure>
@@ -57,7 +58,7 @@
     </figure>
 
     <section class="closing">
-      <h2>4. JSON's address</h2>
+      <h2>5. JSON's address</h2>
       <p>JSON becoming the general-purpose data format is an event on a separate track from the axis coordinate system. But the structure the format came with pointed at the axis coordinate frame from the start, and since that frame is the underlying structure of human cognitive computation, JSON's structure converges on it regardless of how it came to be widely used.</p>
       <p>In the axis coordinate systems used in cognitive computation, the only thing in focus is the object's coordinates. The number of axes, the axis names, and the units are set up as preconditions for deriving them. For recording, preserving, and consulting things as data, JSON has been converging on the form of a container — a vehicle — that pairs coordinates with axis names and carries them. That is JSON's address as seen from the axis coordinate frame.</p>
     </section>
