@@ -42,6 +42,11 @@
 
     <p>In a deep learning tensor, each layer has its own axis count. Batch size, token count, and feature count making up the three layers of one tensor is a typical case. With no coordinate system shared across layers, there are no axes to rotate together and no place for a transformation rule to stand. It is usually called a multidimensional array; it shares only the name with the physical tensor, and its purpose and mathematical structure are different. What LLMs use is the deep learning tensor.</p>
 
+    <figure>
+      <img src="img/26w391v173_js00.webp" alt="A cube whose one set of axes turns together, and a pile of trays of every size." width="1280" height="548" loading="lazy">
+      <figcaption>A cube whose one set of axes turns together, and a pile of trays of every size.</figcaption>
+    </figure>
+
     <h2>3. What an LLM tensor is</h2>
     <p>In terms of my axis coordinate system, an LLM's tensor is a modified, simplified version built to hold the relational components between tokens — position, arrangement, layer, and so on.</p>
     <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
