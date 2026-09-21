@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(screen.width<500)document.querySelector('meta[name=viewport]').content='width=500';</script>
+<title>Why Billing Needs a Fixed Basis — Bs2FoB</title>
+<meta name="description" content="Starting from a single usage screen: AI metering sits in the seller's black box, and why the billing basis must never move.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../post.css?v=9">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topbar">
+    <a class="back" href="../">← Posts</a>
+    <a class="alt-lang" href="26w391v162_billing.ko.html">KO</a>
+  </nav>
+
+  <header class="post-head">
+    <h1 class="post-title">Why Billing Needs a Fixed Basis</h1>
+    <div class="post-stamp">26w391v162_0921 Bs2FoB</div>
+  </header>
+
+  <main>
+
+    <h2>1. A Gauge With No Denominator</h2>
+    <p>I opened the usage screen in Claude Code today. It breaks down this session by model: input, output, cache reads, cache writes, down to the hundred, plus an API-equivalent cost of $3.06. The counting side is that detailed.</p>
+    <figure>
+      <img src="img/26w391v162_billing01.webp" alt="Claude Code usage screen. Session cost and per-model tokens are itemized; the limits appear only as percentages." width="846" height="568" loading="lazy">
+      <figcaption>Every token counted, but the limit shown as a percentage with no denominator.</figcaption>
+    </figure>
+    <p>The limits are a different story. Current session: 5%. Current week: 1%. One percent of what, it never says. How many tokens the weekly cap holds, or whether it is the same size as last week, the user has no way to know. Further down, a note says the breakdown is only an approximation drawn from local sessions on this machine.</p>
+    <p>A screen that will count your tokens one by one shows you the line where you get cut off with no denominator at all. This piece starts from that missing denominator.</p>
+
+    <h2>2. Saturday Evening to Monday Morning</h2>
+    <p>I didn't do much last week. Yet on Saturday evening I hit the weekly limit, and the service was simply unavailable through all of Sunday until early Monday morning. Where the usage piled up, I can't tell. There is nothing to check it with.</p>
+    <p>Today, with the limit reset, I watched tokens being wasted in real time. This is a separate case from last week. The task was trivial: fix three bad timestamps in post filenames. To confirm the body text hadn't changed, the agent dumped every changed line from six posts, whole paragraphs at a time. A one-line command counting whether the diff was zero lines would have given the same answer. It ran the same check twice, and ran a command that was obviously going to be blocked, then rewrote it. Same result, several times the cost.</p>
+    <p>Seeing that happen in front of you makes you wonder whether the same thing happened last week. But there is no way to find out. You can see how many tokens a request used; you cannot see what fraction of your limit that was.</p>
+
+    <h2>3. Complaints and Responses in 2026</h2>
+    <p>I wasn't the only one. In early January, users complained about hitting limits without warning. Anthropic said it only felt that way because a holiday bonus allowance had expired.</p>
+    <p>At the end of March, Anthropic admitted users were hitting limits "way faster than expected." One user quoted in the press said the quota maxed out every Monday and reset on Saturday, leaving 12 usable days out of 30. Anthropic named three product-side causes. On March 4 it changed the default reasoning effort, reverting it on April 7. A context-management bug introduced on March 26 kept missing the prompt cache until it was fixed on April 10. On April 16 it made the system prompt more verbose, reverting on April 20. On May 6 it doubled the five-hour limits.</p>
+    <p>Two facts come out of this. First, users' consumption grew with the provider's settings and bugs, regardless of what the users actually did. Second, we know this only because the provider admitted it. Users had no means of checking on their own. I found no evidence that consumption was inflated on purpose. The problem is a structure in which users cannot tell whether it was.</p>
+
+    <h2>4. The Seller Holds the Meter</h2>
+    <p>In an AI subscription, the provider controls metering at three levels. The meter sits on the provider's servers; the user only sees the readout. The unit is set by the provider: a token is however the tokenizer chooses to cut text, so a new tokenizer counts the same text differently. The consumption is set by the provider too: change the default reasoning effort or the length of the system prompt, and the same request burns more tokens.</p>
+    <p>An electricity meter hangs on the customer's wall, and a kilowatt-hour is a physical unit that reads the same no matter who measures it. With AI services, the seller decides the meter, the unit, and the consumption.</p>
+
+    <h2>5. Price and Measurement, Tangled</h2>
+    <p>Water and gas prices change too. But nobody gets to play games with how usage is measured. The unit price is changed in public; how a cubic meter is measured is fixed by law. When the bill goes up, you know exactly by how much.</p>
+    <p>AI subscriptions tangle price and measurement together. Keep the monthly fee the same, shift the limit's denominator, the tokenizer, or the default reasoning load, and the real unit price goes up. To the user it never looks like a price increase. Changing how usage is measured becomes a hidden way to raise prices.</p>
+
+    <h2>6. AI Is Becoming a Utility</h2>
+    <p>AI services are already past the point of being an optional tool. Writing code, proofreading, research, logging schedules and locations: all of it runs through AI services. When the service stops, everything built on it stops. That is what happened from Saturday evening to Monday morning. Hitting the limit did not take away one tool; it halted the whole way I work.</p>
+    <p>Just as life stops when the water or power is cut, more and more people find their work stops when their AI service is cut. Leaving the metering of an essential service inside the provider's black box is unacceptable.</p>
+
+    <h2>7. How Other Utilities Do It</h2>
+    <p>Where money is paid for quantity, there are already rules that keep the seller from owning the meter alone. Electricity, water and gas meters, and fuel pumps, must pass government certification before use. In Korea this falls under the Legal Metrology Act, enforced with fines and sales bans.</p>
+    <p>Electricity is also a business under a duty to contract. An electricity retailer cannot refuse supply without legitimate cause. The seller of an essential service has no right to refuse it.</p>
+    <p>AI services escape all three. The meter is uncertified. Price and measurement are tangled. When the limit is reached, the provider shuts you off.</p>
+
+    <h2>8. A Billing Basis That Never Moves</h2>
+    <p>Four conditions should be required to sell an AI service. First, the billing basis does not change. The unit price may change in public, but the way usage is measured stays fixed, and any change to the tokenizer or default settings comes with figures converted back to the previous basis. Second, input, output and cache tokens are reported to the user per request. Third, the limit's denominator is published as an absolute quantity, with notice before any change. Fourth, a third party certifies the meter, and usage inflated by the provider's own defects is refunded.</p>
+    <p>Only a fixed basis lets users compare the cost of the same work week to week. Only comparison lets them verify the meter. If the basis moves, publishing the numbers gives you nothing to compare against.</p>
+    <p>This is not a demand to treat AI services as special. It is a demand to apply to AI services the principle already applied to water, electricity and gas. If AI services become as essential as water and power, their metering should follow the same rules.</p>
+
+    <h2>Sources</h2>
+    <ul class="src">
+      <li><a href="https://www.theregister.com/2026/01/05/claude_devs_usage_limits/" target="_blank" rel="noopener">The Register, 2026-01-05</a></li>
+      <li><a href="https://www.theregister.com/2026/03/31/anthropic_claude_code_limits/" target="_blank" rel="noopener">The Register, 2026-03-31</a></li>
+      <li><a href="https://www.devclass.com/ai-ml/2026/04/01/anthropic-admits-claude-code-users-hitting-usage-limits-way-faster-than-expected/5213575" target="_blank" rel="noopener">DevClass, 2026-04-01</a></li>
+    </ul>
+
+  </main>
+
+  <footer class="post-foot">26w391v162_0921 Bs2FoB</footer>
+
+</div>
+<script data-goatcounter="https://bs2fob.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
