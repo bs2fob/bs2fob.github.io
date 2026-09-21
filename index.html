@@ -195,7 +195,7 @@
   document.querySelectorAll('.lang-btn').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
   });
-  backEl.addEventListener('click', function(){ history.back(); });
+  backEl.addEventListener('click', backToList);
   document.getElementById('home').addEventListener('click', goHome);
   document.addEventListener('click', playClip);
   document.addEventListener('click', followXref);
@@ -445,6 +445,18 @@
       b.addEventListener('click', function(){ openPost(p); });
       postNavEl.appendChild(b);
     }
+  }
+
+  // 목록 버튼은 방문 이력과 무관하게 읽던 글이 놓인 탭과 페이지로 간다
+  function backToList(){
+    var post = current && find(current);
+    var t = post ? tabOf(post) : tab;
+    var mine = tabPosts(t);
+    if (t === 'write' || t === 'verse') mine = mine.slice().reverse();
+    var i = post ? mine.indexOf(post) : -1;
+    var n = i < 0 ? 0 : Math.floor(i / PER_PAGE);
+    history.pushState({ stamp: null, tab: t, page: n }, '', location.pathname);
+    apply({ stamp: null, tab: t, page: n });
   }
 
   function openPost(post){
