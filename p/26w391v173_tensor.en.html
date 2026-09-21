@@ -9,7 +9,7 @@
 <link rel="icon" href="../favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-<link rel="stylesheet" href="../post.css?v=22">
+<link rel="stylesheet" href="../post.css?v=24">
 </head>
 <body>
 <div class="wrap">
@@ -38,7 +38,7 @@
 
     <p>Things like this are often called three-dimensional tensors, but strictly speaking that is an improper expression. There are rank-3 tensors; there is no such thing as a three-dimensional tensor. And what separates the physics tensor from the deep learning tensor is neither rank nor axis count. It is whether there is a promise that, when the coordinates change, the coordinate values change together by a fixed rule. A physics tensor has to keep that promise to count as a tensor at all; a deep learning tensor makes no such promise.</p>
 
-    <p>In a physical tensor, every layer shares one and the same axis coordinate system. A rank-2 stress tensor in three-axis space uses the same three axes for both layers, so it has 3×3 coordinate values. Rotate the axes and every value changes, but all layers change together by the same rule, so what they point to stays the same. That promise is the transformation rule, and textbooks write it as a multilinear quantity that follows specific rules under coordinate transformation. Because the rule is part of the definition, a physical tensor is not tied to any one coordinate system. Stress tensors and curvature tensors are examples, used in the formal domain where fixed axes, an assumed substance, and a demand for identical computation all hold — the formal-level transformation of <a class="xref" href="26w391v171_transform.en.html" target="_blank" rel="noopener">&lt;Cognitive Axioms 04_2&gt;</a>.</p>
+    <p>In the physical tensors most commonly used, every layer uses the same axis coordinate system. A rank-2 stress tensor in three-axis space uses the same three axes for both layers, so it has 3×3 coordinate values. Rotate the axes and every value changes, but all layers change together by the same rule, so what they point to stays the same. That promise is the transformation rule, and it is why textbooks define a physical tensor as a multilinear quantity that follows specific rules under coordinate transformation. Because the rule is part of the definition, a physical tensor is not tied to any one coordinate system. Stress tensors and curvature tensors are examples, used in the formal domain where fixed axes, an assumed substance, and a demand for identical computation all hold — the formal-level transformation of <a class="xref" href="26w391v171_transform.en.html" target="_blank" rel="noopener">&lt;Cognitive Axioms 04_2&gt;</a>.</p>
 
     <p>A deep learning tensor is a container that holds numbers in several layers. Often each layer has its own axis count, as with batch size, token count and feature count, and sometimes the counts match, as in a 768×768 matrix. Either way, it promises no rule to follow when the coordinates change. It is usually called a multidimensional array; it shares only the name with the physical tensor, and its purpose and mathematical structure are different. What LLMs use is the deep learning tensor.</p>
 
