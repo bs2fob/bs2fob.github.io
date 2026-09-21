@@ -5,8 +5,15 @@
 <link>https://bs2fob.com/</link>
 <description>Established footholds — each one becomes the next starting point</description>
 <language>en-us</language>
-<lastBuildDate>Mon, 21 Sep 2026 17:31:00 +0900</lastBuildDate>
+<lastBuildDate>Mon, 21 Sep 2026 18:03:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.en.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>Renumbering, and a Few Other Things</title>
+<link>https://bs2fob.com/p/26w391v180_renumber.en.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v180_renumber.en.html</guid>
+<pubDate>Mon, 21 Sep 2026 18:00:00 +0900</pubDate>
+<description>Cognitive Axioms numbering is now ##_#. And the question of identity and similarity that stayed with me through the 04 set.</description>
+</item>
 <item>
 <title>Tensors and JSON</title>
 <link>https://bs2fob.com/p/26w391v173_tensor.en.html</link>

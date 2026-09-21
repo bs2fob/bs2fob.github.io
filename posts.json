@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w391v180_0921",
+    "tab": "notice",
+    "ko": {
+      "title": "번호체계의 수정 등",
+      "lede": "인지공리 번호를 ##_# 방식으로 바꿨다. 04 세트를 올리며 끝까지 붙들었던 동일성과 유사성 이야기.",
+      "file": "p/26w391v180_renumber.ko.html"
+    },
+    "en": {
+      "title": "Renumbering, and a Few Other Things",
+      "lede": "Cognitive Axioms numbering is now ##_#. And the question of identity and similarity that stayed with me through the 04 set.",
+      "file": "p/26w391v180_renumber.en.html"
+    }
+  },
+  {
     "stamp": "26w391v173_0921",
     "no": "04_4",
     "series": {
@@ -427,7 +441,7 @@
   },
   {
     "stamp": "26w376v154_0912",
-    "no": "01_1",
+    "no": "01_0",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
