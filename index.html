@@ -546,14 +546,28 @@
 
     renderPager();
 
-    if (home && mine[0] && pick(mine[0])) {
+    var entry = home && entryPost(mine);
+    if (entry) {
       fitViewport(true);
       var mark = document.createElement('div');
       mark.className = 'latest-mark';
       mark.textContent = UI[lang].latest;
       latestEl.appendChild(mark);
-      load(mine[0], latestEl, function(){ latestEl.hidden = false; });
+      load(entry, latestEl, function(){ latestEl.hidden = false; });
     }
+  }
+
+  // 첫 화면에는 가장 최근 세트의 첫 편을 띄워 세트 입구에서 읽기 시작하게 한다
+  function entryPost(mine){
+    var top = mine[0];
+    if (!top || !pick(top)) return null;
+    if (!top.no) return top;
+    var set = top.no.split('_')[0];
+    for (var i = 0; i < mine.length; i++) {
+      var p = mine[i];
+      if (seriesName(p) === seriesName(top) && (p.no === set + '_1' || p.no === set + '_0') && pick(p)) return p;
+    }
+    return top;
   }
 
   // 술어는 글이 아니라 lexicon.json 의 항목이며 눌러 펼친다
