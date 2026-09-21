@@ -36,33 +36,36 @@
 
     <p>This section sets the physics tensor against the deep learning tensor. The shared name makes them sound like one thing, but they do different jobs. A tensor in physics is an arrangement built so that it points to the same thing no matter which direction you look from. A tensor in deep learning is a table of numbers stacked in rows, columns, and layers. If one spreadsheet is a rank-2 tensor, a stack of those sheets is a rank-3 tensor.</p>
 
+    <figure>
+      <img src="img/26w391v173_js00.webp" alt="A cube whose one set of axes turns together, and a pile of trays of every size." width="1280" height="548" loading="lazy">
+      <figcaption>A cube whose one set of axes turns together, and a pile of trays of every size.</figcaption>
+    </figure>
+
     <p>Things like this are often called three-dimensional tensors, but strictly speaking that is an improper expression. There are rank-3 tensors; there is no such thing as a three-dimensional tensor. And what separates the physics tensor from the deep learning tensor is neither rank nor axis count. It is whether there is a promise that, when the coordinates change, the coordinate values change together by a fixed rule. A physics tensor has to keep that promise to count as a tensor at all; a deep learning tensor makes no such promise.</p>
 
     <p>In the physical tensors most commonly used, every layer uses the same axis coordinate system. A rank-2 stress tensor in three-axis space uses the same three axes for both layers, so it has 3×3 coordinate values. Rotate the axes and every value changes, but all layers change together by the same rule, so what they point to stays the same. That promise is the transformation rule, and it is why textbooks define a physical tensor as a multilinear quantity that follows specific rules under coordinate transformation. Because the rule is part of the definition, a physical tensor is not tied to any one coordinate system. Stress tensors and curvature tensors are examples, used in the formal domain where fixed axes, an assumed substance, and a demand for identical computation all hold — the formal-level transformation of <a class="xref" href="26w391v171_transform.en.html" target="_blank" rel="noopener">&lt;Cognitive Axioms 04_2&gt;</a>.</p>
 
     <p>A deep learning tensor is a container that holds numbers in several layers. Often each layer has its own axis count, as with batch size, token count and feature count, and sometimes the counts match, as in a 768×768 matrix. Either way, it promises no rule to follow when the coordinates change. It is usually called a multidimensional array; it shares only the name with the physical tensor, and its purpose and mathematical structure are different. What LLMs use is the deep learning tensor.</p>
 
-    <figure>
-      <img src="img/26w391v173_js00.webp" alt="A cube whose one set of axes turns together, and a pile of trays of every size." width="1280" height="548" loading="lazy">
-      <figcaption>A cube whose one set of axes turns together, and a pile of trays of every size.</figcaption>
-    </figure>
-
     <h2>3. What an LLM tensor is</h2>
     <p>Seen from my axis coordinate system, an LLM's tensor can also be understood as something like a modified, simplified version built to hold the relational components between tokens — position, arrangement, layer, and so on.</p>
-    <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
-    <p>The only thing dropped is the axis names. Nothing inside an LLM records what each axis points to; the names live at the level of input, output, and interpretation. In this sense the LLM tensor is an axis coordinate system with only the names removed, and it is distinct from the physical tensor, whose definition includes a transformation rule.</p>
+
     <figure>
       <img src="img/26w391v173_js01.webp" alt="A grid of drawers with no labels. Many slots, no names." width="1280" height="548" loading="lazy">
       <figcaption>A grid of drawers with no labels. Many slots, no names.</figcaption>
     </figure>
 
+    <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
+    <p>The only thing dropped is the axis names. Nothing inside an LLM records what each axis points to; the names live at the level of input, output, and interpretation. In this sense the LLM tensor is an axis coordinate system with only the names removed, and it is distinct from the physical tensor, whose definition includes a transformation rule.</p>
     <h2>4. JSON converges</h2>
     <p>Many data formats have been tried, but JSON — a plain-text delivery system that pairs axis names with coordinates in the simplest possible form — has settled in as today's most popular general-purpose format for passing data around. JSON started from the goal of defining data and handing it over, and defining data calls for an axis coordinate system. JSON's two structures, objects and arrays, match the two ways an axis coordinate system points at things: by name and by order.</p>
-    <p>JSON carries no axis transformation formula, no assumed substance, no coordinate independence. The demand for definition, the match with the two ways of pointing, and the absence of axis transformation and substance: these three made JSON converge on the axis coordinate frame.</p>
+
     <figure>
       <img src="img/26w391v173_js02.webp" alt="Putting a name label on each drawer." width="1280" height="548" loading="lazy">
       <figcaption>Putting a name label on each drawer.</figcaption>
     </figure>
+
+    <p>JSON carries no axis transformation formula, no assumed substance, no coordinate independence. The demand for definition, the match with the two ways of pointing, and the absence of axis transformation and substance: these three made JSON converge on the axis coordinate frame.</p>
 
     <section class="closing">
       <h2>5. JSON's address</h2>
