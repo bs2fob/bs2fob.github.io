@@ -48,7 +48,7 @@
     </figure>
 
     <h2>3. What an LLM tensor is</h2>
-    <p>In terms of my axis coordinate system, an LLM's tensor is a modified, simplified version built to hold the relational components between tokens — position, arrangement, layer, and so on.</p>
+    <p>In terms of my axis coordinate system, an LLM's tensor is a modified, simplified version built to hold the relational components between tokens — position (which place in the sentence a token sits in), arrangement (how tokens pair up and refer to one another), layer (how many layers a value has passed through), and so on.</p>
     <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
     <p>The only thing dropped is the axis names. Nothing inside an LLM records what each axis points to; the names live at the level of input, output, and interpretation. In this sense the LLM tensor is an axis coordinate system with only the names removed, and it is distinct from the physical tensor, whose definition includes a transformation rule.</p>
     <figure>
