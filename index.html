@@ -85,6 +85,13 @@
 .reader-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:22px;border-bottom:1px solid var(--border)}
 .back-btn{background:none;border:none;color:var(--text3);font-family:inherit;font-size:13px;padding:0;cursor:pointer}
 .back-btn:hover{color:var(--accent)}
+.post-nav{display:flex;justify-content:space-between;gap:12px;margin:40px 0 34px;padding-top:22px;border-top:1px solid var(--border)}
+.pn{flex:1 1 0;min-width:0;background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text3);font-family:inherit;font-size:13px;padding:10px 12px;cursor:pointer;text-align:left}
+.pn.next{text-align:right}
+.pn:hover{color:var(--text);border-color:var(--text3)}
+.pn b{display:block;font-weight:normal;font-size:12px;margin-bottom:4px}
+.pn span{display:block;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pn-empty{flex:1 1 0}
 
 #latest{max-width:680px;margin:0 auto;padding-top:34px;border-top:1px solid var(--border)}
 #latest .post-head{padding-block:0 12px}
@@ -136,6 +143,7 @@
   <div id="reader" class="reader" hidden>
     <nav class="reader-bar"><button class="back-btn" id="back"></button></nav>
     <div id="reader-body"></div>
+    <nav class="post-nav" id="post-nav" hidden></nav>
   </div>
 
 </div>
@@ -152,13 +160,13 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', latest: '최근 글', back: '← 목록', notice: '로그',
+          fallback: '한국어 원문', latest: '최근 글', back: '← 목록', prev: '← 이전 글', next: '다음 글 →', notice: '로그',
           lexEmpty: '아직 등록된 술어가 없습니다.',
           tab: { notice: '로그', verse: '시문', write: '작문', lexicon: '술어', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', latest: 'Latest', back: '← Index', notice: 'Log',
+          fallback: 'Korean original', latest: 'Latest', back: '← Index', prev: '← Previous', next: 'Next →', notice: 'Log',
           lexEmpty: 'No entries yet.',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', lexicon: 'Lexicon', snap: 'Snap', code: 'Code' } }
   };
@@ -174,6 +182,7 @@
   var bodyEl = document.getElementById('reader-body');
   var subEl = document.getElementById('site-sub');
   var backEl = document.getElementById('back');
+  var postNavEl = document.getElementById('post-nav');
 
   var lang = pickLang();
   var posts = null;
@@ -345,6 +354,7 @@
       indexEl.hidden = true;
       readerEl.hidden = false;
       load(post, bodyEl);
+      renderPostNav(post);
     } else {
       readerEl.hidden = true;
       indexEl.hidden = false;
@@ -403,6 +413,32 @@
     if (!got) return;
     e.preventDefault();
     window.open(got.v.file + (parts[1] ? '#' + parts[1] : ''), '_blank', 'noopener');
+  }
+
+  // 같은 탭 안에서 목록 순서로 앞뒤 글을 잇는다. 목록이 최신순이므로 뒤쪽이 이전 글이다
+  function renderPostNav(post){
+    var list = tabPosts(tabOf(post)).filter(function(p){ return pick(p); });
+    var i = list.indexOf(post);
+    postNavEl.innerHTML = '';
+    postNavEl.hidden = i < 0 || list.length < 2;
+    if (postNavEl.hidden) return;
+    add(list[i + 1], 'prev');
+    add(list[i - 1], 'next');
+
+    function add(p, kind){
+      if (!p) {
+        var gap = document.createElement('div');
+        gap.className = 'pn-empty';
+        postNavEl.appendChild(gap);
+        return;
+      }
+      var b = document.createElement('button');
+      b.className = 'pn ' + kind;
+      b.innerHTML = '<b>' + UI[lang][kind] + '</b><span>' + esc(((seriesNo(p) ? seriesNo(p) + ' ' : '') + (pick(p).v.title || ''))) + '</span>';
+      b.title = pick(p).v.title || '';
+      b.addEventListener('click', function(){ openPost(p); });
+      postNavEl.appendChild(b);
+    }
   }
 
   function openPost(post){
