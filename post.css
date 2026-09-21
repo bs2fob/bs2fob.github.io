@@ -113,3 +113,7 @@ figcaption{font-size:12px;color:#72726a;margin-top:9px}
   .fob-r{grid-template-columns:52px 1fr;row-gap:6px}
   .fob-r .b{grid-column:2}
 }
+main a,main a:visited{color:var(--accent)}
+.src{padding-left:1.2em}
+.src a{text-decoration:none;border-bottom:1px dotted var(--accent)}
+.src a:hover{border-bottom-style:solid}
