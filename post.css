@@ -43,6 +43,7 @@ h2:first-of-type{border-top:none;padding-top:0}
 /* 본문 문단만 명조로. 제목과 카드, 캡션은 고딕으로 둔다 */
 p{margin:0 0 1.15em;font-family:'Noto Serif KR',serif;font-size:17px;line-height:1.9;letter-spacing:-.005em;text-align:justify;text-justify:inter-character;text-align-last:left;word-break:normal;line-break:strict;overflow-wrap:anywhere}
 p strong{font-weight:600}
+p.note{font-family:NBG,sans-serif;font-size:15px;line-height:1.85;color:var(--text2);margin:1.6em 0;padding:14px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2)}
 /* 영문은 낱말 사이를 벌려 채운다. 글자 단위 균등분배는 한글에만 맞는다 */
 html[lang="en"] p{text-justify:auto;word-break:normal}
 code{font-family:'Courier New',monospace;font-size:.92em;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--accent)}
