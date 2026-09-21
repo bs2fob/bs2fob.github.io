@@ -528,7 +528,7 @@
 
     renderPager();
 
-    if (mine[0] && pick(mine[0])) {
+    if (home && mine[0] && pick(mine[0])) {
       fitViewport(true);
       var mark = document.createElement('div');
       mark.className = 'latest-mark';
