@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(screen.width<500)document.querySelector('meta[name=viewport]').content='width=500';</script>
+<title>Tensors and JSON — Bs2FoB</title>
+<meta name="description" content="Strip out the axis names and you get a tensor. Keep only the axis names and you get JSON.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../post.css?v=21">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topbar">
+    <a class="back" href="../">← Index</a>
+    <a class="alt-lang" href="26w391v173_tensor.ko.html">KO</a>
+  </nav>
+
+  <header class="post-head">
+    <div class="post-series">&lt;Cognitive Axioms 04_4&gt;</div>
+    <h1 class="post-title">Tensors and JSON</h1>
+    <div class="post-stamp">26w391v173_0921 Bs2FoB</div>
+  </header>
+
+  <main>
+    <h2>1. Physical tensors and deep learning tensors part ways</h2>
+    <p>A physical tensor is a multilinear quantity that follows specific rules under coordinate transformation. The transformation rule is part of its definition, and it has coordinate independence. Stress tensors and curvature tensors are examples, used in the formal domain where fixed axes, an assumed substance, and a demand for identical computation all hold — the formal-level transformation of <a class="xref" href="26w391v171_transform.en.html" target="_blank" rel="noopener">&lt;Cognitive Axioms 04_2&gt;</a>.</p>
+    <p>A deep learning tensor is a multidimensional array. No transformation rule is part of its definition, and it has no notion of a coordinate system. It shares only the name with the physical tensor; its purpose and mathematical structure are different. What LLMs use is the deep learning tensor.</p>
+
+    <h2>2. What an LLM tensor is</h2>
+    <p>In terms of my axis coordinate system, an LLM's tensor is a modified, simplified version built to hold the relational components between tokens — position, arrangement, layer, and so on.</p>
+    <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
+    <p>The only thing dropped is the axis names. Nothing inside an LLM records what each axis points to; the names live at the level of input, output, and interpretation. In this sense the LLM tensor is an axis coordinate system with only the names removed, and it is distinct from the physical tensor, whose definition includes a transformation rule.</p>
+    <figure>
+      <img src="img/26w391v173_js01.webp" alt="A grid of drawers with no labels. Many slots, no names." width="1280" height="548" loading="lazy">
+      <figcaption>A grid of drawers with no labels. Many slots, no names.</figcaption>
+    </figure>
+
+    <h2>3. JSON converges</h2>
+    <p>Many data formats have been tried, but JSON — a plain-text delivery system that pairs axis names with coordinates in the simplest possible form — has settled in as today's general-purpose format for passing data around. JSON started from the goal of defining data and handing it over, and defining data calls for an axis coordinate system. JSON's two structures, objects and arrays, match the two ways an axis coordinate system points at things: by name and by order.</p>
+    <p>JSON carries no axis transformation formula, no assumed substance, no coordinate independence. The demand for definition, the match with the two ways of pointing, and the absence of axis transformation and substance: these three made JSON converge on the axis coordinate frame.</p>
+    <figure>
+      <img src="img/26w391v173_js02.webp" alt="Putting a name label on each drawer." width="1280" height="548" loading="lazy">
+      <figcaption>Putting a name label on each drawer.</figcaption>
+    </figure>
+
+    <section class="closing">
+      <h2>4. Two directions of simplification</h2>
+      <p>JSON becoming the general-purpose data format is an event on a separate track from the axis coordinate system. But the structure the format came with pointed at the axis coordinate frame from the start, and since that frame is the underlying structure of human cognitive computation, JSON's structure converges on it regardless of how it came to be widely used.</p>
+      <p>LLM tensors and JSON simplify the axis coordinate system in opposite directions. The tensor erases the axis names inside and keeps only the coordinates. JSON puts the axis names up front and hangs the coordinates from them. Neither carries axis transformation or substance.</p>
+      <p>Strip out the axis names and you get a tensor. Keep only the axis names and you get JSON.</p>
+    </section>
+
+  </main>
+
+  <footer class="post-foot">26w391v173_0921 Bs2FoB</footer>
+
+</div>
+<script data-goatcounter="https://bs2fob.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>

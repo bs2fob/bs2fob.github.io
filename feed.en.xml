@@ -5,8 +5,36 @@
 <link>https://bs2fob.com/</link>
 <description>Established footholds — each one becomes the next starting point</description>
 <language>en-us</language>
-<lastBuildDate>Mon, 21 Sep 2026 16:23:00 +0900</lastBuildDate>
+<lastBuildDate>Mon, 21 Sep 2026 17:09:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.en.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>Tensors and JSON</title>
+<link>https://bs2fob.com/p/26w391v173_tensor.en.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v173_tensor.en.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:30:00 +0900</pubDate>
+<description>Strip out the axis names and you get a tensor. Keep only the axis names and you get JSON.</description>
+</item>
+<item>
+<title>Identity Is a Matter of Scale</title>
+<link>https://bs2fob.com/p/26w391v172_identity.en.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v172_identity.en.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:20:00 +0900</pubDate>
+<description>Mercury's orbit, manufacturing tolerances, yesterday's self. Being the same means the difference falls below the scale.</description>
+</item>
+<item>
+<title>The Absence of Transformation</title>
+<link>https://bs2fob.com/p/26w391v171_transform.en.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v171_transform.en.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:10:00 +0900</pubDate>
+<description>Real cognitive computation has no transformation. What can't be carried over gets borrowed.</description>
+</item>
+<item>
+<title>Axis Coordinate Systems</title>
+<link>https://bs2fob.com/p/26w391v170_axes.en.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v170_axes.en.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:00:00 +0900</pubDate>
+<description>The basic component of cognitive computation is the axis coordinate system: number of axes, axis names, units, coordinates.</description>
+</item>
 <item>
 <title>Why Billing Needs a Fixed Basis</title>
 <link>https://bs2fob.com/p/26w391v162_billing.en.html</link>

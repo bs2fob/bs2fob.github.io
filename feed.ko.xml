@@ -5,8 +5,36 @@
 <link>https://bs2fob.com/</link>
 <description>확보된 거점 — 세운 것을 다음 출발점으로 넘긴다</description>
 <language>ko-kr</language>
-<lastBuildDate>Mon, 21 Sep 2026 16:23:00 +0900</lastBuildDate>
+<lastBuildDate>Mon, 21 Sep 2026 17:09:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.ko.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>텐서와 JSON</title>
+<link>https://bs2fob.com/p/26w391v173_tensor.ko.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v173_tensor.ko.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:30:00 +0900</pubDate>
+<description>축명을 빼면 텐서.. 축명만 남기면 JSON.</description>
+</item>
+<item>
+<title>동일성은 눈금이다</title>
+<link>https://bs2fob.com/p/26w391v172_identity.ko.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v172_identity.ko.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:20:00 +0900</pubDate>
+<description>수성의 궤도.. 공산품의 공차.. 어제의 나. 같다는 것은 차이가 눈금 아래에 있다는 것이다.</description>
+</item>
+<item>
+<title>변환의 부재</title>
+<link>https://bs2fob.com/p/26w391v171_transform.ko.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v171_transform.ko.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:10:00 +0900</pubDate>
+<description>현실의 인지연산에 변환은 없다. 옮길 수 없으면 가져온다.</description>
+</item>
+<item>
+<title>축좌표계</title>
+<link>https://bs2fob.com/p/26w391v170_axes.ko.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w391v170_axes.ko.html</guid>
+<pubDate>Mon, 21 Sep 2026 17:00:00 +0900</pubDate>
+<description>인지연산의 기본 구성 요소는 축좌표계이다. 축수·축명·단위·좌표.</description>
+</item>
 <item>
 <title>과금기준 필요성</title>
 <link>https://bs2fob.com/p/26w391v162_billing.ko.html</link>

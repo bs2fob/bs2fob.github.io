@@ -1,5 +1,81 @@
 [
   {
+    "stamp": "26w391v173_0921",
+    "no": "04_4",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "텐서와 JSON",
+      "lede": "축명을 빼면 텐서.. 축명만 남기면 JSON.",
+      "file": "p/26w391v173_tensor.ko.html"
+    },
+    "en": {
+      "title": "Tensors and JSON",
+      "lede": "Strip out the axis names and you get a tensor. Keep only the axis names and you get JSON.",
+      "file": "p/26w391v173_tensor.en.html"
+    },
+    "tab": "write"
+  },
+  {
+    "stamp": "26w391v172_0921",
+    "no": "04_3",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "동일성은 눈금이다",
+      "lede": "수성의 궤도.. 공산품의 공차.. 어제의 나. 같다는 것은 차이가 눈금 아래에 있다는 것이다.",
+      "file": "p/26w391v172_identity.ko.html"
+    },
+    "en": {
+      "title": "Identity Is a Matter of Scale",
+      "lede": "Mercury's orbit, manufacturing tolerances, yesterday's self. Being the same means the difference falls below the scale.",
+      "file": "p/26w391v172_identity.en.html"
+    },
+    "tab": "write"
+  },
+  {
+    "stamp": "26w391v171_0921",
+    "no": "04_2",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "변환의 부재",
+      "lede": "현실의 인지연산에 변환은 없다. 옮길 수 없으면 가져온다.",
+      "file": "p/26w391v171_transform.ko.html"
+    },
+    "en": {
+      "title": "The Absence of Transformation",
+      "lede": "Real cognitive computation has no transformation. What can't be carried over gets borrowed.",
+      "file": "p/26w391v171_transform.en.html"
+    },
+    "tab": "write"
+  },
+  {
+    "stamp": "26w391v170_0921",
+    "no": "04_1",
+    "series": {
+      "ko": "인지공리",
+      "en": "Cognitive Axioms"
+    },
+    "ko": {
+      "title": "축좌표계",
+      "lede": "인지연산의 기본 구성 요소는 축좌표계이다. 축수·축명·단위·좌표.",
+      "file": "p/26w391v170_axes.ko.html"
+    },
+    "en": {
+      "title": "Axis Coordinate Systems",
+      "lede": "The basic component of cognitive computation is the axis coordinate system: number of axes, axis names, units, coordinates.",
+      "file": "p/26w391v170_axes.en.html"
+    },
+    "tab": "write"
+  },
+  {
     "stamp": "26w391v162_0921",
     "tab": "snap",
     "ko": {
@@ -29,7 +105,7 @@
   },
   {
     "stamp": "26w386v181_0919",
-    "no": "007",
+    "no": "03_3",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
@@ -48,7 +124,7 @@
   },
   {
     "stamp": "26w386v180_0919",
-    "no": "006",
+    "no": "03_2",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
@@ -67,7 +143,7 @@
   },
   {
     "stamp": "26w386v175_0919",
-    "no": "005",
+    "no": "03_1",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
@@ -86,7 +162,7 @@
   },
   {
     "stamp": "26w386v170_0919",
-    "no": "004",
+    "no": "02_3",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
@@ -105,7 +181,7 @@
   },
   {
     "stamp": "26w386v165_0919",
-    "no": "003",
+    "no": "02_2",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
@@ -124,7 +200,7 @@
   },
   {
     "stamp": "26w386v164_0919",
-    "no": "002",
+    "no": "02_1",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
@@ -351,7 +427,7 @@
   },
   {
     "stamp": "26w376v154_0912",
-    "no": "001",
+    "no": "01_1",
     "series": {
       "ko": "인지공리",
       "en": "Cognitive Axioms"
