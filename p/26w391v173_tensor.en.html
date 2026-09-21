@@ -31,15 +31,20 @@
 
     <p>Tensors are layered by how many times coordinate values are laid out, and that count is called the rank. A scalar, rank 0, marks a pure quantity in itself, with no axis coordinate system assumed. However many axes you set up and whichever way you turn them, its value stays the same, so it has nothing to do with the axis count. A temperature or a mass is a scalar. A vector, rank 1, is one set of coordinate values with an axis coordinate system assumed. A matrix, rank 2, is those sets laid out in a row again. Each further layer of laying-out raises the rank by one. The axis count only sets how many values go into a set; it does not change the rank. Whether a vector sits in a 3-axis or a 768-axis coordinate system, its rank is 1. Scalar, vector and matrix are nicknames given to the rank-0, rank-1 and rank-2 tensor. Tensor is the general name for all of them, whatever the rank.</p>
 
+    <figure>
+      <img src="img/26w391v173_rk01.webp" alt="One stone, a row of stones, a sheet of rows, a stack of sheets." width="1280" height="548" loading="lazy">
+      <figcaption>One stone, a row of stones, a sheet of rows, a stack of sheets.</figcaption>
+    </figure>
+
     <h2 id="tensor-fork">2. Physical tensors and deep learning tensors part ways</h2>
     <p>Most of the tensors mentioned on YouTube and the like these days are LLM tensors. Yet physics students also have to learn the tensor concept to work through quantum mechanics, such as Heisenberg's matrix mechanics. In quantum mechanics the vector that holds a state, a rank-1 tensor, is never observed directly; each observable quantity is represented by a matrix, a rank-2 tensor, acting on that vector, and a measurement returns one of the values that matrix allows. And the prototype of the tensor that physics uses is in turn handled by mathematics.</p>
 
-    <p>This section sets the physics tensor against the deep learning tensor. The shared name makes them sound like one thing, but they do different jobs. A tensor in physics is an arrangement built so that it points to the same thing no matter which direction you look from. A tensor in deep learning is a table of numbers stacked in rows, columns, and layers. If one spreadsheet is a rank-2 tensor, a stack of those sheets is a rank-3 tensor.</p>
-
     <figure>
-      <img src="img/26w391v173_js00.webp" alt="A cube whose one set of axes turns together, and a pile of trays of every size." width="1280" height="548" loading="lazy">
-      <figcaption>A cube whose one set of axes turns together, and a pile of trays of every size.</figcaption>
+      <img src="img/26w391v173_qm01.webp" alt="The arrow in the fogged box cannot be seen; only after passing the grid does a dot land on one tick." width="1280" height="548" loading="lazy">
+      <figcaption>The arrow in the fogged box cannot be seen; only after passing the grid does a dot land on one tick.</figcaption>
     </figure>
+
+    <p>This section sets the physics tensor against the deep learning tensor. The shared name makes them sound like one thing, but they do different jobs. A tensor in physics is an arrangement built so that it points to the same thing no matter which direction you look from. A tensor in deep learning is a table of numbers stacked in rows, columns, and layers. If one spreadsheet is a rank-2 tensor, a stack of those sheets is a rank-3 tensor.</p>
 
     <p>Things like this are often called three-dimensional tensors, but strictly speaking that is an improper expression. There are rank-3 tensors; there is no such thing as a three-dimensional tensor. And what separates the physics tensor from the deep learning tensor is neither rank nor axis count. It is whether there is a promise that, when the coordinates change, the coordinate values change together by a fixed rule. A physics tensor has to keep that promise to count as a tensor at all; a deep learning tensor makes no such promise.</p>
 
@@ -47,16 +52,22 @@
 
     <p>A deep learning tensor is a container that holds numbers in several layers. Often each layer has its own axis count, as with batch size, token count and feature count, and sometimes the counts match, as in a 768×768 matrix. Either way, it promises no rule to follow when the coordinates change. It is usually called a multidimensional array; it shares only the name with the physical tensor, and its purpose and mathematical structure are different. What LLMs use is the deep learning tensor.</p>
 
+    <figure>
+      <img src="img/26w391v173_js00.webp" alt="A cube that points to the same thing however it turns, and a pile of stacked trays." width="1280" height="548" loading="lazy">
+      <figcaption>A cube that points to the same thing however it turns, and a pile of stacked trays.</figcaption>
+    </figure>
+
     <h2>3. What an LLM tensor is</h2>
     <p>Seen from my axis coordinate system, an LLM's tensor can also be understood as something like a modified, simplified version built to hold the relational components between tokens — position, arrangement, layer, and so on.</p>
+
+    <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
+    <p>The only thing dropped is the axis names. Nothing inside an LLM records what each axis points to; the names live at the level of input, output, and interpretation. In this sense the LLM tensor is an axis coordinate system with only the names removed, and it is distinct from the physical tensor, whose definition includes a transformation rule.</p>
 
     <figure>
       <img src="img/26w391v173_js01.webp" alt="A grid of drawers with no labels. Many slots, no names." width="1280" height="548" loading="lazy">
       <figcaption>A grid of drawers with no labels. Many slots, no names.</figcaption>
     </figure>
 
-    <p>Three of the four elements of an axis coordinate system survive intact in the LLM tensor. There are many axes, and coordinates are measured as real numbers. Units aren't dropped either. A unit isn't something agreed on and handed down from outside; it's built into the act of measurement called scaling. The scaling done in an LLM tensor is itself the act of setting units, so the units are already in place.</p>
-    <p>The only thing dropped is the axis names. Nothing inside an LLM records what each axis points to; the names live at the level of input, output, and interpretation. In this sense the LLM tensor is an axis coordinate system with only the names removed, and it is distinct from the physical tensor, whose definition includes a transformation rule.</p>
     <h2>4. JSON converges</h2>
     <p>Many data formats have been tried, but JSON — a plain-text delivery system that pairs axis names with coordinates in the simplest possible form — has settled in as today's most popular general-purpose format for passing data around. JSON started from the goal of defining data and handing it over, and defining data calls for an axis coordinate system. JSON's two structures, objects and arrays, match the two ways an axis coordinate system points at things: by name and by order.</p>
 
