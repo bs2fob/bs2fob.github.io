@@ -117,3 +117,8 @@ main a,main a:visited{color:var(--accent)}
 .src{padding-left:1.2em}
 .src a{text-decoration:none;border-bottom:1px dotted var(--accent)}
 .src a:hover{border-bottom-style:solid}
+
+/* 원문 인용. 출처 줄을 위에 두고 좌측 선으로 본문과 가른다 */
+.quote{margin:0 0 1.4em;padding:4px 0 4px 18px;border-left:3px solid var(--border2)}
+.quote-src{font-size:12px;color:var(--text3);margin-bottom:6px}
+.quote p{margin:0;color:var(--text2);font-size:15px;line-height:1.8;text-align:left;text-align-last:left}
