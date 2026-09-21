@@ -416,12 +416,13 @@
   }
 
   // 같은 탭 안에서 앞뒤 글을 잇고, 버튼 좌우는 그 탭 목록의 배치 방향을 따른다
-  function renderPostNav(post){
+  function renderPostNav(post, el){
+    el = el || postNavEl;
     var list = tabPosts(tabOf(post)).filter(function(p){ return pick(p); });
     var i = list.indexOf(post);
-    postNavEl.innerHTML = '';
-    postNavEl.hidden = i < 0 || list.length < 2;
-    if (postNavEl.hidden) return;
+    el.innerHTML = '';
+    el.hidden = i < 0 || list.length < 2;
+    if (el.hidden) return;
     var t = tabOf(post);
     if (t === 'write' || t === 'verse') {
       add(list[i + 1], 'prev', 'left');
@@ -435,7 +436,7 @@
       if (!p) {
         var gap = document.createElement('div');
         gap.className = 'pn-empty';
-        postNavEl.appendChild(gap);
+        el.appendChild(gap);
         return;
       }
       var b = document.createElement('button');
@@ -443,7 +444,7 @@
       b.innerHTML = '<b>' + (side === 'left' ? '← ' + UI[lang][kind] : UI[lang][kind] + ' →') + '</b><span>' + esc(((seriesNo(p) ? seriesNo(p) + ' ' : '') + (pick(p).v.title || ''))) + '</span>';
       b.title = pick(p).v.title || '';
       b.addEventListener('click', function(){ openPost(p); });
-      postNavEl.appendChild(b);
+      el.appendChild(b);
     }
   }
 
@@ -553,7 +554,13 @@
       mark.className = 'latest-mark';
       mark.textContent = UI[lang].latest;
       latestEl.appendChild(mark);
-      load(entry, latestEl, function(){ latestEl.hidden = false; });
+      load(entry, latestEl, function(){
+        var nav = document.createElement('nav');
+        nav.className = 'post-nav';
+        latestEl.appendChild(nav);
+        renderPostNav(entry, nav);
+        latestEl.hidden = false;
+      });
     }
   }
 
