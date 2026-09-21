@@ -52,7 +52,7 @@
     "tab": "write"
   },
   {
-    "stamp": "26w386v179_0919",
+    "stamp": "26w386v175_0919",
     "no": "005",
     "series": {
       "ko": "인지공리",
@@ -61,12 +61,12 @@
     "ko": {
       "title": "산것의 출현",
       "lede": "엔트로피와 시간.. 끌개와 해밀턴.. 소산가속장치로서의 국지적 질서가 산것으로 출현하기까지.",
-      "file": "p/26w386v179_living.ko.html"
+      "file": "p/26w386v175_living.ko.html"
     },
     "en": {
       "title": "The Emergence of Lifeforms",
       "lede": "Entropy and time, attractors and Hamilton, and how local order emerged as lifeforms: devices that accelerate dissipation.",
-      "file": "p/26w386v179_living.en.html"
+      "file": "p/26w386v175_living.en.html"
     },
     "tab": "write"
   },
@@ -90,7 +90,7 @@
     "tab": "write"
   },
   {
-    "stamp": "26w386v169_0919",
+    "stamp": "26w386v165_0919",
     "no": "003",
     "series": {
       "ko": "인지공리",
@@ -99,17 +99,17 @@
     "ko": {
       "title": "실용의 격률과 정보이론",
       "lede": "가추가 연 것을 무엇으로 판정하는가. 퍼스의 격률과 섀넌의 정보량.",
-      "file": "p/26w386v169_maxim.ko.html"
+      "file": "p/26w386v165_maxim.ko.html"
     },
     "en": {
       "title": "The Pragmatic Maxim and Information Theory",
       "lede": "How to judge what abduction opens: Peirce's maxim and Shannon's information.",
-      "file": "p/26w386v169_maxim.en.html"
+      "file": "p/26w386v165_maxim.en.html"
     },
     "tab": "write"
   },
   {
-    "stamp": "26w386v168_0919",
+    "stamp": "26w386v164_0919",
     "no": "002",
     "series": {
       "ko": "인지공리",
@@ -118,12 +118,12 @@
     "ko": {
       "title": "가추",
       "lede": "가설 공간을 여는 연산은 가추뿐이다. 연역과 귀납은 그 안에서만 작동한다.",
-      "file": "p/26w386v168_abduction.ko.html"
+      "file": "p/26w386v164_abduction.ko.html"
     },
     "en": {
       "title": "Abduction",
       "lede": "Only abduction opens a hypothesis space. Deduction and induction work inside it.",
-      "file": "p/26w386v168_abduction.en.html"
+      "file": "p/26w386v164_abduction.en.html"
     },
     "tab": "write"
   },
