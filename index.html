@@ -465,8 +465,9 @@
       return;
     }
 
-    // 페이지를 먼저 자르고 그 안에서 시리즈를 묶는다
-    var slice = mine.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+    // 작문 탭은 연작을 첫 편부터 읽도록 정순으로 늘어놓고, 페이지를 자른 뒤 시리즈를 묶는다
+    var ordered = tab === 'write' ? mine.slice().reverse() : mine;
+    var slice = ordered.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
     var groups = [], index = {};
     slice.forEach(function(p){
       var key = seriesName(p);
