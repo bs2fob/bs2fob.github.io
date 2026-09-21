@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w392v012_0922",
+    "tab": "snap",
+    "ko": {
+      "title": "소금이야기",
+      "lede": "밴댕이 젓갈 한 통.. 옮겨 담을 통 바닥의 숫자에서 출발해 캔과 포장지를 거쳐 식탁 위의 소금까지 간다.",
+      "file": "p/26w392v012_salt.ko.html"
+    },
+    "en": {
+      "title": "A Story About Salt",
+      "lede": "One tub of salted fish. From the number stamped under a container, through cans and wrappers, to the salt on the table.",
+      "file": "p/26w392v012_salt.en.html"
+    }
+  },
+  {
     "stamp": "26w391v211_0921",
     "tab": "notice",
     "ko": {
