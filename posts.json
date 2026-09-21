@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w392v021_0922",
+    "tab": "notice",
+    "ko": {
+      "title": "이전글과 다음글 버튼",
+      "lede": "글 하단에 같은 탭의 이전글과 다음글로 넘어가는 버튼을 박았다. 좌우 배치는 탭 목록의 정렬 방향을 따른다.",
+      "file": "p/26w392v021_prevnext.ko.html"
+    },
+    "en": {
+      "title": "Previous and Next Buttons",
+      "lede": "Each post now ends with buttons to the previous and next pieces in its tab, laid out to match the direction of that tab’s list.",
+      "file": "p/26w392v021_prevnext.en.html"
+    }
+  },
+  {
     "stamp": "26w392v012_0922",
     "tab": "snap",
     "ko": {

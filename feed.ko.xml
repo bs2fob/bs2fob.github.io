@@ -5,8 +5,15 @@
 <link>https://bs2fob.com/</link>
 <description>확보된 거점 — 세운 것을 다음 출발점으로 넘긴다</description>
 <language>ko-kr</language>
-<lastBuildDate>Tue, 22 Sep 2026 01:23:00 +0900</lastBuildDate>
+<lastBuildDate>Tue, 22 Sep 2026 02:19:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.ko.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>이전글과 다음글 버튼</title>
+<link>https://bs2fob.com/p/26w392v021_prevnext.ko.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w392v021_prevnext.ko.html</guid>
+<pubDate>Tue, 22 Sep 2026 02:10:00 +0900</pubDate>
+<description>글 하단에 같은 탭의 이전글과 다음글로 넘어가는 버튼을 박았다. 좌우 배치는 탭 목록의 정렬 방향을 따른다.</description>
+</item>
 <item>
 <title>소금이야기</title>
 <link>https://bs2fob.com/p/26w392v012_salt.ko.html</link>
