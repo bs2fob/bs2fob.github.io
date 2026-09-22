@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w392v153_0922",
+    "tab": "notice",
+    "ko": {
+      "title": "웨이백 머신",
+      "lede": "옛날부터 알고 있던 사이트 박제공간 archive.org 가 원본성을 증명하는 웨이백 머신이라는 것을 알게 되었다.",
+      "file": "p/26w392v153_wayback.ko.html"
+    },
+    "en": {
+      "title": "Wayback Machine",
+      "lede": "The site-pinning space I've long known, archive.org, turns out to be the Wayback Machine, a way to prove originality.",
+      "file": "p/26w392v153_wayback.en.html"
+    }
+  },
+  {
     "stamp": "26w392v134_0922",
     "tab": "verse",
     "series": {
