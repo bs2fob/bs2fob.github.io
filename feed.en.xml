@@ -5,8 +5,15 @@
 <link>https://bs2fob.com/</link>
 <description>Established footholds — each one becomes the next starting point</description>
 <language>en-us</language>
-<lastBuildDate>Tue, 22 Sep 2026 15:32:00 +0900</lastBuildDate>
+<lastBuildDate>Wed, 23 Sep 2026 01:46:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.en.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>Counter Reset</title>
+<link>https://bs2fob.com/p/26w393v014_reset.en.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w393v014_reset.en.html</guid>
+<pubDate>Wed, 23 Sep 2026 01:40:00 +0900</pubDate>
+<description>Automating Wayback Machine pinning put the crawler on my counter, so I reset it to zero and stopped counting Linux-header visits.</description>
+</item>
 <item>
 <title>Wayback Machine</title>
 <link>https://bs2fob.com/p/26w392v153_wayback.en.html</link>

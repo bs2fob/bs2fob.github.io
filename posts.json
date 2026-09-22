@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w393v014_0923",
+    "tab": "notice",
+    "ko": {
+      "title": "카운터 리셋",
+      "lede": "웨이백 머신 박제를 자동화하자 수집기 접속이 카운터에 찍혀 카운터를 0으로 리셋하고 리눅스헤더 유입을 집계에서 뺐다.",
+      "file": "p/26w393v014_reset.ko.html"
+    },
+    "en": {
+      "title": "Counter Reset",
+      "lede": "Automating Wayback Machine pinning put the crawler on my counter, so I reset it to zero and stopped counting Linux-header visits.",
+      "file": "p/26w393v014_reset.en.html"
+    }
+  },
+  {
     "stamp": "26w392v153_0922",
     "tab": "notice",
     "ko": {

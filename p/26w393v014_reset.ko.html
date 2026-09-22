@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(screen.width<500)document.querySelector('meta[name=viewport]').content='width=500';</script>
+<title>카운터 리셋 — Bs2FoB</title>
+<meta name="description" content="웨이백 머신 박제를 자동화하자 수집기 접속이 카운터에 찍혀 카운터를 0으로 리셋하고 리눅스헤더 유입을 집계에서 뺐다.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../post.css?v=23">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topbar">
+    <a class="back" href="../">← 목록</a>
+    <a class="alt-lang" href="26w393v014_reset.en.html">EN</a>
+  </nav>
+
+  <header class="post-head">
+    <h1 class="post-title">카운터 리셋</h1>
+    <div class="post-stamp">26w393v014_0923 Bs2FoB</div>
+  </header>
+
+  <main>
+    <p>웨이백 머신의 사이트 박제를 자동화했더니.. 이 과정에서 수집기의 사이트 접속이 카운터에 찍히는 문제가 발생했다. 사후 수집기의 접속을 카운팅에서 막는 방어장치는 만들었지만.. 초기 박제과정에서 페이지 숫자만큼 갑자기 올라간 값을 그것만 추려 지우는 것이 성가셔서.. 그냥 0으로 리셋했다.</p>
+
+    <p>수집기는 하나의 고정 아이피를 들고 들어오는 놈이 아니라서.. 아이피무시방식으로 배제할 수는 없었다. 일단 캘리포니아 쪽에서.. 리눅스헤더로 헤드리스 크롬을 여는 접근을 한다는 패턴이 확인됐고.. 어차피 인간 유저 중 리눅스헤더로 유입될 가능성이 낮은 상황이라.. 그냥 리눅스헤더 유입 자체를 카운팅에서 배제하는 식으로 처리했다.</p>
+  </main>
+
+  <footer class="post-foot">26w393v014_0923 Bs2FoB</footer>
+
+</div>
+<script>(function(){if(/X11; Linux/.test(navigator.userAgent))return;var s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';s.dataset.goatcounter='https://bs2fob.goatcounter.com/count';document.body.appendChild(s);})();</script>
+</body>
+</html>
