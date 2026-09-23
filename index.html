@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="post.css?v=24">
 <link rel="stylesheet" href="verse.css?v=3">
+<link rel="stylesheet" href="voxchat.css?v=1">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
@@ -44,17 +45,6 @@
 .tab-count{font-size:11px;font-weight:500;color:var(--text3);margin-left:6px}
 @media (max-width:520px){.tabbar{flex-wrap:wrap;row-gap:0}.tab{font-size:13px;padding:9px 9px}.tab-count{margin-left:3px}}
 
-.lex-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
-.lex-item:hover{border-color:var(--accent)}
-.lex-head{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
-.lex-term{font-size:16px;font-weight:600}
-.lex-alt{font-family:'Courier New',monospace;font-size:12px;color:var(--text3)}
-.lex-short{font-size:13px;color:var(--text2);line-height:1.7;margin-top:6px}
-.lex-body{font-size:14px;color:var(--text);line-height:1.85;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-.lex-body p{margin-bottom:.9em}
-.lex-body p:last-child{margin-bottom:0}
-.lex-see{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-.lex-see span{font-size:11px;color:var(--text3);border:1px solid var(--border);border-radius:4px;padding:2px 8px}
 
 .series{margin-bottom:34px}
 .series-name{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.08em;margin-bottom:12px}
@@ -153,7 +143,7 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 5;
-  var TABS = ['notice', 'verse', 'write', 'lexicon', 'snap', 'code'];
+  var TABS = ['notice', 'verse', 'write', 'voxchat', 'snap', 'code'];
   var DEFAULT_TAB = 'write';
 
   var UI = {
@@ -161,14 +151,12 @@
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
           fallback: '한국어 원문', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
-          lexEmpty: '아직 등록된 술어가 없습니다.',
-          tab: { notice: '로그', verse: '시문', write: '작문', lexicon: '술어', snap: '스냅', code: '코딩' } },
+          tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
           fallback: 'Korean original', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
-          lexEmpty: 'No entries yet.',
-          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', lexicon: 'Lexicon', snap: 'Snap', code: 'Code' } }
+          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
   var clockEl = document.getElementById('clock');
@@ -190,7 +178,6 @@
   var tab = DEFAULT_TAB;
   var page = 0;
   var cache = {};
-  var lexicon = null;
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
@@ -206,11 +193,6 @@
   paintChrome();
   startClock();
   loadHits();
-  fetch('lexicon.json?t=' + Date.now())
-    .then(function(r){ return r.json(); })
-    .then(function(d){ lexicon = d || []; sortTerms(); if (posts) renderTabs(); })
-    .catch(function(){ lexicon = []; });
-
   fetch('posts.json?t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -304,7 +286,6 @@
     lang = next;
     try { localStorage.setItem(STORE, next); } catch (e) {}
     cache = {};
-    if (lexicon) sortTerms();
     paintChrome();
     apply({ stamp: current, tab: tab, page: page });
   }
@@ -424,7 +405,7 @@
     el.hidden = i < 0 || list.length < 2;
     if (el.hidden) return;
     var t = tabOf(post);
-    if (t === 'write' || t === 'verse') {
+    if (isOrdered(t)) {
       add(list[i + 1], 'prev', 'left');
       add(list[i - 1], 'next', 'right');
     } else {
@@ -453,7 +434,7 @@
     var post = current && find(current);
     var t = post ? tabOf(post) : tab;
     var mine = tabPosts(t);
-    if (t === 'write' || t === 'verse') mine = mine.slice().reverse();
+    if (isOrdered(t)) mine = mine.slice().reverse();
     var i = post ? mine.indexOf(post) : -1;
     var n = i < 0 ? 0 : Math.floor(i / PER_PAGE);
     history.pushState({ stamp: null, tab: t, page: n }, '', location.pathname);
@@ -490,7 +471,7 @@
   function renderTabs(){
     tabbarEl.innerHTML = '';
     TABS.forEach(function(t){
-      var n = t === 'lexicon' ? (lexicon ? lexicon.length : 0) : tabPosts(t).length;
+      var n = tabPosts(t).length;
       var b = document.createElement('button');
       b.className = 'tab' + (t === tab ? ' on' : '');
       b.textContent = UI[lang].tab[t];
@@ -513,16 +494,14 @@
     renderTabs();
     renderNotice();
 
-    if (tab === 'lexicon') { renderLexicon(); return; }
-
     var mine = tabPosts();
     if (!mine.length) {
       listEl.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
       return;
     }
 
-    // 작문·시문 탭은 첫 편부터 읽도록 정순으로 늘어놓고, 페이지를 자른 뒤 시리즈를 묶는다
-    var ordered = (tab === 'write' || tab === 'verse') ? mine.slice().reverse() : mine;
+    // 작문·시문·복스챗 탭은 첫 편부터 읽도록 정순으로 늘어놓고, 페이지를 자른 뒤 시리즈를 묶는다
+    var ordered = isOrdered(tab) ? mine.slice().reverse() : mine;
     var slice = ordered.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
     var groups = [], index = {};
     slice.forEach(function(p){
@@ -577,77 +556,6 @@
     return top;
   }
 
-  // 술어는 글이 아니라 lexicon.json 의 항목이며 눌러 펼친다
-  function renderLexicon(){
-    if (!lexicon) {
-      listEl.innerHTML = '';
-      fetch('lexicon.json?t=' + Date.now())
-        .then(function(r){ return r.json(); })
-        .then(function(d){ lexicon = d || []; sortTerms(); if (tab === 'lexicon') renderList(); })
-        .catch(function(){ lexicon = []; if (tab === 'lexicon') renderList(); });
-      return;
-    }
-
-    var mine = lexicon.filter(function(t){ return t[lang] && t[lang].term; });
-    if (!mine.length) {
-      listEl.innerHTML = '<div class="empty">' + UI[lang].lexEmpty + '</div>';
-      return;
-    }
-
-    listEl.innerHTML = mine.map(function(t){
-      var v = t[lang];
-      var alt = (t[lang === 'ko' ? 'en' : 'ko'] || {}).term || '';
-      return '<div class="lex-item" data-key="' + esc(t.key || '') + '">'
-        + '<div class="lex-head"><span class="lex-term">' + esc(v.term) + '</span>'
-        + (alt ? '<span class="lex-alt">' + esc(alt) + '</span>' : '') + '</div>'
-        + (v.short ? '<div class="lex-short">' + esc(v.short) + '</div>' : '')
-        + '</div>';
-    }).join('');
-
-    listEl.querySelectorAll('.lex-item').forEach(function(el){
-      el.addEventListener('click', function(){ toggleTerm(el); });
-    });
-  }
-
-  function sortTerms(){
-    lexicon.sort(function(a, b){
-      var x = (a[lang] || a.ko || a.en || {}).term || '';
-      var y = (b[lang] || b.ko || b.en || {}).term || '';
-      return x.localeCompare(y, lang === 'ko' ? 'ko' : 'en');
-    });
-  }
-
-  function toggleTerm(el){
-    var open = el.querySelector('.lex-body');
-    if (open) { el.removeChild(open); var s = el.querySelector('.lex-see'); if (s) el.removeChild(s); return; }
-
-    var t = findTerm(el.dataset.key);
-    if (!t) return;
-    var v = t[lang] || {};
-
-    var body = document.createElement('div');
-    body.className = 'lex-body';
-    body.innerHTML = String(v.body || v.short || '').split('\n\n')
-      .map(function(par){ return '<p>' + esc(par) + '</p>'; }).join('');
-    el.appendChild(body);
-
-    if (t.see && t.see.length) {
-      var see = document.createElement('div');
-      see.className = 'lex-see';
-      see.innerHTML = t.see.map(function(k){
-        var o = findTerm(k);
-        var n = o ? ((o[lang] || o.ko || o.en || {}).term || k) : k;
-        return '<span>' + esc(n) + '</span>';
-      }).join('');
-      el.appendChild(see);
-    }
-  }
-
-  function findTerm(key){
-    for (var i = 0; i < (lexicon || []).length; i++) if (lexicon[i].key === key) return lexicon[i];
-    return null;
-  }
-
   // 앞뒤 두 칸과 양 끝만 남기고 사이는 생략표로 접는다
   function renderPager(){
     var total = pageCount();
@@ -695,6 +603,10 @@
     mark.textContent = UI[lang].notice;
     noticeEl.appendChild(mark);
     load(latest, noticeEl, function(){ noticeEl.hidden = false; });
+  }
+
+  function isOrdered(t){
+    return t === 'write' || t === 'verse' || t === 'voxchat';
   }
 
   function seriesName(p){
