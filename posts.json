@@ -3,12 +3,12 @@
     "stamp": "26w393v150_0923",
     "tab": "snap",
     "ko": {
-      "title": "탄수화물과 동맥경화",
+      "title": "LDL 동맥경화 apoB",
       "lede": "콜레스테롤 택배 상자 비유 한 장면.. 상자에 주소가 없다는 데서 출발해 동맥경화를 정하는 변수가 혈중 apoB 입자 수 하나로 모이는 데까지 간다.",
       "file": "p/26w393v150_apob.ko.html"
     },
     "en": {
-      "title": "Carbohydrates and Atherosclerosis",
+      "title": "LDL, Atherosclerosis, apoB",
       "lede": "One scene: cholesterol as a delivery box. Starting from the fact that the box has no address, and ending where every driver of atherosclerosis converges on one number, the count of apoB particles in the blood.",
       "file": "p/26w393v150_apob.en.html"
     }
