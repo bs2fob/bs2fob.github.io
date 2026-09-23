@@ -14,7 +14,9 @@ main.vx .vx-q p{font-size:19px;font-weight:700;line-height:1.7;color:var(--text)
 main.vx .vx-a{margin:0 0 34px 19px}
 main.vx .vx-a p{font-size:15.5px;line-height:1.9;color:#c4c4ba;margin-bottom:.9em}
 main.vx .vx-a p:last-child{margin-bottom:0}
+main.vx .vx-a ol,main.vx .vx-a ul{font-size:15.5px;line-height:1.9;color:#c4c4ba;margin:0 0 .9em;padding-left:1.4em}
 main.vx .vx-a .dev-table{margin:4px 0 16px;font-size:13.5px;color:#c4c4ba}
+main.vx .vx-a .dev-table td:first-child{white-space:normal}
 main.vx p.vx-chain{text-align:center;text-align-last:center}
 main.vx .vx-path td:first-child{font-family:'Courier New',monospace;color:#d4a96a}
 main.vx .vx-path td:nth-child(2){font-weight:600;color:var(--text)}

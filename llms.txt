@@ -30,6 +30,7 @@ Every post is a static HTML file readable without JavaScript. Korean files end i
 
 ## VoxSermo
 
+- [The Mind to Keep, the Mind to Choose](https://bs2fob.com/p/26w394v053_voxchat0002.en.html): A dialogue that starts from the ceiling on human lifespan and ends at a body that can be replaced, a mind that must stay the original, and power that must be filtered by the mind. Korean original: https://bs2fob.com/p/26w394v053_voxchat0002.ko.html
 - [From Time to Mass](https://bs2fob.com/p/26w393v174_voxchat0001.en.html): A dialogue that starts from which physical quantity is defined first and ends at mass as frequency in time while at rest in space. Korean original: https://bs2fob.com/p/26w393v174_voxchat0001.ko.html
 
 ## Snap
