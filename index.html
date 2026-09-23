@@ -92,6 +92,10 @@
 #notice .post-head{padding-block:0 10px}
 #notice .post-title{font-size:17px}
 #notice .post-stamp{font-size:11px}
+.stamp-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px}
+.stamp-row .post-stamp{margin-top:0}
+.copy-link{flex-shrink:0;background:none;border:none;padding:0;color:var(--text3);font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.copy-link:hover,.copy-link.done{color:var(--text2)}
 #notice p{font-size:15px;color:var(--text);margin-bottom:.9em;line-height:1.8}
 #notice p:last-child{margin-bottom:0}
 #notice .quote p{color:var(--text2);margin:0}
@@ -150,12 +154,12 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
+          fallback: '한국어 원문', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
           tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
+          fallback: 'Korean original', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
@@ -186,6 +190,7 @@
   document.getElementById('home').addEventListener('click', goHome);
   document.addEventListener('click', playClip);
   document.addEventListener('click', followXref);
+  document.addEventListener('click', copyLink);
   window.addEventListener('popstate', function(e){
     apply(e.state || {});
   });
@@ -198,7 +203,10 @@
     .then(function(d){
       posts = d;
       posts.sort(function(a, b){ return (b.stamp || '').localeCompare(a.stamp || ''); });
-      if (!history.state) {
+      var shared = sharedPost();
+      if (shared) {
+        history.replaceState({ stamp: shared.stamp, tab: tabOf(shared), page: 0 }, '', location.pathname);
+      } else if (!history.state) {
         history.replaceState({ stamp: null, tab: DEFAULT_TAB, page: 0, home: true }, '', location.pathname);
       }
       apply(history.state || {});
@@ -206,6 +214,44 @@
     .catch(function(){
       listEl.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>';
     });
+
+  // 공유 주소(?p=스탬프&lang=언어)로 들어오면 그 글을 열고 주소창은 사이트 주소만 남긴다
+  function sharedPost(){
+    var q = new URLSearchParams(location.search);
+    var post = q.get('p') ? find(q.get('p')) : null;
+    if (!post) return null;
+    var want = q.get('lang');
+    if ((want === 'ko' || want === 'en') && want !== lang) { lang = want; paintChrome(); }
+    return post;
+  }
+
+  function copyLink(e){
+    var b = e.target.closest && e.target.closest('.copy-link');
+    if (!b) return;
+    var url = location.origin + '/?p=' + b.dataset.stamp + '&lang=' + lang;
+    var ok = function(){
+      b.textContent = UI[lang].copied;
+      b.classList.add('done');
+      setTimeout(function(){ b.textContent = UI[lang].copy; b.classList.remove('done'); }, 1500);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(url).then(ok, function(){ legacyCopy(url); ok(); });
+    } else {
+      legacyCopy(url);
+      ok();
+    }
+  }
+
+  function legacyCopy(text){
+    var t = document.createElement('textarea');
+    t.value = text;
+    t.style.position = 'fixed';
+    t.style.opacity = '0';
+    document.body.appendChild(t);
+    t.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(t);
+  }
 
   // 머리글 시계. 주차코드와 음력 일자를 필자의 좌표인 서울 시각으로 그린다
   function startClock(){
@@ -655,7 +701,7 @@
     if (!got) return;
     var file = got.v.file;
 
-    if (cache[file]) { paint(target, cache[file], done); return; }
+    if (cache[file]) { paint(target, cache[file], done, post); return; }
 
     fetch(file + '?t=' + Date.now())
       .then(function(r){ return r.text(); })
@@ -678,14 +724,27 @@
         });
 
         cache[file] = frag;
-        paint(target, frag, done);
+        paint(target, frag, done, post);
       })
       .catch(function(){});
   }
 
-  function paint(target, frag, done){
+  function paint(target, frag, done, post){
     if (target === bodyEl) target.innerHTML = '';
-    target.appendChild(frag.cloneNode(true));
+    var node = frag.cloneNode(true);
+    var stamp = node.querySelector('.post-head .post-stamp');
+    if (stamp && post) {
+      var b = document.createElement('button');
+      b.className = 'copy-link';
+      b.dataset.stamp = post.stamp;
+      b.textContent = UI[lang].copy;
+      var row = document.createElement('div');
+      row.className = 'stamp-row';
+      stamp.parentNode.insertBefore(row, stamp);
+      row.appendChild(stamp);
+      row.appendChild(b);
+    }
+    target.appendChild(node);
     if (done) done();
   }
 
