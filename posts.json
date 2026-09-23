@@ -1,5 +1,19 @@
 [
   {
+    "stamp": "26w394v084_0924",
+    "tab": "voxchat",
+    "ko": {
+      "title": "그놈의 에테르",
+      "lede": "에테르의 시원에서 출발해.. 마술을 없애려던 요구가 에테르 없이 시공간으로 채워지고 중력자와 나비에-스토크스 두 갈래로 갈라지는 데까지 간 문답.",
+      "file": "p/26w394v084_voxchat0003.ko.html"
+    },
+    "en": {
+      "title": "That Damned Ether",
+      "lede": "A dialogue that starts from the origin of ether and ends where the demand to get rid of magic is met by spacetime without ether, splitting into the graviton and Navier–Stokes.",
+      "file": "p/26w394v084_voxchat0003.en.html"
+    }
+  },
+  {
     "stamp": "26w394v053_0924",
     "tab": "voxchat",
     "ko": {
