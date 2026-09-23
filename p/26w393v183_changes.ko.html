@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>if(screen.width<500)document.querySelector('meta[name=viewport]').content='width=500';</script>
+<title>몇 가지 구조와 설정의 변경 — Bs2FoB</title>
+<meta name="description" content="술어 탭을 빼고 복스챗 탭을 넣었다. 개별 글의 주소를 전하는 URL 복사 버튼과 메신저에 표제를 실어 보내는 중간층도 만들었다.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../post.css?v=24">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="topbar">
+    <a class="back" href="../">← 목록</a>
+    <a class="alt-lang" href="26w393v183_changes.en.html">EN</a>
+  </nav>
+
+  <header class="post-head">
+    <h1 class="post-title">몇 가지 구조와 설정의 변경</h1>
+    <div class="post-stamp">26w393v183_0923 Bs2FoB</div>
+  </header>
+
+  <main>
+    <p>우선 기존의 술어탭을 제거하고 그 자리에 복스챗탭을 넣었다. 애초에 술어탭은.. 위키피디아에서 구현되어 있는 플로팅 주석을 제공하는 용도로 제안된 것인데.. 구조 구현 자체가 너무 성가시고.. 산뜻한 설계 그림이 안 나와서.. 계속 보류 중이던 영역이었다. 그냥 고민 않고 빼기로 했다.</p>
+
+    <p>복스챗탭은 ai 대화록 정리 버전 게시물을 담는 탭으로 제안된 것이다. Q&amp;A와는 성격이 좀 달라서.. 이름을 복스챗으로 정했다. 복스는 영화 타임머신에 등장하는 도서관 사서 ai의 모델명인 vox114에서 따온 말이다. 현재 서비스되고 있는 LLM의 챗봇 성능은.. 나의 관측으로는.. 영원히 vox114의 수준에 도달할 수 없는 설정이며.. 아주 높게 평가해 줘도.. 매우 원시적인 vox114 버전의 흉내 수준이다.</p>
+
+    <p>어쨌든.. 문답 형식의 인지연산 전개가 아주 잘 읽히는 포맷이고.. 실제로 영어의 어순 자체가.. 이 문답 형식을 뼈대로 하고 있다. 소위 육하원칙의 질문들에 대한 대답을 순서대로 쌓으면.. 하나의 문장이 완성되는 구조이다. 선명한 사고의 흐름도 기본적으로 이런 구조를 취하게 된다. 뭐 그래서.. 이런 구조의 글이 잘 읽히는 글이 된다. 문답을 통해 정리된 내용을 다시 문서화하여 보존하는 것보다.. 문답 자체를 정리하여 보존하는 것이.. 복기에 훨씬 유리하다는 경험적 관찰의 반영이기도 하다. 가끔.. 꽤 즉흥적인 문답의 기록이 정리되어 게시될 창구인 셈이다.</p>
+
+    <p>url 복사 버튼을 추가했다. 현재의 사이트 설정은.. 어느 페이지를 열건 브라우저에 기본 도메인 주소만 표기되고 있어서.. 개별 페이지를 특정해 여는 주소 전달이 어렵게 되어 있다. 개별 페이지의 주소 복사 버튼을 추가하여 이 전달의 문제를 해소한 대응이다. 막상 메신저로 그렇게 복사한 주소를 던져보니.. 링크가 해당 개별 페이지로 연결되기는 하나.. 링크 자체에 개별 페이지 표제 정보가 전혀 드러나지 않고.. 도메인 정보만 전달되는 문제가 보였다.</p>
+
+    <p>페이지 정보를 담아서 전달하는 중간층을 하나 만들어.. 이 문제도 해결했다.</p>
+  </main>
+
+  <footer class="post-foot">26w393v183_0923 Bs2FoB</footer>
+
+</div>
+<script>(function(){if(/X11; Linux/.test(navigator.userAgent))return;var s=document.createElement('script');s.async=true;s.src='//gc.zgo.at/count.js';s.dataset.goatcounter='https://bs2fob.goatcounter.com/count';document.body.appendChild(s);})();</script>
+</body>
+</html>

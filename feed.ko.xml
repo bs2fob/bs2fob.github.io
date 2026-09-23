@@ -5,8 +5,15 @@
 <link>https://bs2fob.com/</link>
 <description>확보된 거점 — 세운 것을 다음 출발점으로 넘긴다</description>
 <language>ko-kr</language>
-<lastBuildDate>Wed, 23 Sep 2026 18:15:00 +0900</lastBuildDate>
+<lastBuildDate>Wed, 23 Sep 2026 18:32:00 +0900</lastBuildDate>
 <atom:link href="https://bs2fob.com/feed.ko.xml" rel="self" type="application/rss+xml"/>
+<item>
+<title>몇 가지 구조와 설정의 변경</title>
+<link>https://bs2fob.com/p/26w393v183_changes.ko.html</link>
+<guid isPermaLink="true">https://bs2fob.com/p/26w393v183_changes.ko.html</guid>
+<pubDate>Wed, 23 Sep 2026 18:30:00 +0900</pubDate>
+<description>술어 탭을 빼고 복스챗 탭을 넣었다. 개별 글의 주소를 전하는 URL 복사 버튼과.. 메신저에 표제를 실어 보내는 중간층도 만들었다.</description>
+</item>
 <item>
 <title>시간에서 질량까지</title>
 <link>https://bs2fob.com/p/26w393v174_voxchat0001.ko.html</link>
