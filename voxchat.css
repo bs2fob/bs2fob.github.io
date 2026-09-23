@@ -18,6 +18,10 @@ main.vx .vx-a ol,main.vx .vx-a ul{font-size:15.5px;line-height:1.9;color:#c4c4ba
 main.vx .vx-a .dev-table{margin:4px 0 16px;font-size:13.5px;color:#c4c4ba}
 main.vx .vx-a .dev-table td:first-child{white-space:normal}
 main.vx p.vx-chain{text-align:center;text-align-last:center}
+main.vx .vx-src-h{font-family:'Courier New',monospace;font-size:11px;font-weight:700;color:#d4a96a;margin:18px 0 6px}
+main.vx ul.vx-src{font-size:12.5px;line-height:1.7;color:var(--text3);margin:0;padding-left:1.2em;overflow-wrap:anywhere}
+main.vx ul.vx-src li{margin-bottom:.3em}
+main.vx ul.vx-src a{color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent)}
 main.vx .vx-path td:first-child{font-family:'Courier New',monospace;color:#d4a96a}
 main.vx .vx-path td:nth-child(2){font-weight:600;color:var(--text)}
 main.vx code{white-space:nowrap}
