@@ -500,7 +500,7 @@
       return;
     }
 
-    // 작문·시문·복스챗 탭은 첫 편부터 읽도록 정순으로 늘어놓고, 페이지를 자른 뒤 시리즈를 묶는다
+    // 작문·시문 탭은 첫 편부터 읽도록 정순으로 늘어놓고, 페이지를 자른 뒤 시리즈를 묶는다
     var ordered = isOrdered(tab) ? mine.slice().reverse() : mine;
     var slice = ordered.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
     var groups = [], index = {};
@@ -606,7 +606,7 @@
   }
 
   function isOrdered(t){
-    return t === 'write' || t === 'verse' || t === 'voxchat';
+    return t === 'write' || t === 'verse';
   }
 
   function seriesName(p){
