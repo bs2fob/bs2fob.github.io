@@ -215,7 +215,7 @@
       listEl.innerHTML = '<div class="empty">' + UI[lang].fail + '</div>';
     });
 
-  // 공유 주소(?p=스탬프&lang=언어)로 들어오면 그 글을 열고 주소창은 사이트 주소만 남긴다
+  // 공유 중간 페이지(s/)가 넘겨준 ?p=스탬프&lang=언어 로 들어오면 그 글을 열고 주소창은 사이트 주소만 남긴다
   function sharedPost(){
     var q = new URLSearchParams(location.search);
     var post = q.get('p') ? find(q.get('p')) : null;
@@ -228,7 +228,7 @@
   function copyLink(e){
     var b = e.target.closest && e.target.closest('.copy-link');
     if (!b) return;
-    var url = location.origin + '/?p=' + b.dataset.stamp + '&lang=' + lang;
+    var url = location.origin + '/s/' + b.dataset.stamp + '.' + lang + '.html';
     var ok = function(){
       b.textContent = UI[lang].copied;
       b.classList.add('done');

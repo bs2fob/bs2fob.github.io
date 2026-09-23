@@ -132,6 +132,56 @@ def build_sitemap(posts):
     return "\n".join(lines)
 
 
+# 메신저 미리보기용 중간 페이지. 수집기는 og 태그를 읽고 사람은 사이트 안 글로 넘어간다
+def build_share(post, lang):
+    v = pick(post, lang)
+    stamp = post["stamp"]
+    title = esc(v.get("title", ""))
+    lede = esc(v.get("lede", ""))
+    target = "/?p=%s&lang=%s" % (stamp, lang)
+    return "\n".join([
+        "<!DOCTYPE html>",
+        '<html lang="%s">' % lang,
+        "<head>",
+        '<meta charset="UTF-8">',
+        "<title>%s — Bs2FoB</title>" % title,
+        '<meta name="description" content="%s">' % lede,
+        '<meta property="og:type" content="article">',
+        '<meta property="og:site_name" content="Bs2FoB">',
+        '<meta property="og:title" content="%s">' % title,
+        '<meta property="og:description" content="%s">' % lede,
+        '<meta property="og:url" content="%ss/%s.%s.html">' % (SITE_URL, stamp, lang),
+        '<meta property="og:image" content="%sapple-touch-icon.png">' % SITE_URL,
+        '<meta name="twitter:card" content="summary">',
+        '<link rel="canonical" href="%s%s">' % (SITE_URL, v["file"]),
+        "<script>location.replace('%s');</script>" % target,
+        "</head>",
+        '<body><a href="%s">%s</a></body>' % (esc(target), title),
+        "</html>",
+        "",
+    ])
+
+
+def write_shares(root, posts):
+    folder = os.path.join(root, "s")
+    os.makedirs(folder, exist_ok=True)
+    keep = set()
+    for post in posts:
+        if not parse_stamp(post.get("stamp")):
+            continue
+        for lang in ("ko", "en"):
+            if not pick(post, lang):
+                continue
+            name = "%s.%s.html" % (post["stamp"], lang)
+            keep.add(name)
+            with io.open(os.path.join(folder, name), "w", encoding="utf-8", newline="\n") as f:
+                f.write(build_share(post, lang))
+    for name in os.listdir(folder):
+        if name not in keep:
+            os.remove(os.path.join(folder, name))
+    print("s/  (%d 개)" % len(keep))
+
+
 def write(root, name, text):
     path = os.path.join(root, name)
     with io.open(path, "w", encoding="utf-8", newline="\n") as f:
@@ -150,6 +200,7 @@ def main():
     write(root, "feed.ko.xml", build_feed(posts, "ko"))
     write(root, "feed.en.xml", build_feed(posts, "en"))
     write(root, "sitemap.xml", build_sitemap(posts))
+    write_shares(root, posts)
     print("글 %d 편" % len(posts))
 
 
