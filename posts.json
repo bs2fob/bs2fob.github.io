@@ -1,6 +1,6 @@
 [
   {
-    "stamp": "26w395v186_0925",
+    "stamp": "26w395v190_0925",
     "no": "05_6",
     "series": {
       "ko": "인지공리",
@@ -9,12 +9,12 @@
     "ko": {
       "title": "거버닝과 핸들링",
       "lede": "별일 없음이 이어지는 동안 다음 축이 선다. 다층 제어 구조를 운영의 영역에 옮겨 본다.",
-      "file": "p/26w395v186_governing.ko.html"
+      "file": "p/26w395v190_governing.ko.html"
     },
     "en": {
       "title": "Governing and Handling",
       "lede": "While nothing happens, the next axis goes up. Moving the multilayer control structure into the domain of operations.",
-      "file": "p/26w395v186_governing.en.html"
+      "file": "p/26w395v190_governing.en.html"
     },
     "tab": "write"
   },
