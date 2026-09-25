@@ -125,8 +125,8 @@
         <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
       </div>
       <div class="hits" id="hits" hidden>
-        <span><span id="lbl-view">노출</span><b class="now" id="view-today">-</b>/<b id="view-total">-</b></span>
-        <span><span id="lbl-visit">방문</span><b class="now" id="visit-today">-</b>/<b id="visit-total">-</b></span>
+        <span><b class="now" id="view-today">-</b>/<b id="view-total">-</b></span>
+        <span>visit<b class="now" id="visit-today">-</b>/<b id="visit-total">-</b></span>
       </div>
     </div>
     <div class="head-left">
@@ -225,12 +225,12 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그', view: '노출', visit: '방문',
+          fallback: '한국어 원문', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
           tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log', view: 'VIEWS', visit: 'VISITS',
+          fallback: 'Korean original', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
@@ -416,8 +416,6 @@
     document.documentElement.lang = lang;
     subEl.innerHTML = UI[lang].sub;
     backEl.textContent = UI[lang].back;
-    document.getElementById('lbl-view').textContent = UI[lang].view;
-    document.getElementById('lbl-visit').textContent = UI[lang].visit;
     document.getElementById('feed-link').href = 'feed.' + lang + '.xml';
     document.querySelectorAll('.lang-btn').forEach(function(b){
       b.classList.toggle('active', b.dataset.lang === lang);
