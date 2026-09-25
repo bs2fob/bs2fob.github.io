@@ -45,8 +45,8 @@
 .feed-link:hover{color:var(--accent);border-color:var(--accent)}
 
 .hits{display:flex;gap:10px;align-items:center;font-size:11px;color:var(--text3);letter-spacing:.04em}
-.hits b{font-family:'Courier New',monospace;font-size:12px;font-weight:600;color:var(--text2);margin-left:4px}
-.hits .today b{color:var(--accent)}
+.hits b{font-family:'Courier New',monospace;font-size:12px;font-weight:600;color:var(--text2)}
+.hits b.now{color:var(--accent);margin-left:4px}
 
 .tabbar{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:26px}
 .tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);font-family:inherit;font-size:14px;font-weight:600;padding:10px 16px;margin-bottom:-1px;cursor:pointer}
@@ -125,8 +125,8 @@
         <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
       </div>
       <div class="hits" id="hits" hidden>
-        <span class="today">TODAY<b id="hit-today">-</b></span>
-        <span class="total">TOTAL<b id="hit-total">-</b></span>
+        <span><span id="lbl-view">노출</span><b class="now" id="view-today">-</b>/<b id="view-total">-</b></span>
+        <span><span id="lbl-visit">방문</span><b class="now" id="visit-today">-</b>/<b id="visit-total">-</b></span>
       </div>
     </div>
     <div class="head-left">
@@ -225,12 +225,12 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
+          fallback: '한국어 원문', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그', view: '노출', visit: '방문',
           tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
+          fallback: 'Korean original', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log', view: 'VIEWS', visit: 'VISITS',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
@@ -367,9 +367,9 @@
 
   function pad2(n){ return (n < 10 ? '0' : '') + n; }
 
-  // 방문 수는 GoatCounter 가 조회 문자열별로 캐시하므로 end 를 분마다 다른 미래 날짜로 준다
+  // 노출은 경로별 합계에서 /visit 를 뺀 값, 방문은 접속마다 한 번 보내는 /visit 경로이며 캐시를 피해 end 를 분마다 바꾼다
   function loadHits(){
-    var base = 'https://bs2fob.goatcounter.com/counter/TOTAL.json';
+    var host = 'https://bs2fob.goatcounter.com/counter/';
     var d = new Date();
 
     function ymd(x){
@@ -380,13 +380,18 @@
 
     var today = ymd(d);
     var tomorrow = ymd(new Date(d.getTime() + 86400000 * (1 + Math.floor(d.getTime() / 60000) % 3000)));
+    var ids = ['view-total', 'view-today', 'visit-total', 'visit-today'];
 
     Promise.all([
-      fetch(base + '?start=2026-01-01&end=' + tomorrow).then(function(r){ return r.json(); }),
-      fetch(base + '?start=' + today + '&end=' + tomorrow).then(function(r){ return r.json(); })
-    ]).then(function(r){
-      document.getElementById('hit-total').textContent = r[0].count;
-      document.getElementById('hit-today').textContent = r[1].count;
+      ['TOTAL', '2026-01-01'], ['TOTAL', today], ['%2Fvisit', '2026-01-01'], ['%2Fvisit', today]
+    ].map(function(q){
+      return fetch(host + q[0] + '.json?start=' + q[1] + '&end=' + tomorrow)
+        .then(function(r){ return r.json(); });
+    })).then(function(r){
+      var n = r.map(function(x){ return +x.count || 0; });
+      [n[0] - n[2], n[1] - n[3], n[2], n[3]].forEach(function(v, i){
+        document.getElementById(ids[i]).textContent = v;
+      });
       document.getElementById('hits').hidden = false;
     }).catch(function(){});
   }
@@ -411,6 +416,8 @@
     document.documentElement.lang = lang;
     subEl.innerHTML = UI[lang].sub;
     backEl.textContent = UI[lang].back;
+    document.getElementById('lbl-view').textContent = UI[lang].view;
+    document.getElementById('lbl-visit').textContent = UI[lang].visit;
     document.getElementById('feed-link').href = 'feed.' + lang + '.xml';
     document.querySelectorAll('.lang-btn').forEach(function(b){
       b.classList.toggle('active', b.dataset.lang === lang);
@@ -425,7 +432,7 @@
   }
 
   // 주소가 바뀌지 않으므로 화면이 바뀔 때마다 직접 집계를 부른다
-  var pending = [];
+  var pending = [{ path: '/visit', title: 'visit', event: false }];
   function count(path, title){
     var hit = { path: path, title: title, event: false };
     var gc = window.goatcounter;
