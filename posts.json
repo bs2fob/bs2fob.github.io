@@ -8,12 +8,12 @@
     },
     "ko": {
       "title": "거버닝과 핸들링",
-      "lede": "별일 없음이 이어지는 동안 다음 축이 선다. 다층 제어 구조를 운영의 영역에 옮겨 본다.",
+      "lede": "다층 제어 구조를 운영의 영역에 옮겨 보면.. 별일 없음이 이어지는 동안 다음 축이 선다는 것이 드러난다.",
       "file": "p/26w395v190_governing.ko.html"
     },
     "en": {
       "title": "Governing and Handling",
-      "lede": "While nothing happens, the next axis goes up. Moving the multilayer control structure into the domain of operations.",
+      "lede": "Move the multilayer control structure into the domain of operations, and it turns out that the next axis goes up while nothing happens.",
       "file": "p/26w395v190_governing.en.html"
     },
     "tab": "write"
@@ -27,12 +27,12 @@
     },
     "ko": {
       "title": "격률로 거른다",
-      "lede": "정보량은 목적이 세운 축의 눈금을 정한다. 그 눈금을 움직이지 못하는 명제는 빠진다.",
+      "lede": "정보량은 목적이 세운 축의 눈금을 정하는 데 쓰이므로.. 그 눈금을 움직이지 못하는 명제는 빠진다.",
       "file": "p/26w395v185_filter.ko.html"
     },
     "en": {
       "title": "Filtering by the Maxim",
-      "lede": "Information sets the scale on the axes a purpose raises. A proposition that can't move that scale drops out.",
+      "lede": "Information is used to set the scale on the axes a purpose raises, so a proposition that can't move that scale drops out.",
       "file": "p/26w395v185_filter.en.html"
     },
     "tab": "write"
@@ -46,12 +46,12 @@
     },
     "ko": {
       "title": "기능주의와 갈라서기",
-      "lede": "다마지오.. 메칭거.. 그라지아노.. 고차 이론.. 김주환.. 폴라니. 형이상학 없이 기능만 기술하는 이론들과의 거리.",
+      "lede": "다마지오.. 메칭거.. 그라지아노.. 고차 이론.. 김주환.. 폴라니처럼 형이상학 없이 기능만 기술하는 이론들과 거버너 개념 사이의 거리.",
       "file": "p/26w395v184_functionalism.ko.html"
     },
     "en": {
       "title": "Functionalism, and Where We Part",
-      "lede": "Damasio, Metzinger, Graziano, higher-order theory, Kim Joo-hwan, Polanyi. The distance from theories that describe only function, with no metaphysics.",
+      "lede": "The distance between the governor concept and theories that describe only function, with no metaphysics: Damasio, Metzinger, Graziano, higher-order theory, Kim Joo-hwan and Polanyi.",
       "file": "p/26w395v184_functionalism.en.html"
     },
     "tab": "write"
@@ -65,12 +65,12 @@
     },
     "ko": {
       "title": "도달의 서사와 갈라서기",
-      "lede": "베단타.. 영지주의.. 수피즘.. 카발라.. 족첸. 비슷해 보이는 삼분법들이 어디서 갈라지는가.",
+      "lede": "베단타.. 영지주의.. 수피즘.. 카발라.. 족첸처럼 비슷해 보이는 삼분법들이 어디서 거버너와 갈라지는가.",
       "file": "p/26w395v183_arrival.ko.html"
     },
     "en": {
       "title": "Narratives of Arrival, and Where We Part",
-      "lede": "Vedanta, Gnosticism, Sufism, Kabbalah, Dzogchen. Where do tripartite schemes that look alike part ways?",
+      "lede": "Where do look-alike tripartite schemes such as Vedanta, Gnosticism, Sufism, Kabbalah and Dzogchen part ways with the governor?",
       "file": "p/26w395v183_arrival.en.html"
     },
     "tab": "write"
@@ -84,12 +84,12 @@
     },
     "ko": {
       "title": "트리거 문장과 명찰",
-      "lede": "지금여기를 벗어난 적이 없다는 한 문장이 거버너를 켠다.",
+      "lede": "지금여기를 벗어난 적이 없다는 한 문장이 거버너를 켜고.. 켜진 거버너는 명찰로 드러난다.",
       "file": "p/26w395v182_trigger.ko.html"
     },
     "en": {
       "title": "The Trigger Sentence and Myeongchal",
-      "lede": "One sentence, that we have never left the here-now, switches the governor on.",
+      "lede": "One sentence, that we have never left the here-now, switches the governor on, and a governor that is on shows up as myeongchal.",
       "file": "p/26w395v182_trigger.en.html"
     },
     "tab": "write"
@@ -103,12 +103,12 @@
     },
     "ko": {
       "title": "화신·핸들러·거버너",
-      "lede": "몸과 자의식과 2차 표상. 영역이 바뀌어도 다층 제어 구조는 그대로 동작한다.",
+      "lede": "몸과 자의식과 2차 표상으로 산자를 가르면.. 영역이 바뀌어도 다층 제어 구조가 그대로 동작하는 것이 보인다.",
       "file": "p/26w395v181_avatar.ko.html"
     },
     "en": {
       "title": "Avatar, Handler, Governor",
-      "lede": "Body, self-consciousness, second-order representation. Change the domain and the multilayer control structure still runs the same way.",
+      "lede": "Split the living cognizer into body, self-consciousness and second-order representation, and the multilayer control structure turns out to run the same way even when the domain changes.",
       "file": "p/26w395v181_avatar.en.html"
     },
     "tab": "write"
