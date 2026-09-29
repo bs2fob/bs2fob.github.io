@@ -53,6 +53,17 @@
 .del-btn{position:absolute;top:12px;right:12px;background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text3);font-family:inherit;font-size:11px;padding:2px 8px;cursor:pointer}
 .del-btn:hover{color:#d9534f;border-color:#d9534f}
 .post.deleting{opacity:.45;pointer-events:none}
+.row-btns{display:flex;gap:14px;flex-shrink:0}
+.del-link{flex-shrink:0;background:none;border:none;padding:0;color:var(--text3);font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.del-link:hover{color:#d9534f}
+.log-tools{display:flex;justify-content:flex-end;margin:-10px 0 14px}
+.editor{display:flex;flex-direction:column;gap:10px;margin-bottom:34px}
+.editor input,.editor textarea{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;line-height:1.7;padding:9px 12px}
+.editor textarea{resize:vertical;min-height:320px}
+.editor input:focus,.editor textarea:focus{outline:none;border-color:var(--accent)}
+.editor .ed-slug{font-family:monospace;font-size:13px;max-width:260px}
+.ed-msg{font-size:12px;color:var(--text3);min-height:1em}
+.ed-msg.err{color:#d9534f}
 
 .admin-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .admin-modal[hidden]{display:none}
@@ -264,12 +275,12 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', del: '삭제', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
+          fallback: '한국어 원문', del: '삭제', write: '쓰기', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
           tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', del: 'Delete', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
+          fallback: 'Korean original', del: 'Delete', write: 'Write', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
@@ -295,6 +306,9 @@
   var REPO = 'https://api.github.com/repos/bs2fob/bs2fob.github.io';
   var ADMIN = 'bs2fob-admin';
   var deleting = {};
+  var writing = false;
+  var publishing = false;
+  var DRAFT = 'bs2fob-log-draft';
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
@@ -308,6 +322,10 @@
   document.addEventListener('click', playClip);
   document.addEventListener('click', followXref);
   document.addEventListener('click', copyLink);
+  document.addEventListener('click', function(e){
+    var b = e.target.closest && e.target.closest('.del-link');
+    if (b) delPost(find(b.dataset.stamp));
+  });
   window.addEventListener('popstate', function(e){
     apply(e.state || {});
   });
@@ -664,9 +682,14 @@
     renderTabs();
     renderNotice();
 
+    var logAdmin = tab === 'notice' && !!adminToken();
+    if (logAdmin && writing) { renderEditor(); return; }
+    var tools = logAdmin ? '<div class="log-tools"><button class="pg" id="write-btn">' + UI[lang].write + '</button></div>' : '';
+
     var mine = tabPosts();
     if (!mine.length) {
-      listEl.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
+      listEl.innerHTML = tools + '<div class="empty">' + UI[lang].empty + '</div>';
+      bindWrite();
       return;
     }
 
@@ -680,7 +703,7 @@
       groups[index[key]].items.push(p);
     });
 
-    listEl.innerHTML = groups.map(function(g){
+    listEl.innerHTML = tools + groups.map(function(g){
       return '<section class="series">'
         + (g.name ? '<div class="series-name">' + esc(g.name) + '</div>' : '')
         + g.items.map(card).join('')
@@ -694,8 +717,9 @@
       el.addEventListener('click', function(e){ e.stopPropagation(); });
     });
     listEl.querySelectorAll('.del-btn').forEach(function(el){
-      el.addEventListener('click', function(e){ e.stopPropagation(); delPost(el.closest('.post')); });
+      el.addEventListener('click', function(e){ e.stopPropagation(); delPost(find(el.closest('.post').dataset.stamp)); });
     });
+    bindWrite();
 
     renderPager();
 
@@ -866,11 +890,22 @@
       b.className = 'copy-link';
       b.dataset.stamp = post.stamp;
       b.textContent = UI[lang].copy;
+      var btns = document.createElement('span');
+      btns.className = 'row-btns';
+      if (adminToken()) {
+        var d = document.createElement('button');
+        d.className = 'del-link';
+        d.dataset.stamp = post.stamp;
+        d.textContent = deleting[post.stamp] ? '…' : UI[lang].del;
+        d.disabled = !!deleting[post.stamp];
+        btns.appendChild(d);
+      }
+      btns.appendChild(b);
       var row = document.createElement('div');
       row.className = 'stamp-row';
       stamp.parentNode.insertBefore(row, stamp);
       row.appendChild(stamp);
-      row.appendChild(b);
+      row.appendChild(btns);
     }
     target.appendChild(node);
     if (done) done();
@@ -924,8 +959,7 @@
     });
   }
 
-  function delPost(el){
-    var post = el && find(el.dataset.stamp);
+  function delPost(post){
     var token = adminToken();
     if (!post || !token || deleting[post.stamp]) return;
     var got = pick(post);
@@ -934,41 +968,157 @@
 
     var since = Date.now() - 10000;
     deleting[post.stamp] = true;
-    renderList();
+    markDeleting(post.stamp);
     gh('/actions/workflows/del_post.yml/dispatches', token, {
       method: 'POST',
       body: JSON.stringify({ ref: 'main', inputs: { stamp: post.stamp } })
     }).then(function(r){
       if (r.status !== 204) throw new Error('삭제 요청 실패 (' + r.status + ')');
-      return waitRun(token, since);
+      return waitRun(token, since, 'del_post.yml');
     }).then(function(){
       delete deleting[post.stamp];
       posts = posts.filter(function(p){ return p !== post; });
       cache = {};
-      apply({ stamp: null, tab: tab, page: clampPage(page), home: home });
+      if (current === post.stamp) apply({ stamp: null, tab: tabOf(post), page: 0 });
+      else apply({ stamp: current, tab: tab, page: clampPage(page), home: home });
     }).catch(function(e){
       delete deleting[post.stamp];
-      renderList();
+      markDeleting(post.stamp);
       alert(e.message);
     });
   }
 
-  // 방금 부른 작업이 끝날 때까지 5초 간격으로 확인한다
-  function waitRun(token, since){
+  function markDeleting(stamp){
+    var on = !!deleting[stamp];
+    document.querySelectorAll('.del-link').forEach(function(b){
+      if (b.dataset.stamp !== stamp) return;
+      b.textContent = on ? '…' : UI[lang].del;
+      b.disabled = on;
+    });
+    if (!current) renderList();
+  }
+
+  // 부른 작업이 끝날 때까지 5초 간격으로 확인한다
+  function waitRun(token, since, wf){
     return new Promise(function(done, fail){
       var tries = 0;
       (function poll(){
-        if (++tries > 60) return fail(new Error('5분 안에 삭제 작업이 끝나지 않았습니다. 저장소 Actions 탭을 확인하세요.'));
-        gh('/actions/workflows/del_post.yml/runs?event=workflow_dispatch&per_page=1', token)
+        if (++tries > 60) return fail(new Error('5분 안에 작업이 끝나지 않았습니다. 저장소 Actions 탭을 확인하세요.'));
+        gh('/actions/workflows/' + wf + '/runs?event=workflow_dispatch&per_page=1', token)
           .then(function(r){ return r.json(); })
           .then(function(d){
             var run = d.workflow_runs && d.workflow_runs[0];
             if (!run || Date.parse(run.created_at) < since || run.status !== 'completed') return setTimeout(poll, 5000);
             if (run.conclusion === 'success') done();
-            else fail(new Error('삭제 작업 실패: ' + run.conclusion + '\n' + run.html_url));
+            else fail(new Error('작업 실패: ' + run.conclusion + '\n' + run.html_url));
           })
           .catch(function(){ setTimeout(poll, 5000); });
       })();
+    });
+  }
+
+  // 사이트 빌드가 끝나 새 글 파일이 실제로 뜰 때까지 기다린다
+  function waitFile(file){
+    return new Promise(function(done, fail){
+      var tries = 0;
+      (function poll(){
+        if (++tries > 36) return fail(new Error('글은 저장소에 올라갔으나 3분 안에 사이트에 뜨지 않았습니다. 잠시 뒤 새로고침하세요.'));
+        fetch(file + '?t=' + Date.now(), { method: 'HEAD' })
+          .then(function(r){ if (r.ok) done(); else setTimeout(poll, 5000); })
+          .catch(function(){ setTimeout(poll, 5000); });
+      })();
+    });
+  }
+
+  // 로그 탭 쓰기. 제목·요약·본문을 받아 new_log 작업으로 로그 양식의 한국어판을 올린다
+  var FIELDS = ['title', 'lede', 'body', 'slug'];
+
+  function bindWrite(){
+    var b = document.getElementById('write-btn');
+    if (b) b.addEventListener('click', function(){ writing = true; renderList(); });
+  }
+
+  function loadDraft(){
+    try { return JSON.parse(localStorage.getItem(DRAFT) || '{}') || {}; } catch (e) { return {}; }
+  }
+
+  function saveDraft(){
+    var d = {};
+    FIELDS.forEach(function(k){ d[k] = document.getElementById('ed-' + k).value; });
+    try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
+    return d;
+  }
+
+  function renderEditor(){
+    listEl.innerHTML = '<div class="editor">'
+      + '<input id="ed-title" placeholder="제목">'
+      + '<input id="ed-lede" placeholder="요약 한 줄. 목록 카드에 뜹니다">'
+      + '<textarea id="ed-body" placeholder="본문. 줄마다 한 문단이 됩니다"></textarea>'
+      + '<input id="ed-slug" class="ed-slug" placeholder="파일 이름 영문 (비우면 log)">'
+      + '<div class="ed-msg" id="ed-msg"></div>'
+      + '<div class="admin-row"><button class="pg" id="ed-cancel">취소</button><button class="pg" id="ed-send">게시</button></div>'
+      + '</div>';
+    var d = loadDraft();
+    FIELDS.forEach(function(k){
+      var el = document.getElementById('ed-' + k);
+      el.value = d[k] || '';
+      el.disabled = publishing;
+      el.addEventListener('input', saveDraft);
+    });
+    document.getElementById('ed-send').disabled = publishing;
+    if (publishing) edMsg('게시 중입니다. 1~2분 걸립니다.');
+    document.getElementById('ed-cancel').addEventListener('click', function(){ writing = false; renderList(); });
+    document.getElementById('ed-send').addEventListener('click', publishLog);
+  }
+
+  function edMsg(text, err){
+    var m = document.getElementById('ed-msg');
+    if (!m) return;
+    m.textContent = text;
+    m.classList.toggle('err', !!err);
+  }
+
+  function lockEditor(on){
+    publishing = on;
+    FIELDS.forEach(function(k){ var el = document.getElementById('ed-' + k); if (el) el.disabled = on; });
+    var b = document.getElementById('ed-send');
+    if (b) b.disabled = on;
+  }
+
+  function publishLog(){
+    var token = adminToken();
+    var f = saveDraft();
+    var title = f.title.trim(), lede = f.lede.trim(), slug = f.slug.trim(), body = f.body.trim();
+    if (!token || publishing) return;
+    if (!title || !body) return edMsg('제목과 본문을 채우세요.', true);
+    if (slug && !/^[a-z0-9]{1,24}$/.test(slug)) return edMsg('파일 이름은 영문 소문자·숫자 24자 이내입니다.', true);
+    if (title.length + lede.length + body.length > 60000) return edMsg('글이 너무 깁니다. 6만 자 이내로 줄이세요.', true);
+    var p = seoulParts(new Date());
+    var stamp = weekStamp(p) + 'v' + p.hour + p.minute.charAt(0) + '_' + p.month + p.day;
+    if (find(stamp)) return edMsg('같은 10분 안에 올린 글이 이미 있습니다. 잠시 뒤 다시 게시하세요.', true);
+    var file = 'p/' + stamp.split('_')[0] + '_' + (slug || 'log') + '.ko.html';
+
+    var since = Date.now() - 10000;
+    lockEditor(true);
+    edMsg('게시 중입니다. 1~2분 걸립니다.');
+    gh('/actions/workflows/new_log.yml/dispatches', token, {
+      method: 'POST',
+      body: JSON.stringify({ ref: 'main', inputs: { stamp: stamp, title: title, lede: lede, slug: slug, body: body } })
+    }).then(function(r){
+      if (r.status !== 204) throw new Error('게시 요청 실패 (' + r.status + ')');
+      return waitRun(token, since, 'new_log.yml');
+    }).then(function(){
+      edMsg('저장소에 올라갔습니다. 사이트 반영을 기다립니다.');
+      return waitFile(file);
+    }).then(function(){
+      lockEditor(false);
+      writing = false;
+      try { localStorage.removeItem(DRAFT); } catch (e) {}
+      posts.unshift({ stamp: stamp, ko: { title: title, lede: lede, file: file }, tab: 'notice' });
+      openPost(find(stamp));
+    }).catch(function(e){
+      lockEditor(false);
+      edMsg(e.message, true);
     });
   }
 

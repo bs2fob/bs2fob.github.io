@@ -1,11 +1,22 @@
-# del_post.yml
-name: del_post
+# new_log.yml
+name: new_log
 
 on:
   workflow_dispatch:
     inputs:
       stamp:
-        description: "지울 글의 스탬프"
+        required: true
+        type: string
+      title:
+        required: true
+        type: string
+      lede:
+        required: false
+        type: string
+      slug:
+        required: false
+        type: string
+      body:
         required: true
         type: string
 
@@ -16,16 +27,20 @@ permissions:
 concurrency: admin_post
 
 jobs:
-  delete:
+  add:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 글 삭제와 피드 재생성
+      - name: 로그 추가와 피드 재생성
         env:
           STAMP: ${{ inputs.stamp }}
+          TITLE: ${{ inputs.title }}
+          LEDE: ${{ inputs.lede }}
+          SLUG: ${{ inputs.slug }}
+          BODY: ${{ inputs.body }}
           PYTHONIOENCODING: utf-8
         run: |
-          python3 tools/del_post.py "$STAMP"
+          python3 tools/new_log.py
           python3 tools/gen_feed.py
       - name: 커밋
         env:
@@ -34,7 +49,7 @@ jobs:
           git config user.name "bs2fob"
           git config user.email "bs2fob@users.noreply.github.com"
           git add -A
-          git commit -m "Delete post $STAMP"
+          git commit -m "Add log $STAMP"
           git push
       - name: 사이트 다시 빌드
         env:
