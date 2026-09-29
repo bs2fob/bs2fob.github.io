@@ -1,0 +1,42 @@
+# del_post.yml
+name: del_post
+
+on:
+  workflow_dispatch:
+    inputs:
+      stamp:
+        description: "지울 글의 스탬프"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency: del_post
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 글 삭제와 피드 재생성
+        env:
+          STAMP: ${{ inputs.stamp }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          python3 tools/del_post.py "$STAMP"
+          python3 tools/gen_feed.py
+      - name: 커밋
+        env:
+          STAMP: ${{ inputs.stamp }}
+        run: |
+          git config user.name "bs2fob"
+          git config user.email "bs2fob@users.noreply.github.com"
+          git add -A
+          git commit -m "Delete post $STAMP"
+          git push
+      - name: 사이트 다시 빌드
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

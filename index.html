@@ -43,6 +43,22 @@
 
 .feed-link{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;text-decoration:none}
 .feed-link:hover{color:var(--accent);border-color:var(--accent)}
+.admin-btn{background:none;font-family:inherit;cursor:pointer}
+.admin-btn.on{color:var(--accent);border-color:var(--accent)}
+
+.post{position:relative}
+.del-btn{position:absolute;top:12px;right:12px;background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text3);font-family:inherit;font-size:11px;padding:2px 8px;cursor:pointer}
+.del-btn:hover{color:#d9534f;border-color:#d9534f}
+.post.deleting{opacity:.45;pointer-events:none}
+
+.admin-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.admin-modal[hidden]{display:none}
+.admin-box{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:20px}
+.admin-box b{display:block;font-size:14px;margin-bottom:10px}
+.admin-box input{width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:monospace;font-size:13px;padding:8px 10px}
+.admin-box .hint{font-size:11px;color:var(--text3);line-height:1.6;margin-top:8px}
+.admin-box .err{font-size:12px;color:#d9534f;margin-top:8px}
+.admin-row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
 .hits{display:flex;gap:10px;align-items:center;font-size:11px;color:var(--text3);letter-spacing:.04em}
 .hits b{font-family:'Courier New',monospace;font-size:12px;font-weight:600;color:var(--text2)}
@@ -123,6 +139,7 @@
           <button class="lang-btn" data-lang="en">EN</button>
         </div>
         <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
+        <button class="feed-link admin-btn" id="admin-btn"></button>
       </div>
       <div class="hits" id="hits" hidden>
         <span>r<b class="now" id="view-today">-</b>/<b id="view-total">-</b></span>
@@ -211,6 +228,19 @@
     <section id="notice" hidden></section>
   </div>
 
+  <div class="admin-modal" id="admin-modal" hidden>
+    <div class="admin-box">
+      <b>관리자 로그인</b>
+      <input id="admin-token" type="password" placeholder="github_pat_..." autocomplete="off">
+      <div class="hint">Fine-grained token → bs2fob.github.io 저장소 → Actions: Read and write. 토큰은 이 기기에만 저장됩니다.</div>
+      <div class="err" id="admin-err" hidden></div>
+      <div class="admin-row">
+        <button class="pg" id="admin-cancel">취소</button>
+        <button class="pg" id="admin-ok">로그인</button>
+      </div>
+    </div>
+  </div>
+
   <div id="reader" class="reader" hidden>
     <nav class="reader-bar"><button class="back-btn" id="back"></button></nav>
     <div id="reader-body"></div>
@@ -231,12 +261,12 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
+          fallback: '한국어 원문', admin: '관리자', del: '삭제', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
           tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
+          fallback: 'Korean original', admin: 'Admin', del: 'Delete', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
@@ -259,11 +289,18 @@
   var tab = DEFAULT_TAB;
   var page = 0;
   var cache = {};
+  var REPO = 'https://api.github.com/repos/bs2fob/bs2fob.github.io';
+  var ADMIN = 'bs2fob-admin';
+  var deleting = {};
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
   });
   backEl.addEventListener('click', backToList);
+  document.getElementById('admin-btn').addEventListener('click', adminClick);
+  document.getElementById('admin-cancel').addEventListener('click', closeLogin);
+  document.getElementById('admin-ok').addEventListener('click', login);
+  document.getElementById('admin-token').addEventListener('keydown', function(e){ if (e.key === 'Enter') login(); });
   document.getElementById('home').addEventListener('click', goHome);
   document.addEventListener('click', playClip);
   document.addEventListener('click', followXref);
@@ -423,6 +460,9 @@
     subEl.innerHTML = UI[lang].sub;
     backEl.textContent = UI[lang].back;
     document.getElementById('feed-link').href = 'feed.' + lang + '.xml';
+    var ab = document.getElementById('admin-btn');
+    ab.textContent = UI[lang].admin;
+    ab.classList.toggle('on', !!adminToken());
     document.querySelectorAll('.lang-btn').forEach(function(b){
       b.classList.toggle('active', b.dataset.lang === lang);
     });
@@ -651,6 +691,9 @@
     listEl.querySelectorAll('.dl').forEach(function(el){
       el.addEventListener('click', function(e){ e.stopPropagation(); });
     });
+    listEl.querySelectorAll('.del-btn').forEach(function(el){
+      el.addEventListener('click', function(e){ e.stopPropagation(); delPost(el.closest('.post')); });
+    });
 
     renderPager();
 
@@ -769,7 +812,8 @@
         + esc(p.downloadLabel || 'DOWNLOAD') + '</a>');
     }
 
-    return '<div class="post' + (got ? '' : ' flat') + '" data-stamp="' + esc(p.stamp) + '">'
+    return '<div class="post' + (got ? '' : ' flat') + (deleting[p.stamp] ? ' deleting' : '') + '" data-stamp="' + esc(p.stamp) + '">'
+      + (adminToken() ? '<button class="del-btn">' + (deleting[p.stamp] ? '…' : UI[lang].del) + '</button>' : '')
       + '<div class="post-stamp">' + esc(seriesNo(p) || p.stamp || '') + '</div>'
       + '<div class="card-title">' + esc(meta.title || '') + '</div>'
       + (meta.lede ? '<div class="post-lede">' + esc(meta.lede) + '</div>' : '')
@@ -828,6 +872,103 @@
     }
     target.appendChild(node);
     if (done) done();
+  }
+
+  // 관리자 토큰은 이 기기에만 두고, 삭제는 저장소의 del_post 작업을 불러 한 커밋으로 처리한다
+
+  function adminToken(){
+    try { return localStorage.getItem(ADMIN) || ''; } catch (e) { return ''; }
+  }
+
+  function gh(path, token, opt){
+    opt = opt || {};
+    opt.headers = { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+    return fetch(REPO + path, opt);
+  }
+
+  function relist(){
+    paintChrome();
+    if (posts) apply({ stamp: current, tab: tab, page: page, home: home });
+  }
+
+  function adminClick(){
+    if (!adminToken()) {
+      document.getElementById('admin-err').hidden = true;
+      document.getElementById('admin-modal').hidden = false;
+      document.getElementById('admin-token').focus();
+      return;
+    }
+    if (!confirm('관리자 로그아웃합니까?')) return;
+    try { localStorage.removeItem(ADMIN); } catch (e) {}
+    relist();
+  }
+
+  function closeLogin(){
+    document.getElementById('admin-modal').hidden = true;
+    document.getElementById('admin-token').value = '';
+  }
+
+  function login(){
+    var err = document.getElementById('admin-err');
+    var token = document.getElementById('admin-token').value.trim();
+    if (!token) return;
+    gh('/actions/workflows/del_post.yml', token).then(function(r){
+      if (!r.ok) throw new Error('토큰 확인 실패 (' + r.status + ')');
+      try { localStorage.setItem(ADMIN, token); } catch (e) {}
+      closeLogin();
+      relist();
+    }).catch(function(e){
+      err.textContent = e.message;
+      err.hidden = false;
+    });
+  }
+
+  function delPost(el){
+    var post = el && find(el.dataset.stamp);
+    var token = adminToken();
+    if (!post || !token || deleting[post.stamp]) return;
+    var got = pick(post);
+    var title = got ? got.v.title : '';
+    if (!confirm('[' + post.stamp + '] ' + title + '\n\n이 글을 삭제합니까? 글 파일과 전용 이미지가 저장소에서 지워집니다.')) return;
+
+    var since = Date.now() - 10000;
+    deleting[post.stamp] = true;
+    renderList();
+    gh('/actions/workflows/del_post.yml/dispatches', token, {
+      method: 'POST',
+      body: JSON.stringify({ ref: 'main', inputs: { stamp: post.stamp } })
+    }).then(function(r){
+      if (r.status !== 204) throw new Error('삭제 요청 실패 (' + r.status + ')');
+      return waitRun(token, since);
+    }).then(function(){
+      delete deleting[post.stamp];
+      posts = posts.filter(function(p){ return p !== post; });
+      cache = {};
+      apply({ stamp: null, tab: tab, page: clampPage(page), home: home });
+    }).catch(function(e){
+      delete deleting[post.stamp];
+      renderList();
+      alert(e.message);
+    });
+  }
+
+  // 방금 부른 작업이 끝날 때까지 5초 간격으로 확인한다
+  function waitRun(token, since){
+    return new Promise(function(done, fail){
+      var tries = 0;
+      (function poll(){
+        if (++tries > 60) return fail(new Error('5분 안에 삭제 작업이 끝나지 않았습니다. 저장소 Actions 탭을 확인하세요.'));
+        gh('/actions/workflows/del_post.yml/runs?event=workflow_dispatch&per_page=1', token)
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            var run = d.workflow_runs && d.workflow_runs[0];
+            if (!run || Date.parse(run.created_at) < since || run.status !== 'completed') return setTimeout(poll, 5000);
+            if (run.conclusion === 'success') done();
+            else fail(new Error('삭제 작업 실패: ' + run.conclusion + '\n' + run.html_url));
+          })
+          .catch(function(){ setTimeout(poll, 5000); });
+      })();
+    });
   }
 
   // 영상 구간은 지정 장면 한 장으로 세워 두고, 누르면 그 자리에 구간 재생 창을 넣는다
