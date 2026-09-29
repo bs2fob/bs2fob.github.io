@@ -45,6 +45,8 @@
 .feed-link:hover{color:var(--accent);border-color:var(--accent)}
 .admin-btn{background:none;font-family:inherit;cursor:pointer;display:flex;align-items:center;align-self:stretch;padding:0 9px}
 .admin-btn svg{width:15px;height:15px;display:block}
+.admin-btn .ic-open,.admin-btn.on .ic-key{display:none}
+.admin-btn.on .ic-open{display:block}
 .admin-btn.on{color:var(--accent);border-color:var(--accent)}
 
 .post{position:relative}
@@ -140,7 +142,7 @@
           <button class="lang-btn" data-lang="en">EN</button>
         </div>
         <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
-        <button class="feed-link admin-btn" id="admin-btn" aria-label="Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M17 6l3 3M14.5 8.5l2.5 2.5"/></svg></button>
+        <button class="feed-link admin-btn" id="admin-btn" aria-label="Admin"><svg class="ic-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M17 6l3 3M14.5 8.5l2.5 2.5"/></svg><svg class="ic-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.8-1.2"/></svg></button>
       </div>
       <div class="hits" id="hits" hidden>
         <span>r<b class="now" id="view-today">-</b>/<b id="view-total">-</b></span>
@@ -898,7 +900,6 @@
       document.getElementById('admin-token').focus();
       return;
     }
-    if (!confirm('관리자 로그아웃합니까?')) return;
     try { localStorage.removeItem(ADMIN); } catch (e) {}
     relist();
   }
