@@ -56,6 +56,14 @@
 .row-btns{display:flex;gap:14px;flex-shrink:0}
 .del-link{flex-shrink:0;background:none;border:none;padding:0;color:var(--text3);font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .del-link:hover{color:#d9534f}
+.edit-link{flex-shrink:0;background:none;border:none;padding:0;color:var(--text3);font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.edit-link:hover{color:var(--accent)}
+.edit-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 12px;margin:14px 0}
+.edit-bar .ed-msg{flex:1 1 auto;min-height:0}
+.edit-bar .admin-row{margin-top:0}
+.ed-t{border-radius:2px;outline:1px dotted var(--border2);outline-offset:1px}
+.ed-t:hover{background:var(--surface2)}
+.ed-t:focus{outline:1px dotted var(--accent);background:var(--surface2)}
 .log-tools{display:flex;justify-content:flex-end;margin:-10px 0 14px}
 .editor{display:flex;flex-direction:column;gap:10px;margin-bottom:34px}
 .editor input,.editor textarea{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;line-height:1.7;padding:9px 12px}
@@ -275,12 +283,12 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', del: '삭제', write: '쓰기', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
+          fallback: '한국어 원문', del: '삭제', edit: '수정', write: '쓰기', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
           tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', del: 'Delete', write: 'Write', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
+          fallback: 'Korean original', del: 'Delete', edit: 'Edit', write: 'Write', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
@@ -309,6 +317,7 @@
   var writing = false;
   var publishing = false;
   var DRAFT = 'bs2fob-log-draft';
+  var editing = null;
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
     b.addEventListener('click', function(){ setLang(b.dataset.lang); });
@@ -325,6 +334,13 @@
   document.addEventListener('click', function(e){
     var b = e.target.closest && e.target.closest('.del-link');
     if (b) delPost(find(b.dataset.stamp));
+  });
+  document.addEventListener('click', function(e){
+    if (!editing || !bodyEl.contains(e.target)) return;
+    if (e.target.closest('a, .clip-play')) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  bodyEl.addEventListener('keydown', function(e){
+    if (editing && e.key === 'Enter' && e.target.closest('.ed-t')) e.preventDefault();
   });
   window.addEventListener('popstate', function(e){
     apply(e.state || {});
@@ -512,6 +528,7 @@
   var home = false;
   function apply(state){
     if (!posts) return;
+    editing = null;
     var post = state.stamp ? find(state.stamp) : null;
     current = post ? post.stamp : null;
     tab = TABS.indexOf(state.tab) >= 0 ? state.tab : DEFAULT_TAB;
@@ -862,8 +879,10 @@
         var parts = doc.querySelectorAll('.post-head, .epigraph, .ep-trans, main, .gloss');
         if (!parts.length) return;
 
-        var frag = document.createDocumentFragment();
+        var frag = document.createDocumentFragment(), taken = [];
         Array.prototype.forEach.call(parts, function(el){
+          if (taken.some(function(p){ return p.contains(el); })) return;
+          taken.push(el);
           frag.appendChild(document.importNode(el, true));
         });
 
@@ -892,6 +911,14 @@
       b.textContent = UI[lang].copy;
       var btns = document.createElement('span');
       btns.className = 'row-btns';
+      if (adminToken() && target === bodyEl) {
+        var ed = document.createElement('button');
+        ed.className = 'edit-link';
+        ed.dataset.stamp = post.stamp;
+        ed.textContent = UI[lang].edit;
+        ed.addEventListener('click', startEdit);
+        btns.appendChild(ed);
+      }
       if (adminToken()) {
         var d = document.createElement('button');
         d.className = 'del-link';
@@ -1119,6 +1146,149 @@
     }).catch(function(e){
       lockEditor(false);
       edMsg(e.message, true);
+    });
+  }
+
+  // 문구 수정. 원본 파일의 글자 조각과 화면의 글자 조각을 순번으로 맞춰 두고, 조각마다 따로 입력받아 틀을 건드리지 않는다
+  var PARTS = '.post-head, .epigraph, .ep-trans, main, .gloss';
+  var TOKEN_RE = /<!--[\s\S]*?-->|<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>|<[^>]*>/gi;
+  var TEXT_RE = /[^\t\n\f\r ]/;
+
+  function rawSegments(raw){
+    var out = [], last = 0, m;
+    TOKEN_RE.lastIndex = 0;
+    while ((m = TOKEN_RE.exec(raw))) { push(last, m.index); last = TOKEN_RE.lastIndex; }
+    push(last, raw.length);
+    return out;
+    function push(a, b){ var t = raw.slice(a, b); if (TEXT_RE.test(t)) out.push(t); }
+  }
+
+  function textNodes(root){
+    var out = [], w = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) {
+      if (TEXT_RE.test(n.data) && !n.parentNode.closest('script, style')) out.push(n);
+    }
+    return out;
+  }
+
+  function partTexts(root){
+    var els = [], out = [];
+    root.querySelectorAll(PARTS).forEach(function(el){
+      if (!els.some(function(p){ return p.contains(el); })) els.push(el);
+    });
+    els.forEach(function(el){
+      textNodes(el).forEach(function(n){
+        if (!n.parentNode.closest('.row-btns, .post-stamp, .post-series')) out.push(n);
+      });
+    });
+    return out;
+  }
+
+  function decode(raw){
+    var t = document.createElement('textarea');
+    t.innerHTML = raw;
+    return t.value;
+  }
+
+  function encodeText(t){
+    return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\u00a0/g, '&nbsp;');
+  }
+
+  function startEdit(){
+    if (this.dataset.stamp !== current) return;
+    var post = find(current);
+    var got = post && pick(post);
+    if (!got || editing) return;
+    var file = got.v.file;
+    fetch(file + '?t=' + Date.now()).then(function(r){ return r.text(); }).then(function(raw){
+      var segs = rawSegments(raw);
+      var doc = new DOMParser().parseFromString(raw, 'text/html');
+      var all = textNodes(doc.documentElement);
+      if (post.stamp !== current) return;
+      var bad = segs.length !== all.length || all.some(function(n, i){ return decode(segs[i]) !== n.data; });
+      var docP = partTexts(doc), shown = partTexts(bodyEl);
+      bad = bad || docP.length !== shown.length || docP.some(function(n, k){ return n.data !== shown[k].data; });
+      if (bad) throw new Error('이 글은 원본과 화면의 글자 조각이 맞지 않아 웹에서 수정할 수 없습니다.');
+
+      shown.forEach(function(n, k){
+        var sp = document.createElement('span');
+        sp.className = 'ed-t';
+        try { sp.contentEditable = 'plaintext-only'; } catch (e) { sp.contentEditable = 'true'; }
+        sp.dataset.i = all.indexOf(docP[k]);
+        sp.textContent = n.data;
+        n.parentNode.replaceChild(sp, n);
+      });
+      editing = { post: post, v: got.v, file: file, raw: raw, segs: segs, all: all };
+
+      var bar = document.createElement('div');
+      bar.className = 'edit-bar';
+      bar.innerHTML = '<div class="ed-msg" id="ed-msg">점선 안의 문구를 고친 뒤 저장하세요.</div>'
+        + '<div class="admin-row"><button class="pg" id="ed-cancel">취소</button><button class="pg" id="ed-send">저장</button></div>';
+      bodyEl.insertBefore(bar, bodyEl.firstChild);
+      document.getElementById('ed-cancel').addEventListener('click', function(){ apply({ stamp: current, tab: tab, page: page }); });
+      document.getElementById('ed-send').addEventListener('click', saveEdit);
+    }).catch(function(e){ alert(e.message); });
+  }
+
+  function saveEdit(){
+    var ed = editing, token = adminToken();
+    if (!ed || !token || ed.saving) return;
+    var edits = [], titled = false;
+    bodyEl.querySelectorAll('.ed-t').forEach(function(sp){
+      var i = +sp.dataset.i, old = ed.all[i].data, t = sp.textContent;
+      if (old.indexOf('\u00a0') < 0) t = t.replace(/\u00a0/g, ' ');
+      if (t === old) return;
+      edits.push([i, ed.segs[i], encodeText(t)]);
+      if (sp.closest('.post-title')) titled = true;
+    });
+    if (!edits.length) return apply({ stamp: current, tab: tab, page: page });
+    var h = bodyEl.querySelector('.post-title');
+    var title = titled && h ? h.textContent.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim() : '';
+    var payload = JSON.stringify(edits);
+    if (payload.length > 60000) return edMsg('한 번에 고친 양이 너무 많습니다. 나눠서 저장하세요.', true);
+
+    ed.saving = true;
+    bodyEl.querySelectorAll('.ed-t').forEach(function(sp){ sp.contentEditable = 'false'; });
+    document.getElementById('ed-send').disabled = true;
+    document.getElementById('ed-cancel').disabled = true;
+    edMsg('저장 중입니다. 1~2분 걸립니다.');
+    var since = Date.now() - 10000;
+    gh('/actions/workflows/edit_post.yml/dispatches', token, {
+      method: 'POST',
+      body: JSON.stringify({ ref: 'main', inputs: { file: ed.file, edits: payload, title: title } })
+    }).then(function(r){
+      if (r.status !== 204) throw new Error('저장 요청 실패 (' + r.status + ')');
+      return waitRun(token, since, 'edit_post.yml');
+    }).then(function(){
+      edMsg('저장소에 올라갔습니다. 사이트 반영을 기다립니다.');
+      return waitChange(ed.file, ed.raw);
+    }).then(function(){
+      if (title) ed.v.title = title;
+      cache = {};
+      if (current === ed.post.stamp) apply({ stamp: current, tab: tab, page: page });
+    }).catch(function(e){
+      ed.saving = false;
+      if (editing !== ed) return alert(e.message);
+      bodyEl.querySelectorAll('.ed-t').forEach(function(sp){
+        try { sp.contentEditable = 'plaintext-only'; } catch (x) { sp.contentEditable = 'true'; }
+      });
+      document.getElementById('ed-send').disabled = false;
+      document.getElementById('ed-cancel').disabled = false;
+      edMsg(e.message, true);
+    });
+  }
+
+  // 사이트가 고친 판을 내줄 때까지 기다린다
+  function waitChange(file, raw){
+    return new Promise(function(done, fail){
+      var tries = 0;
+      (function poll(){
+        if (++tries > 36) return fail(new Error('저장소에는 올라갔으나 3분 안에 사이트에 반영되지 않았습니다. 잠시 뒤 새로고침하세요.'));
+        fetch(file + '?t=' + Date.now())
+          .then(function(r){ return r.text(); })
+          .then(function(t){ if (t !== raw) done(); else setTimeout(poll, 5000); })
+          .catch(function(){ setTimeout(poll, 5000); });
+      })();
     });
   }
 
