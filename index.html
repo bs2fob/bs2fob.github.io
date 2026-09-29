@@ -43,7 +43,8 @@
 
 .feed-link{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--text3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;text-decoration:none}
 .feed-link:hover{color:var(--accent);border-color:var(--accent)}
-.admin-btn{background:none;font-family:inherit;cursor:pointer}
+.admin-btn{background:none;font-family:inherit;cursor:pointer;display:flex;align-items:center;align-self:stretch;padding:0 9px}
+.admin-btn svg{width:15px;height:15px;display:block}
 .admin-btn.on{color:var(--accent);border-color:var(--accent)}
 
 .post{position:relative}
@@ -139,7 +140,7 @@
           <button class="lang-btn" data-lang="en">EN</button>
         </div>
         <a class="feed-link" id="feed-link" href="feed.ko.xml">RSS</a>
-        <button class="feed-link admin-btn" id="admin-btn"></button>
+        <button class="feed-link admin-btn" id="admin-btn" aria-label="Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3 21 2M17 6l3 3M14.5 8.5l2.5 2.5"/></svg></button>
       </div>
       <div class="hits" id="hits" hidden>
         <span>r<b class="now" id="view-today">-</b>/<b id="view-total">-</b></span>
@@ -261,12 +262,12 @@
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', admin: '관리자', del: '삭제', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
+          fallback: '한국어 원문', del: '삭제', copy: 'URL 복사', copied: '복사됨', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
           tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', admin: 'Admin', del: 'Delete', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
+          fallback: 'Korean original', del: 'Delete', copy: 'Copy URL', copied: 'Copied', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
           tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code' } }
   };
 
@@ -461,7 +462,6 @@
     backEl.textContent = UI[lang].back;
     document.getElementById('feed-link').href = 'feed.' + lang + '.xml';
     var ab = document.getElementById('admin-btn');
-    ab.textContent = UI[lang].admin;
     ab.classList.toggle('on', !!adminToken());
     document.querySelectorAll('.lang-btn').forEach(function(b){
       b.classList.toggle('active', b.dataset.lang === lang);
