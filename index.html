@@ -64,6 +64,8 @@
 .ed-t{border-radius:2px;outline:1px dotted var(--border2);outline-offset:1px}
 .ed-t:hover{background:var(--surface2)}
 .ed-t:focus{outline:1px dotted var(--accent);background:var(--surface2)}
+.ed-p{display:block;width:100%;box-sizing:border-box;margin:0 0 1.15em;padding:8px 10px;background:var(--surface);color:var(--text);border:1px dotted var(--border2);border-radius:var(--radius-sm);font-family:Consolas,D2,monospace;font-size:13.5px;line-height:1.7;resize:vertical;overflow:hidden}
+.ed-p:focus{outline:none;border-color:var(--accent)}
 .log-tools{display:flex;justify-content:flex-end;margin:-10px 0 14px}
 .editor{display:flex;flex-direction:column;gap:10px;margin-bottom:34px}
 .editor input,.editor textarea{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;line-height:1.7;padding:9px 12px}
@@ -340,7 +342,7 @@
     if (e.target.closest('a, .clip-play')) { e.preventDefault(); e.stopPropagation(); }
   }, true);
   bodyEl.addEventListener('keydown', function(e){
-    if (editing && e.key === 'Enter' && e.target.closest('.ed-t')) e.preventDefault();
+    if (editing && e.key === 'Enter' && e.target.closest('.ed-t, .ed-p')) e.preventDefault();
   });
   window.addEventListener('popstate', function(e){
     apply(e.state || {});
@@ -1149,7 +1151,7 @@
     });
   }
 
-  // 문구 수정. 원본 파일의 글자 조각과 화면의 글자 조각을 순번으로 맞춰 두고, 조각마다 따로 입력받아 틀을 건드리지 않는다
+  // 문구 수정. 문단은 원본의 안쪽 HTML 을 통째로, 문단 밖 글자는 조각마다 따로 입력받는다
   var PARTS = '.post-head, .epigraph, .ep-trans, main, .gloss';
   var TOKEN_RE = /<!--[\s\S]*?-->|<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>|<[^>]*>/gi;
   var TEXT_RE = /[^\t\n\f\r ]/;
@@ -1171,12 +1173,17 @@
     return out;
   }
 
-  function partTexts(root){
-    var els = [], out = [];
+  function partRoots(root){
+    var els = [];
     root.querySelectorAll(PARTS).forEach(function(el){
       if (!els.some(function(p){ return p.contains(el); })) els.push(el);
     });
-    els.forEach(function(el){
+    return els;
+  }
+
+  function partTexts(root){
+    var out = [];
+    partRoots(root).forEach(function(el){
       textNodes(el).forEach(function(n){
         if (!n.parentNode.closest('.row-btns, .post-stamp, .post-series')) out.push(n);
       });
@@ -1194,6 +1201,51 @@
     return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\u00a0/g, '&nbsp;');
   }
 
+  function rawParas(raw){
+    var out = [], open = -1, m;
+    TOKEN_RE.lastIndex = 0;
+    while ((m = TOKEN_RE.exec(raw))) {
+      if (/^<p[\s>]/i.test(m[0])) open = TOKEN_RE.lastIndex;
+      else if (/^<\/p\s*>/i.test(m[0]) && open >= 0) { out.push(raw.slice(open, m.index)); open = -1; }
+    }
+    return out;
+  }
+
+  function partParas(root){
+    var out = [];
+    partRoots(root).forEach(function(el){
+      el.querySelectorAll('p').forEach(function(p){
+        if (TEXT_RE.test(p.textContent) && !p.closest('.row-btns, .post-stamp, .post-series')) out.push(p);
+      });
+    });
+    return out;
+  }
+
+  var VOID = { br: 1, img: 1, wbr: 1, hr: 1 };
+  var INLINE = ['b', 'strong', 'a', 'span', 'code', 'br', 'sup', 'sub', 'small', 'mark', 'u', 's'];
+
+  // 고친 문단이 문단 하나 안에서 짝이 맞는 인라인 태그로만 이뤄졌는지 본다
+  function checkPara(html, old){
+    var allow = INLINE.slice(), stack = [], m, re = /<(\/?)([a-z][a-z0-9]*)\b[^>]*?(\/?)>/gi;
+    (old.match(/<[a-z][a-z0-9]*/gi) || []).forEach(function(t){ allow.push(t.slice(1).toLowerCase()); });
+    if (/<!--|<\s*\/?\s*(p|div|main|section|script|style)\b/i.test(html)) return '문단을 가르거나 블록 태그를 넣을 수 없습니다';
+    while ((m = re.exec(html))) {
+      var name = m[2].toLowerCase();
+      if (allow.indexOf(name) < 0) return '<' + name + '> 태그는 쓸 수 없습니다';
+      if (VOID[name] || m[3]) continue;
+      if (!m[1]) stack.push(name);
+      else if (stack.pop() !== name) return '</' + name + '> 의 짝이 맞지 않습니다';
+    }
+    if (stack.length) return '<' + stack.pop() + '> 가 닫히지 않았습니다';
+    if (/<[^>]*$/.test(html)) return '꺾쇠가 닫히지 않았습니다';
+    return '';
+  }
+
+  function fitArea(ta){
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 2 + 'px';
+  }
+
   function startEdit(){
     if (this.dataset.stamp !== current) return;
     var post = find(current);
@@ -1201,56 +1253,93 @@
     if (!got || editing) return;
     var file = got.v.file;
     fetch(file + '?t=' + Date.now()).then(function(r){ return r.text(); }).then(function(raw){
-      var segs = rawSegments(raw);
+      var segs = rawSegments(raw), paras = rawParas(raw);
       var doc = new DOMParser().parseFromString(raw, 'text/html');
-      var all = textNodes(doc.documentElement);
+      var all = textNodes(doc.documentElement), docAllP = [].slice.call(doc.querySelectorAll('p'));
       if (post.stamp !== current) return;
+      var outside = function(n){ return !n.parentNode.closest('p'); };
       var bad = segs.length !== all.length || all.some(function(n, i){ return decode(segs[i]) !== n.data; });
-      var docP = partTexts(doc), shown = partTexts(bodyEl);
-      bad = bad || docP.length !== shown.length || docP.some(function(n, k){ return n.data !== shown[k].data; });
-      if (bad) throw new Error('이 글은 원본과 화면의 글자 조각이 맞지 않아 웹에서 수정할 수 없습니다.');
+      bad = bad || paras.length !== docAllP.length || docAllP.some(function(p, k){
+        var t = document.createElement('div');
+        t.innerHTML = paras[k];
+        return t.textContent !== p.textContent;
+      });
+      var docT = partTexts(doc).filter(outside), shownT = partTexts(bodyEl).filter(outside);
+      var docP = partParas(doc), shownP = partParas(bodyEl);
+      bad = bad || docT.length !== shownT.length || docT.some(function(n, k){ return n.data !== shownT[k].data; });
+      bad = bad || docP.length !== shownP.length || docP.some(function(p, k){ return p.textContent !== shownP[k].textContent; });
+      if (bad) throw new Error('이 글은 원본과 화면이 맞지 않아 웹에서 수정할 수 없습니다.');
 
-      shown.forEach(function(n, k){
+      shownT.forEach(function(n, k){
         var sp = document.createElement('span');
         sp.className = 'ed-t';
         try { sp.contentEditable = 'plaintext-only'; } catch (e) { sp.contentEditable = 'true'; }
-        sp.dataset.i = all.indexOf(docP[k]);
+        sp.dataset.i = all.indexOf(docT[k]);
         sp.textContent = n.data;
         n.parentNode.replaceChild(sp, n);
       });
-      editing = { post: post, v: got.v, file: file, raw: raw, segs: segs, all: all };
+      var areas = shownP.map(function(p, k){
+        var ta = document.createElement('textarea');
+        var j = docAllP.indexOf(docP[k]);
+        ta.className = 'ed-p';
+        ta.spellcheck = false;
+        ta.value = paras[j];
+        ta.dataset.j = j;
+        p.style.display = 'none';
+        p.parentNode.insertBefore(ta, p.nextSibling);
+        ta.addEventListener('input', function(){ fitArea(ta); });
+        return ta;
+      });
+      editing = { post: post, v: got.v, file: file, raw: raw, segs: segs, all: all, paras: paras };
 
       var bar = document.createElement('div');
       bar.className = 'edit-bar';
-      bar.innerHTML = '<div class="ed-msg" id="ed-msg">점선 안의 문구를 고친 뒤 저장하세요.</div>'
+      bar.innerHTML = '<div class="ed-msg" id="ed-msg">문단은 태그째로, 표제와 장 제목은 점선 칸에서 고친 뒤 저장하세요.</div>'
         + '<div class="admin-row"><button class="pg" id="ed-cancel">취소</button><button class="pg" id="ed-send">저장</button></div>';
       bodyEl.insertBefore(bar, bodyEl.firstChild);
+      areas.forEach(fitArea);
       document.getElementById('ed-cancel').addEventListener('click', function(){ apply({ stamp: current, tab: tab, page: page }); });
       document.getElementById('ed-send').addEventListener('click', saveEdit);
     }).catch(function(e){ alert(e.message); });
   }
 
+  function lockEdit(on){
+    bodyEl.querySelectorAll('.ed-t').forEach(function(sp){
+      if (on) sp.contentEditable = 'false';
+      else try { sp.contentEditable = 'plaintext-only'; } catch (x) { sp.contentEditable = 'true'; }
+    });
+    bodyEl.querySelectorAll('.ed-p').forEach(function(ta){ ta.readOnly = on; });
+    document.getElementById('ed-send').disabled = on;
+    document.getElementById('ed-cancel').disabled = on;
+  }
+
   function saveEdit(){
     var ed = editing, token = adminToken();
     if (!ed || !token || ed.saving) return;
-    var edits = [], titled = false;
+    var edits = [], titled = false, err = '';
     bodyEl.querySelectorAll('.ed-t').forEach(function(sp){
       var i = +sp.dataset.i, old = ed.all[i].data, t = sp.textContent;
-      if (old.indexOf('\u00a0') < 0) t = t.replace(/\u00a0/g, ' ');
+      if (old.indexOf(' ') < 0) t = t.replace(/ /g, ' ');
       if (t === old) return;
       edits.push([i, ed.segs[i], encodeText(t)]);
       if (sp.closest('.post-title')) titled = true;
     });
+    bodyEl.querySelectorAll('.ed-p').forEach(function(ta, n){
+      var j = +ta.dataset.j, old = ed.paras[j], t = ta.value;
+      if (err || t === old) return;
+      var why = checkPara(t, old);
+      if (why) { err = (n + 1) + '번째 문단: ' + why; ta.focus(); return; }
+      edits.push({ p: j, old: old, new: t });
+    });
+    if (err) return edMsg(err, true);
     if (!edits.length) return apply({ stamp: current, tab: tab, page: page });
     var h = bodyEl.querySelector('.post-title');
-    var title = titled && h ? h.textContent.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim() : '';
+    var title = titled && h ? h.textContent.replace(/ /g, ' ').replace(/\s+/g, ' ').trim() : '';
     var payload = JSON.stringify(edits);
     if (payload.length > 60000) return edMsg('한 번에 고친 양이 너무 많습니다. 나눠서 저장하세요.', true);
 
     ed.saving = true;
-    bodyEl.querySelectorAll('.ed-t').forEach(function(sp){ sp.contentEditable = 'false'; });
-    document.getElementById('ed-send').disabled = true;
-    document.getElementById('ed-cancel').disabled = true;
+    lockEdit(true);
     edMsg('저장 중입니다. 1~2분 걸립니다.');
     var since = Date.now() - 10000;
     gh('/actions/workflows/edit_post.yml/dispatches', token, {
@@ -1269,11 +1358,7 @@
     }).catch(function(e){
       ed.saving = false;
       if (editing !== ed) return alert(e.message);
-      bodyEl.querySelectorAll('.ed-t').forEach(function(sp){
-        try { sp.contentEditable = 'plaintext-only'; } catch (x) { sp.contentEditable = 'true'; }
-      });
-      document.getElementById('ed-send').disabled = false;
-      document.getElementById('ed-cancel').disabled = false;
+      lockEdit(false);
       edMsg(e.message, true);
     });
   }
