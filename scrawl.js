@@ -380,12 +380,15 @@ function attachHtml(list,id,kw){
 }
 
 function entryHtml(m,kw,ctx){
+  const tailOk=!!((m.attachments&&m.attachments.length)||m.tail);
   return `<div class="sc-entry">
     <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${m.pin?'<b class="sc-pin-tag">비망</b>':''}</div>
     <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${m.body?`<div class="sc-body">${highlight(m.body,kw)}</div>`:''}</div>
     ${attachHtml(m.attachments,m.id,kw)}
+    ${tailOk?`<div class="sc-body-wrap sc-tail" id="sc-${ctx}-${m.id}-tail">${m.tail?`<div class="sc-body">${highlight(m.tail,kw)}</div>`:''}</div>`:''}
     <div class="sc-acts">
       <button data-act="edit" data-id="${m.id}" data-ctx="${ctx}">수정</button>
+      ${tailOk?`<button data-act="edit" data-field="tail" data-id="${m.id}" data-ctx="${ctx}">추가작성</button>`:''}
       <button class="del" data-act="del" data-id="${m.id}">삭제</button>
     </div>
   </div>`;
@@ -449,7 +452,7 @@ function renderSearch(){
   if(!kw){label.textContent='';out.innerHTML='';return;}
   const qcOnly=/^\d{2}w\d{2}\d?$/.test(kw);
   const hits=qcOnly?memos.filter(m=>m.qc.startsWith(kw)):memos.filter(m=>
-    (m.body&&m.body.includes(kw))||m.qc.includes(kw)||
+    (m.body&&m.body.includes(kw))||(m.tail&&m.tail.includes(kw))||m.qc.includes(kw)||
     (m.attachments||[]).some(a=>(a.origName||'').includes(kw)||(a.filename||'').includes(kw)));
   const groups=groupByWeek(hits);
   const keys=[...groups.keys()].sort().reverse();
@@ -589,18 +592,21 @@ async function onClick(e){
   const m=findMemo(b.dataset.id);
   if(!m)return;
   if(act==='edit'){
-    const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}`);
+    const field=b.dataset.field||'body';
+    const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}${field==='tail'?'-tail':''}`);
     if(!wrap||wrap.querySelector('textarea'))return;
     wrap.closest('.sc-entry').classList.add('editing');
-    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m.body||'')}</textarea>
-      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div>`;
+    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m[field]||'')}</textarea>
+      <div class="sc-row"><button class="sc-btn" data-act="commit" data-field="${field}" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div>`;
     const ta=wrap.querySelector('textarea');
     ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
     return;
   }
   if(act==='commit'){
     const wrap=b.closest('.sc-body-wrap');
-    m.body=wrap.querySelector('textarea').value.trim();
+    const v=wrap.querySelector('textarea').value.trim();
+    if(b.dataset.field==='tail'){if(v)m.tail=v;else delete m.tail;}
+    else m.body=v;
     if(wrap.querySelector('.sc-pin input').checked)m.pin=true;
     else delete m.pin;
     m.mt=Date.now();
