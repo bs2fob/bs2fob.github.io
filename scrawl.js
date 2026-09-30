@@ -6,7 +6,7 @@ const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
 const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub'};
-const SUBS=[['write','작성'],['weeks','주차'],['search','검색']];
+const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['pin','비망']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
 
 let root=null;
@@ -381,7 +381,7 @@ function attachHtml(list,id,kw){
 
 function entryHtml(m,kw,ctx){
   return `<div class="sc-entry">
-    <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span></div>
+    <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${m.pin?'<b class="sc-pin-tag">비망</b>':''}</div>
     <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${m.body?`<div class="sc-body">${highlight(m.body,kw)}</div>`:''}</div>
     ${attachHtml(m.attachments,m.id,kw)}
     <div class="sc-acts">
@@ -457,11 +457,19 @@ function renderSearch(){
   out.innerHTML=hits.length?keys.map(wk=>weekHtml(wk,groups.get(wk),'s',qcOnly?'':kw)).join(''):'<div class="sc-empty">결과 없음</div>';
 }
 
+function renderPin(){
+  const list=memos.filter(m=>m.pin);
+  $('.sc-page[data-page=pin]').innerHTML=list.length
+    ?`<div class="sc-label">비망 ${list.length}건</div>${scrollHtml(list,'p','')}`
+    :'<div class="sc-empty">비망 메모가 없습니다.</div>';
+}
+
 function renderAll(){
   if(!live())return;
   if(sub==='write')renderWrite();
   if(sub==='weeks')renderWeeks();
   if(sub==='search')renderSearch();
+  if(sub==='pin')renderPin();
   hydrate();
 }
 
@@ -492,6 +500,7 @@ function updateQnow(){
 
 function clearWrite(){
   $('.sc-input').value='';
+  $('.sc-card .sc-pin input').checked=false;
   lsSet(LS.draft,null);
   pending.forEach(a=>URL.revokeObjectURL(a.url));
   pending=[];
@@ -507,6 +516,7 @@ async function saveMemo(){
   const prog=$('.sc-prog');
   btn.disabled=true;
   const qc=buildQcode(new Date());
+  const pin=$('.sc-card .sc-pin input').checked;
   const attachments=[];
   if(pending.length){
     prog.hidden=false;
@@ -529,7 +539,9 @@ async function saveMemo(){
     prog.hidden=true;
   }
   const now=Date.now();
-  memos.unshift({id:now,qc,body,attachments,mt:now});
+  const memo={id:now,qc,body,attachments,mt:now};
+  if(pin)memo.pin=true;
+  memos.unshift(memo);
   clearWrite();
   renderAll();
   btn.disabled=false;
@@ -581,13 +593,16 @@ async function onClick(e){
     if(!wrap||wrap.querySelector('textarea'))return;
     wrap.closest('.sc-entry').classList.add('editing');
     wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m.body||'')}</textarea>
-      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button></div>`;
+      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div>`;
     const ta=wrap.querySelector('textarea');
     ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
     return;
   }
   if(act==='commit'){
-    m.body=b.closest('.sc-body-wrap').querySelector('textarea').value.trim();
+    const wrap=b.closest('.sc-body-wrap');
+    m.body=wrap.querySelector('textarea').value.trim();
+    if(wrap.querySelector('.sc-pin input').checked)m.pin=true;
+    else delete m.pin;
     m.mt=Date.now();
     renderAll();
     return saveMemos();
@@ -616,6 +631,10 @@ function onCancel(e){
   renderAll();
 }
 
+function pinHtml(on){
+  return `<label class="sc-pin"><input type="checkbox"${on?' checked':''}>비망</label>`;
+}
+
 function charsHtml(){
   return `<div class="sc-chars">${CHARS.map(c=>`<button class="sc-char" data-act="char">${c}</button>`).join('')}</div>`;
 }
@@ -640,7 +659,7 @@ function mount(el){
         </div>
         <div class="sc-preview"></div>
         <div class="sc-prog" hidden></div>
-        <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button></div>
+        <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button>${pinHtml(false)}</div>
       </div>
       <div class="sc-cur"></div>
     </div>
@@ -650,6 +669,7 @@ function mount(el){
       <div class="sc-label"></div>
       <div class="sc-results"></div>
     </div>
+    <div class="sc-page" data-page="pin"></div>
     <div class="sc-lightbox" data-act="lightbox" hidden><img alt=""></div>`;
   el.innerHTML='';
   el.appendChild(root);
