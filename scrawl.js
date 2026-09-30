@@ -6,17 +6,19 @@ const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
 const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub'};
-const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['pin','비망']];
+const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['topic','주제']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
 
 let root=null;
 let sub=lsGet(LS.sub)||'write';
+if(sub==='pin')sub='topic';
 let memos=cacheLoad()||[];
 let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
 let pending=[],editPending=[],lastTa=null;
 let weeksShown=1;
 let openWeek=null;
+let openTopics=new Set();
 let query='';
 let sync={state:'',text:''};
 const blobs=new Map();
@@ -381,7 +383,7 @@ function attachHtml(list,id,kw){
 
 function entryHtml(m,kw,ctx){
   return `<div class="sc-entry">
-    <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${m.pin?'<b class="sc-pin-tag">비망</b>':''}</div>
+    <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${topicOf(m)?`<b class="sc-pin-tag">${esc(topicOf(m))}</b>`:''}</div>
     <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${m.body?`<div class="sc-body">${highlight(m.body,kw)}</div>`:''}</div>
     ${attachHtml(m.attachments,m.id,kw)}
     ${m.tail?`<div class="sc-body-wrap sc-tail"><div class="sc-body">${highlight(m.tail,kw)}</div></div>`:''}
@@ -450,7 +452,7 @@ function renderSearch(){
   if(!kw){label.textContent='';out.innerHTML='';return;}
   const qcOnly=/^\d{2}w\d{2}\d?$/.test(kw);
   const hits=qcOnly?memos.filter(m=>m.qc.startsWith(kw)):memos.filter(m=>
-    (m.body&&m.body.includes(kw))||(m.tail&&m.tail.includes(kw))||m.qc.includes(kw)||
+    (m.body&&m.body.includes(kw))||(m.tail&&m.tail.includes(kw))||topicOf(m).includes(kw)||m.qc.includes(kw)||
     (m.attachments||[]).some(a=>(a.origName||'').includes(kw)||(a.filename||'').includes(kw)));
   const groups=groupByWeek(hits);
   const keys=[...groups.keys()].sort().reverse();
@@ -458,11 +460,22 @@ function renderSearch(){
   out.innerHTML=hits.length?keys.map(wk=>weekHtml(wk,groups.get(wk),'s',qcOnly?'':kw)).join(''):'<div class="sc-empty">결과 없음</div>';
 }
 
-function renderPin(){
-  const list=memos.filter(m=>m.pin);
-  $('.sc-page[data-page=pin]').innerHTML=list.length
-    ?`<div class="sc-label">비망 ${list.length}건</div>${scrollHtml(list,'p','')}`
-    :'<div class="sc-empty">비망 메모가 없습니다.</div>';
+function topicOf(m){return m.topic||(m.pin?'비망':'');}
+function renderTopic(){
+  const map=new Map();
+  for(const m of memos){
+    const t=topicOf(m);
+    if(!t)continue;
+    if(!map.has(t))map.set(t,[]);
+    map.get(t).push(m);
+  }
+  const keys=[...map.keys()].sort((a,b)=>a.localeCompare(b,'ko'));
+  $('.sc-page[data-page=topic]').innerHTML=keys.length?keys.map(t=>{
+    const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id),on=openTopics.has(t);
+    return `<div class="sc-wrow sc-trow${on?' on':''}" data-act="topic" data-tp="${esc(t)}">
+      <div><div class="sc-wrow-label">${esc(t)}</div><div class="sc-wrow-meta">${items.length}건</div></div><span>›</span>
+    </div>${on?`<div class="sc-tbody">${scrollHtml(items,'t','')}</div>`:''}`;
+  }).join(''):'<div class="sc-empty">주제가 붙은 메모가 없습니다.</div>';
 }
 
 function renderAll(){
@@ -470,7 +483,7 @@ function renderAll(){
   if(sub==='write')renderWrite();
   if(sub==='weeks')renderWeeks();
   if(sub==='search')renderSearch();
-  if(sub==='pin')renderPin();
+  if(sub==='topic')renderTopic();
   hydrate();
 }
 
@@ -533,7 +546,7 @@ function updateQnow(){
 function clearWrite(){
   $('.sc-input').value='';
   fit($('.sc-input'));
-  $('.sc-card .sc-pin input').checked=false;
+  setTopic($('.sc-card .sc-tp'),'');
   lsSet(LS.draft,null);
   pending.forEach(a=>URL.revokeObjectURL(a.url));
   pending=[];
@@ -571,14 +584,14 @@ async function saveMemo(){
   const prog=$('.sc-prog');
   btn.disabled=true;
   const qc=buildQcode(new Date());
-  const pin=$('.sc-card .sc-pin input').checked;
+  const topic=readTopic($('.sc-card .sc-tp'));
   const tIn=$('.sc-card .sc-tailin'),tail=tIn?tIn.value.trim():'';
   let attachments;
   try{attachments=await uploadAll(qc,pending,prog);}
   catch(e){btn.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
   const now=Date.now();
   const memo={id:now,qc,body,attachments,mt:now};
-  if(pin)memo.pin=true;
+  if(topic)memo.topic=topic;
   if(tail)memo.tail=tail;
   memos.unshift(memo);
   clearWrite();
@@ -625,6 +638,7 @@ async function onClick(e){
   if(act==='more'){weeksShown++;renderAll();return loadAllShards();}
   if(act==='fold')return b.nextElementSibling.classList.toggle('folded');
   if(act==='week'){openWeek=b.dataset.wk;return renderAll();}
+  if(act==='topic'){const t=b.dataset.tp;openTopics.has(t)?openTopics.delete(t):openTopics.add(t);return renderAll();}
   if(act==='weeks-back'){openWeek=null;return renderAll();}
   if(act==='zoom'){
     if(!b.src)return;
@@ -653,7 +667,7 @@ async function onClick(e){
     tail.insertAdjacentHTML('beforebegin','<div class="sc-preview"></div>');
     tail.innerHTML=m.tail?tailTaHtml(m.tail,'sc-edit'):'';
     acts.insertAdjacentHTML('beforebegin',`<div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
-      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div></div>`);
+      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${topicHtml(topicOf(m))}</div></div>`);
     syncTail(entry);
     const ta=wrap.querySelector('textarea');
     entry.querySelectorAll('textarea').forEach(fit);
@@ -671,8 +685,9 @@ async function onClick(e){
     m.body=entry.querySelector('.sc-body-wrap:not(.sc-tail) .sc-edit').value.trim();
     if(t)m.tail=t;else delete m.tail;
     if(added.length)m.attachments=(m.attachments||[]).concat(added);
-    if(ctl.querySelector('.sc-pin input').checked)m.pin=true;
-    else delete m.pin;
+    const tp=readTopic(ctl.querySelector('.sc-tp'));
+    if(tp)m.topic=tp;else delete m.topic;
+    delete m.pin;
     m.mt=Date.now();
     renderAll();
     return saveMemos();
@@ -706,9 +721,11 @@ function onCancel(e){
   renderAll();
 }
 
-function pinHtml(on){
-  return `<label class="sc-pin"><input type="checkbox"${on?' checked':''}>비망</label>`;
+function topicHtml(t){
+  return `<span class="sc-tp"><label class="sc-pin"><input type="checkbox"${t?' checked':''}>주제</label><input class="sc-topic" type="text" maxlength="10" value="${esc(t||'비망')}"></span>`;
 }
+function readTopic(el){return el.querySelector('input[type=checkbox]').checked?el.querySelector('.sc-topic').value.trim()||'비망':'';}
+function setTopic(el,t){el.querySelector('input[type=checkbox]').checked=!!t;el.querySelector('.sc-topic').value=t||'비망';}
 
 function attachBarHtml(){
   return `<div class="sc-attach-bar">
@@ -740,7 +757,7 @@ function mount(el){
         <div class="sc-body-wrap sc-tail"></div>
         ${attachBarHtml()}
         <div class="sc-prog" hidden></div>
-        <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button>${pinHtml(false)}</div>
+        <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button>${topicHtml('')}</div>
       </div>
       <div class="sc-cur"></div>
     </div>
@@ -750,7 +767,7 @@ function mount(el){
       <div class="sc-label"></div>
       <div class="sc-results"></div>
     </div>
-    <div class="sc-page" data-page="pin"></div>
+    <div class="sc-page" data-page="topic"></div>
     <div class="sc-lightbox" data-act="lightbox" hidden><img alt=""></div>`;
   el.innerHTML='';
   el.appendChild(root);
