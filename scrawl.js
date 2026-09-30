@@ -14,7 +14,7 @@ let sub=lsGet(LS.sub)||'write';
 let memos=cacheLoad()||[];
 let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
-let pending=[];
+let pending=[],editPending=[];
 let weeksShown=1;
 let openWeek=null;
 let query='';
@@ -487,11 +487,20 @@ function showSub(name){
 }
 
 function renderPreview(){
-  $('.sc-preview').innerHTML=pending.map((a,i)=>`<div class="sc-pv">
+  $('.sc-card .sc-preview').innerHTML=previewHtml(pending,'unpend');
+  const ed=root.querySelector('.sc-edctl .sc-preview');
+  if(ed)ed.innerHTML=previewHtml(editPending,'unpend-edit');
+}
+function previewHtml(list,act){
+  return list.map((a,i)=>`<div class="sc-pv">
     ${a.type==='image'?`<img src="${a.url}" alt="">`:`<span class="sc-pv-ic">${a.type==='pdf'?'PDF':'♪'}</span>`}
     <div class="sc-pv-info"><div>${esc(a.file.name)}</div><small>${(a.file.size/1024).toFixed(0)}KB</small></div>
-    <button class="sc-x" data-act="unpend" data-i="${i}">✕</button>
+    <button class="sc-x" data-act="${act}" data-i="${i}">✕</button>
   </div>`).join('');
+}
+function dropEditPending(){
+  editPending.forEach(a=>URL.revokeObjectURL(a.url));
+  editPending=[];
 }
 
 function updateQnow(){
@@ -512,6 +521,27 @@ function clearWrite(){
   $('.sc-prog').hidden=true;
 }
 
+// 대기 첨부를 raw/ 에 올리고 메모에 붙일 첨부 목록을 돌려준다
+async function uploadAll(qc,list,prog){
+  const out=[];
+  if(!list.length)return out;
+  prog.hidden=false;
+  prog.textContent='기존 파일 확인 중...';
+  try{
+    const taken=await existingRaw(qc);
+    for(let i=0;i<list.length;i++){
+      const a=list[i];
+      const enc=a.type==='image'?await encodeImage(a.file):null;
+      const fn=resolveName(qc,enc?enc.ext:fileExt(a.file.name),taken);
+      prog.textContent=`업로드 중 (${i+1}/${list.length}) ${fn}`;
+      const r=await put(`/contents/${RAW_DIR}/${encodeURIComponent(fn)}`,{message:`raw ${fn}`,content:enc?enc.b64:await fileToBase64(a.file)});
+      if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||r.status);}
+      out.push(a.type==='image'?{type:a.type,filename:fn}:{type:a.type,filename:fn,origName:a.file.name});
+    }
+  }finally{prog.hidden=true;}
+  return out;
+}
+
 async function saveMemo(){
   const body=$('.sc-input').value.trim();
   if(!body&&!pending.length)return;
@@ -520,27 +550,9 @@ async function saveMemo(){
   btn.disabled=true;
   const qc=buildQcode(new Date());
   const pin=$('.sc-card .sc-pin input').checked;
-  const attachments=[];
-  if(pending.length){
-    prog.hidden=false;
-    prog.textContent='기존 파일 확인 중...';
-    const taken=await existingRaw(qc);
-    for(let i=0;i<pending.length;i++){
-      const a=pending[i];
-      try{
-        const enc=a.type==='image'?await encodeImage(a.file):null;
-        const fn=resolveName(qc,enc?enc.ext:fileExt(a.file.name),taken);
-        prog.textContent=`업로드 중 (${i+1}/${pending.length}) ${fn}`;
-        const r=await put(`/contents/${RAW_DIR}/${encodeURIComponent(fn)}`,{message:`raw ${fn}`,content:enc?enc.b64:await fileToBase64(a.file)});
-        if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||r.status);}
-        attachments.push(a.type==='image'?{type:a.type,filename:fn}:{type:a.type,filename:fn,origName:a.file.name});
-      }catch(e){
-        prog.hidden=true;btn.disabled=false;
-        alert(`파일 업로드 실패: ${e.message}`);return;
-      }
-    }
-    prog.hidden=true;
-  }
+  let attachments;
+  try{attachments=await uploadAll(qc,pending,prog);}
+  catch(e){btn.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
   const now=Date.now();
   const memo={id:now,qc,body,attachments,mt:now};
   if(pin)memo.pin=true;
@@ -567,6 +579,11 @@ async function onClick(e){
   }
   if(act==='save')return saveMemo();
   if(act==='clear')return clearWrite();
+  if(act==='unpend-edit'){
+    URL.revokeObjectURL(editPending[b.dataset.i].url);
+    editPending.splice(+b.dataset.i,1);
+    return renderPreview();
+  }
   if(act==='unpend'){
     URL.revokeObjectURL(pending[b.dataset.i].url);
     pending.splice(+b.dataset.i,1);
@@ -594,20 +611,30 @@ async function onClick(e){
   if(act==='edit'){
     const field=b.dataset.field||'body';
     const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}${field==='tail'?'-tail':''}`);
-    if(!wrap||wrap.querySelector('textarea'))return;
-    wrap.closest('.sc-entry').classList.add('editing');
-    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m[field]||'')}</textarea>
-      <div class="sc-row"><button class="sc-btn" data-act="commit" data-field="${field}" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div>`;
+    if(!wrap||root.querySelector('.sc-entry.editing'))return;
+    const entry=wrap.closest('.sc-entry');
+    entry.classList.add('editing');
+    dropEditPending();
+    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m[field]||'')}</textarea>`;
+    entry.querySelector('.sc-acts').insertAdjacentHTML('beforebegin',`<div class="sc-edctl">${attachBarHtml()}
+      <div class="sc-preview"></div><div class="sc-prog" hidden></div>
+      <div class="sc-row"><button class="sc-btn" data-act="commit" data-field="${field}" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div></div>`);
     const ta=wrap.querySelector('textarea');
     ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
     return;
   }
   if(act==='commit'){
-    const wrap=b.closest('.sc-body-wrap');
-    const v=wrap.querySelector('textarea').value.trim();
+    const entry=b.closest('.sc-entry'),ctl=b.closest('.sc-edctl');
+    b.disabled=true;
+    let added;
+    try{added=await uploadAll(m.qc,editPending,ctl.querySelector('.sc-prog'));}
+    catch(e){b.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
+    dropEditPending();
+    const v=entry.querySelector('.sc-edit').value.trim();
     if(b.dataset.field==='tail'){if(v)m.tail=v;else delete m.tail;}
     else m.body=v;
-    if(wrap.querySelector('.sc-pin input').checked)m.pin=true;
+    if(added.length)m.attachments=(m.attachments||[]).concat(added);
+    if(ctl.querySelector('.sc-pin input').checked)m.pin=true;
     else delete m.pin;
     m.mt=Date.now();
     renderAll();
@@ -627,18 +654,29 @@ async function onClick(e){
     if(!a||!confirm(`첨부 ${a.origName||a.filename} 을 삭제합니까?`))return;
     m.attachments.splice(+b.dataset.i,1);
     m.mt=Date.now();
-    renderAll();
+    const entry=b.closest('.sc-entry.editing');
+    if(entry)entry.querySelector('.sc-attach').outerHTML=attachHtml(m.attachments,m.id,'')||'<div class="sc-attach"></div>';
+    else renderAll();
     await saveMemos();
     return deleteRaw([a.filename]);
   }
 }
 function onCancel(e){
   if(!e.target.closest('[data-act=cancel]'))return;
+  dropEditPending();
   renderAll();
 }
 
 function pinHtml(on){
   return `<label class="sc-pin"><input type="checkbox"${on?' checked':''}>비망</label>`;
+}
+
+function attachBarHtml(){
+  return `<div class="sc-attach-bar">
+    <label class="sc-btn ghost">이미지<input type="file" accept="image/*" multiple data-type="image"></label>
+    <label class="sc-btn ghost">오디오<input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" multiple data-type="audio"></label>
+    <label class="sc-btn ghost">PDF<input type="file" accept="application/pdf" multiple data-type="pdf"></label>
+  </div>`;
 }
 
 function charsHtml(){
@@ -658,11 +696,7 @@ function mount(el){
         <div class="sc-stamp"></div>
         ${charsHtml()}
         <textarea class="sc-input" placeholder="낙서..."></textarea>
-        <div class="sc-attach-bar">
-          <label class="sc-btn ghost">이미지<input type="file" accept="image/*" multiple data-type="image"></label>
-          <label class="sc-btn ghost">오디오<input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" multiple data-type="audio"></label>
-          <label class="sc-btn ghost">PDF<input type="file" accept="application/pdf" multiple data-type="pdf"></label>
-        </div>
+        ${attachBarHtml()}
         <div class="sc-preview"></div>
         <div class="sc-prog" hidden></div>
         <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button>${pinHtml(false)}</div>
@@ -684,16 +718,18 @@ function mount(el){
   const ta=$('.sc-input');
   ta.value=lsGet(LS.draft)||'';
   ta.addEventListener('input',()=>lsSet(LS.draft,ta.value));
-  root.querySelectorAll('input[type=file]').forEach(inp=>inp.addEventListener('change',()=>{
-    const skip=[];
+  root.addEventListener('change',e=>{
+    const inp=e.target;
+    if(!inp.matches('input[type=file]'))return;
+    const list=inp.closest('.sc-edctl')?editPending:pending,skip=[];
     for(const f of inp.files){
       if(inp.dataset.type==='audio'&&!/^(mp3|m4a)$/.test(fileExt(f.name))){skip.push(f.name);continue;}
-      pending.push({file:f,type:inp.dataset.type,url:URL.createObjectURL(f)});
+      list.push({file:f,type:inp.dataset.type,url:URL.createObjectURL(f)});
     }
     if(skip.length)alert(`오디오는 mp3·m4a 만 받습니다.\n${skip.join('\n')}`);
     inp.value='';
     renderPreview();
-  }));
+  });
   const s=$('.sc-search');
   s.value=query;
   s.addEventListener('input',()=>{query=s.value;renderSearch();hydrate();});
@@ -710,7 +746,7 @@ document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&live())loadMemos();
 });
 window.addEventListener('beforeunload',e=>{
-  if(!isDirty()&&!pending.length)return;
+  if(!isDirty()&&!pending.length&&!editPending.length)return;
   e.preventDefault();
   e.returnValue='';
 });
