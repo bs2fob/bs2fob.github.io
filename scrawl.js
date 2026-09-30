@@ -5,7 +5,7 @@ const REPO='https://api.github.com/repos/bs2fob/scrawl';
 const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
-const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics'};
+const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics',keep:'bs2fob-scrawl-keep'};
 const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
 const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['tag','태그']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
@@ -20,6 +20,7 @@ let pending=[],editPending=[],ed=null;
 let weeksShown=1;
 let openWeek=null;
 let openTags=new Map();
+let keepTags=readKeep();
 const TAG_PAGE=5;
 let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
@@ -270,6 +271,9 @@ async function saveMemos({quiet=false}={}){
 }
 
 // 태그 순서는 덩어리와 따로 topics.json 한 파일에 두고 mt 가 최신인 쪽을 쓴다
+function readKeep(){
+  try{const v=JSON.parse(lsGet(LS.keep)||'[]');return new Set(Array.isArray(v)?v:[]);}catch(e){return new Set();}
+}
 function readOrder(){
   try{const v=JSON.parse(lsGet(LS.order)||'null');if(v&&Array.isArray(v.order))return v;}catch(e){}
   return {order:[],mt:0};
@@ -540,7 +544,8 @@ function renderTag(){
     const pages=Math.ceil(items.length/TAG_PAGE),pg=on?Math.min(openTags.get(t),pages-1):0;
     if(on)openTags.set(t,pg);
     return `<div class="sc-tgrp" data-tp="${esc(t)}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="tag" data-tp="${esc(t)}">
-      <div><div class="sc-wrow-label">${esc(t)}</div><div class="sc-wrow-meta">${items.length}건</div></div><span>›</span>
+      <div><div class="sc-wrow-label">${esc(t)}</div><div class="sc-wrow-meta">${items.length}건</div></div>
+      <div class="sc-tright"><input type="checkbox" class="sc-tkeep" data-act="tag-keep" data-tp="${esc(t)}" title="탭을 옮겨도 펼침 유지"${keepTags.has(t)?' checked':''}><span>›</span></div>
     </div>${on?pageNavHtml(t,pg,pages)+`<div class="sc-tbody">${scrollHtml(items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE),'t'+i,'')}</div>`:''}</div>`;
   }).join('')+'</div>':'<div class="sc-empty">태그가 붙은 메모가 없습니다.</div>';
 }
@@ -635,7 +640,7 @@ function onPlay(e){
 }
 
 function showSub(name){
-  if(name!==sub||!root.querySelector('.sc-sub.on'))openTags.clear();
+  if(name!==sub||!root.querySelector('.sc-sub.on'))openTags=new Map([...keepTags].map(t=>[t,openTags.get(t)||0]));
   sub=name;
   lsSet(LS.sub,name);
   root.querySelectorAll('.sc-sub').forEach(b=>b.classList.toggle('on',b.dataset.sub===name));
@@ -857,6 +862,13 @@ async function onClick(e){
   if(act==='fold')return b.nextElementSibling.classList.toggle('folded');
   if(act==='week'){openWeek=b.dataset.wk;return renderAll();}
   if(act==='tag'){if(dragClick)return;const t=b.dataset.tp;openTags.has(t)?openTags.delete(t):openTags.set(t,0);return renderAll();}
+  if(act==='tag-keep'){
+    const t=b.dataset.tp;
+    if(b.checked){keepTags.add(t);if(!openTags.has(t))openTags.set(t,0);}
+    else keepTags.delete(t);
+    lsSet(LS.keep,JSON.stringify([...keepTags]));
+    return renderAll();
+  }
   if(act==='tpage'){openTags.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='weeks-back'){openWeek=null;return renderAll();}
   if(act==='zoom'){
