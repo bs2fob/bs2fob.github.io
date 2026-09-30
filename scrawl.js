@@ -5,7 +5,7 @@ const REPO='https://api.github.com/repos/bs2fob/scrawl';
 const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
-const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics',keep:'bs2fob-scrawl-keep',keepwk:'bs2fob-scrawl-keepwk'};
+const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics',keep:'bs2fob-scrawl-keep'};
 const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
 const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['tag','태그']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
@@ -18,7 +18,9 @@ let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
 let pending=[],editPending=[],ed=null;
 let weeksShown=1;
-const FOLD={tag:{open:new Map(),keep:readKeep(LS.keep),ls:LS.keep},week:{open:new Map(),keep:readKeep(LS.keepwk),ls:LS.keepwk}};
+const FOLD={tag:{open:new Map(),keep:readKeep(LS.keep),ls:LS.keep},week:{open:new Map(),keep:new Set()}};
+const WEEK_PAGE=10;
+let weekPg=0;
 const TAG_PAGE=5;
 let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
@@ -494,8 +496,11 @@ function renderWrite(){
 function renderWeeks(){
   const groups=groupByWeek(memos);
   const keys=weekKeysDesc();
-  $('.sc-page[data-page=weeks]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map((wk,i)=>
+  const pages=Math.ceil(keys.length/WEEK_PAGE);
+  weekPg=Math.max(0,Math.min(weekPg,pages-1));
+  $('.sc-page[data-page=weeks]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.slice(weekPg*WEEK_PAGE,(weekPg+1)*WEEK_PAGE).map((wk,i)=>
     foldHtml('week',wk,weekLabel(wk),`${wk} · ${groups.get(wk).length}건`,groups.get(wk),'w'+i)).join('')+'</div>'
+    +navHtml(weekPg,pages,'data-act="wk-page"')
     :'<div class="sc-empty">기록된 주차가 없습니다.</div>';
 }
 
@@ -544,14 +549,17 @@ function foldHtml(kind,key,label,meta,items,ctx){
   if(on)f.open.set(key,pg);
   return `<div class="sc-tgrp" data-tp="${k}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="grp" data-kind="${kind}" data-tp="${k}">
       <div><div class="sc-wrow-label">${label}</div><div class="sc-wrow-meta">${meta}</div></div>
-      <div class="sc-tright"><input type="checkbox" class="sc-tkeep" data-act="grp-keep" data-kind="${kind}" data-tp="${k}" title="탭을 옮겨도 펼침 유지"${f.keep.has(key)?' checked':''}><span>›</span></div>
+      <div class="sc-tright">${kind==='tag'?`<input type="checkbox" class="sc-tkeep" data-act="grp-keep" data-kind="${kind}" data-tp="${k}" title="탭을 옮겨도 펼침 유지"${f.keep.has(key)?' checked':''}>`:''}<span>›</span></div>
     </div>${on?pageNavHtml(kind,key,pg,pages)+`<div class="sc-tbody">${scrollHtml(items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE),ctx,'')}</div>`:''}</div>`;
 }
 
 // 펼친 태그의 메모가 한 쪽을 넘으면 태그 줄 바로 아래에 이전·쪽 번호·다음을 단다
 function pageNavHtml(kind,t,pg,pages){
+  return navHtml(pg,pages,`data-act="grp-page" data-kind="${kind}" data-tp="${esc(t)}"`);
+}
+function navHtml(pg,pages,attrs){
   if(pages<2)return '';
-  const btn=(p,label,cls)=>`<button class="sc-pgbtn${cls}" data-act="grp-page" data-kind="${kind}" data-tp="${esc(t)}" data-pg="${p}"${p<0||p>=pages?' disabled':''}>${label}</button>`;
+  const btn=(p,label,cls)=>`<button class="sc-pgbtn${cls}" ${attrs} data-pg="${p}"${p<0||p>=pages?' disabled':''}>${label}</button>`;
   return `<div class="sc-pgnav">${btn(pg-1,'이전','')}${Array.from({length:pages},(_,p)=>btn(p,p+1,p===pg?' on':'')).join('')}${btn(pg+1,'다음','')}</div>`;
 }
 
@@ -638,7 +646,10 @@ function onPlay(e){
 }
 
 function showSub(name){
-  if(name!==sub||!root.querySelector('.sc-sub.on'))for(const f of Object.values(FOLD))f.open=new Map([...f.keep].map(t=>[t,f.open.get(t)||0]));
+  if(name!==sub||!root.querySelector('.sc-sub.on')){
+    for(const f of Object.values(FOLD))f.open=new Map([...f.keep].map(t=>[t,f.open.get(t)||0]));
+    weekPg=0;
+  }
   sub=name;
   lsSet(LS.sub,name);
   root.querySelectorAll('.sc-sub').forEach(b=>b.classList.toggle('on',b.dataset.sub===name));
@@ -866,6 +877,7 @@ async function onClick(e){
     lsSet(f.ls,JSON.stringify([...f.keep]));
     return renderAll();
   }
+  if(act==='wk-page'){weekPg=+b.dataset.pg;return renderAll();}
   if(act==='grp-page'){FOLD[b.dataset.kind].open.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='zoom'){
     if(!b.src)return;
