@@ -14,7 +14,7 @@ let sub=lsGet(LS.sub)||'write';
 let memos=cacheLoad()||[];
 let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
-let pending=[],editPending=[];
+let pending=[],editPending=[],lastTa=null;
 let weeksShown=1;
 let openWeek=null;
 let query='';
@@ -380,15 +380,13 @@ function attachHtml(list,id,kw){
 }
 
 function entryHtml(m,kw,ctx){
-  const tailOk=!!((m.attachments&&m.attachments.length)||m.tail);
   return `<div class="sc-entry">
     <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${m.pin?'<b class="sc-pin-tag">비망</b>':''}</div>
     <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${m.body?`<div class="sc-body">${highlight(m.body,kw)}</div>`:''}</div>
     ${attachHtml(m.attachments,m.id,kw)}
-    ${tailOk?`<div class="sc-body-wrap sc-tail" id="sc-${ctx}-${m.id}-tail">${m.tail?`<div class="sc-body">${highlight(m.tail,kw)}</div>`:''}</div>`:''}
+    ${m.tail?`<div class="sc-body-wrap sc-tail"><div class="sc-body">${highlight(m.tail,kw)}</div></div>`:''}
     <div class="sc-acts">
       <button data-act="edit" data-id="${m.id}" data-ctx="${ctx}">수정</button>
-      ${tailOk?`<button data-act="edit" data-field="tail" data-id="${m.id}" data-ctx="${ctx}">추가작성</button>`:''}
       <button class="del" data-act="del" data-id="${m.id}">삭제</button>
     </div>
   </div>`;
@@ -488,8 +486,19 @@ function showSub(name){
 
 function renderPreview(){
   $('.sc-card .sc-preview').innerHTML=previewHtml(pending,'unpend');
-  const ed=root.querySelector('.sc-edctl .sc-preview');
+  const ed=root.querySelector('.sc-entry.editing .sc-preview');
   if(ed)ed.innerHTML=previewHtml(editPending,'unpend-edit');
+  syncTail($('.sc-card'));
+  syncTail(root.querySelector('.sc-entry.editing'));
+}
+// 첨부가 있고 추가작성 칸이 아직 없을 때만 추가작성 버튼을 띄운다
+function syncTail(scope){
+  const btn=scope&&scope.querySelector('[data-act=tail-add]');
+  if(!btn)return;
+  btn.hidden=!scope.querySelector('.sc-attach > *, .sc-pv')||!!scope.querySelector('.sc-tailin');
+}
+function tailTaHtml(v,cls){
+  return `<textarea class="sc-input ${cls} sc-tailin" placeholder="추가작성...">${esc(v)}</textarea>`;
 }
 function previewHtml(list,act){
   return list.map((a,i)=>`<div class="sc-pv">
@@ -516,6 +525,7 @@ function clearWrite(){
   lsSet(LS.draft,null);
   pending.forEach(a=>URL.revokeObjectURL(a.url));
   pending=[];
+  $('.sc-card .sc-tail').innerHTML='';
   renderPreview();
   $('.sc-stamp').textContent=buildQcode(new Date());
   $('.sc-prog').hidden=true;
@@ -550,12 +560,14 @@ async function saveMemo(){
   btn.disabled=true;
   const qc=buildQcode(new Date());
   const pin=$('.sc-card .sc-pin input').checked;
+  const tIn=$('.sc-card .sc-tailin'),tail=tIn?tIn.value.trim():'';
   let attachments;
   try{attachments=await uploadAll(qc,pending,prog);}
   catch(e){btn.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
   const now=Date.now();
   const memo={id:now,qc,body,attachments,mt:now};
   if(pin)memo.pin=true;
+  if(tail)memo.tail=tail;
   memos.unshift(memo);
   clearWrite();
   renderAll();
@@ -571,11 +583,19 @@ async function onClick(e){
   const act=b.dataset.act;
   if(act==='sub')return showSub(b.dataset.sub);
   if(act==='char'){
-    const ta=b.closest('.sc-card, .sc-body-wrap').querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
+    const scope=b.closest('.sc-card, .sc-entry');
+    const ta=lastTa&&scope.contains(lastTa)?lastTa:scope.querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
     ta.value=ta.value.slice(0,s)+t+ta.value.slice(ta.selectionEnd);
     ta.selectionStart=ta.selectionEnd=s+t.length;ta.focus();
-    if(!ta.classList.contains('sc-edit'))lsSet(LS.draft,ta.value);
+    if(ta===$('.sc-input'))lsSet(LS.draft,ta.value);
     return;
+  }
+  if(act==='tail-add'){
+    const scope=b.closest('.sc-card, .sc-entry');
+    const slot=scope.querySelector('.sc-tail');
+    slot.innerHTML=tailTaHtml('',scope.classList.contains('sc-card')?'':'sc-edit');
+    syncTail(scope);
+    return slot.querySelector('textarea').focus();
   }
   if(act==='save')return saveMemo();
   if(act==='clear')return clearWrite();
@@ -609,16 +629,19 @@ async function onClick(e){
   const m=findMemo(b.dataset.id);
   if(!m)return;
   if(act==='edit'){
-    const field=b.dataset.field||'body';
-    const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}${field==='tail'?'-tail':''}`);
+    const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}`);
     if(!wrap||root.querySelector('.sc-entry.editing'))return;
-    const entry=wrap.closest('.sc-entry');
+    const entry=wrap.closest('.sc-entry'),acts=entry.querySelector('.sc-acts');
     entry.classList.add('editing');
     dropEditPending();
-    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m[field]||'')}</textarea>`;
-    entry.querySelector('.sc-acts').insertAdjacentHTML('beforebegin',`<div class="sc-edctl">${attachBarHtml()}
-      <div class="sc-preview"></div><div class="sc-prog" hidden></div>
-      <div class="sc-row"><button class="sc-btn" data-act="commit" data-field="${field}" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div></div>`);
+    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m.body||'')}</textarea>`;
+    let tail=entry.querySelector('.sc-tail');
+    if(!tail){acts.insertAdjacentHTML('beforebegin','<div class="sc-body-wrap sc-tail"></div>');tail=entry.querySelector('.sc-tail');}
+    tail.insertAdjacentHTML('beforebegin','<div class="sc-preview"></div>');
+    tail.innerHTML=m.tail?tailTaHtml(m.tail,'sc-edit'):'';
+    acts.insertAdjacentHTML('beforebegin',`<div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
+      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div></div>`);
+    syncTail(entry);
     const ta=wrap.querySelector('textarea');
     ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
     return;
@@ -630,9 +653,9 @@ async function onClick(e){
     try{added=await uploadAll(m.qc,editPending,ctl.querySelector('.sc-prog'));}
     catch(e){b.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
     dropEditPending();
-    const v=entry.querySelector('.sc-edit').value.trim();
-    if(b.dataset.field==='tail'){if(v)m.tail=v;else delete m.tail;}
-    else m.body=v;
+    const tIn=entry.querySelector('.sc-tailin'),t=tIn?tIn.value.trim():'';
+    m.body=entry.querySelector('.sc-body-wrap:not(.sc-tail) .sc-edit').value.trim();
+    if(t)m.tail=t;else delete m.tail;
     if(added.length)m.attachments=(m.attachments||[]).concat(added);
     if(ctl.querySelector('.sc-pin input').checked)m.pin=true;
     else delete m.pin;
@@ -655,8 +678,10 @@ async function onClick(e){
     m.attachments.splice(+b.dataset.i,1);
     m.mt=Date.now();
     const entry=b.closest('.sc-entry.editing');
-    if(entry)entry.querySelector('.sc-attach').outerHTML=attachHtml(m.attachments,m.id,'')||'<div class="sc-attach"></div>';
-    else renderAll();
+    if(entry){
+      entry.querySelector('.sc-attach').outerHTML=attachHtml(m.attachments,m.id,'')||'<div class="sc-attach"></div>';
+      syncTail(entry);
+    }else renderAll();
     await saveMemos();
     return deleteRaw([a.filename]);
   }
@@ -673,6 +698,7 @@ function pinHtml(on){
 
 function attachBarHtml(){
   return `<div class="sc-attach-bar">
+    <button class="sc-btn ghost" data-act="tail-add" hidden>추가작성</button>
     <label class="sc-btn ghost">이미지<input type="file" accept="image/*" multiple data-type="image"></label>
     <label class="sc-btn ghost">오디오<input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" multiple data-type="audio"></label>
     <label class="sc-btn ghost">PDF<input type="file" accept="application/pdf" multiple data-type="pdf"></label>
@@ -696,8 +722,9 @@ function mount(el){
         <div class="sc-stamp"></div>
         ${charsHtml()}
         <textarea class="sc-input" placeholder="낙서..."></textarea>
-        ${attachBarHtml()}
         <div class="sc-preview"></div>
+        <div class="sc-body-wrap sc-tail"></div>
+        ${attachBarHtml()}
         <div class="sc-prog" hidden></div>
         <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button>${pinHtml(false)}</div>
       </div>
@@ -715,6 +742,7 @@ function mount(el){
   el.appendChild(root);
   root.addEventListener('click',onClick);
   root.addEventListener('click',onCancel);
+  root.addEventListener('focusin',e=>{if(e.target.matches('textarea'))lastTa=e.target;});
   const ta=$('.sc-input');
   ta.value=lsGet(LS.draft)||'';
   ta.addEventListener('input',()=>lsSet(LS.draft,ta.value));
