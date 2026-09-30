@@ -20,7 +20,7 @@ let pending=[],editPending=[],ed=null;
 let weeksShown=1;
 let openWeek=null;
 let openTags=new Map();
-const TAG_PAGE=10;
+const TAG_PAGE=5;
 let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
 let sync={state:'',text:''};
