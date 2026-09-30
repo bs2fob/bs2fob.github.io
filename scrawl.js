@@ -5,7 +5,7 @@ const REPO='https://api.github.com/repos/bs2fob/scrawl';
 const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
-const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics',keep:'bs2fob-scrawl-keep'};
+const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics',keep:'bs2fob-scrawl-keep',keepwk:'bs2fob-scrawl-keepwk'};
 const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
 const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['tag','태그']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
@@ -18,9 +18,7 @@ let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
 let pending=[],editPending=[],ed=null;
 let weeksShown=1;
-let openWeek=null;
-let openTags=new Map();
-let keepTags=readKeep();
+const FOLD={tag:{open:new Map(),keep:readKeep(LS.keep),ls:LS.keep},week:{open:new Map(),keep:readKeep(LS.keepwk),ls:LS.keepwk}};
 const TAG_PAGE=5;
 let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
@@ -271,8 +269,8 @@ async function saveMemos({quiet=false}={}){
 }
 
 // 태그 순서는 덩어리와 따로 topics.json 한 파일에 두고 mt 가 최신인 쪽을 쓴다
-function readKeep(){
-  try{const v=JSON.parse(lsGet(LS.keep)||'[]');return new Set(Array.isArray(v)?v:[]);}catch(e){return new Set();}
+function readKeep(k){
+  try{const v=JSON.parse(lsGet(k)||'[]');return new Set(Array.isArray(v)?v:[]);}catch(e){return new Set();}
 }
 function readOrder(){
   try{const v=JSON.parse(lsGet(LS.order)||'null');if(v&&Array.isArray(v.order))return v;}catch(e){}
@@ -494,17 +492,11 @@ function renderWrite(){
 }
 
 function renderWeeks(){
-  const el=$('.sc-page[data-page=weeks]');
-  if(openWeek){
-    el.innerHTML='<button class="sc-back" data-act="weeks-back">← 주차 목록</button>'
-      +weekHtml(openWeek,groupByWeek(memos).get(openWeek)||[],'w','');
-    return;
-  }
   const groups=groupByWeek(memos);
   const keys=weekKeysDesc();
-  el.innerHTML=keys.length?keys.map(wk=>`<div class="sc-wrow" data-act="week" data-wk="${wk}">
-      <div><div class="sc-wrow-label">${weekLabel(wk)}</div><div class="sc-wrow-meta">${wk} · ${groups.get(wk).length}건</div></div><span>›</span>
-    </div>`).join(''):'<div class="sc-empty">기록된 주차가 없습니다.</div>';
+  $('.sc-page[data-page=weeks]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map((wk,i)=>
+    foldHtml('week',wk,weekLabel(wk),`${wk} · ${groups.get(wk).length}건`,groups.get(wk),'w'+i)).join('')+'</div>'
+    :'<div class="sc-empty">기록된 주차가 없습니다.</div>';
 }
 
 function renderSearch(){
@@ -540,27 +532,33 @@ function tagGroups(){
 function renderTag(){
   const {map,keys}=tagGroups();
   $('.sc-page[data-page=tag]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map((t,i)=>{
-    const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id),on=openTags.has(t);
-    const pages=Math.ceil(items.length/TAG_PAGE),pg=on?Math.min(openTags.get(t),pages-1):0;
-    if(on)openTags.set(t,pg);
-    return `<div class="sc-tgrp" data-tp="${esc(t)}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="tag" data-tp="${esc(t)}">
-      <div><div class="sc-wrow-label">${esc(t)}</div><div class="sc-wrow-meta">${items.length}건</div></div>
-      <div class="sc-tright"><input type="checkbox" class="sc-tkeep" data-act="tag-keep" data-tp="${esc(t)}" title="탭을 옮겨도 펼침 유지"${keepTags.has(t)?' checked':''}><span>›</span></div>
-    </div>${on?pageNavHtml(t,pg,pages)+`<div class="sc-tbody">${scrollHtml(items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE),'t'+i,'')}</div>`:''}</div>`;
+    const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id);
+    return foldHtml('tag',t,esc(t),`${items.length}건`,items,'t'+i);
   }).join('')+'</div>':'<div class="sc-empty">태그가 붙은 메모가 없습니다.</div>';
 }
 
+// 태그·주차 탭 공통 줄. 누르면 펼치고, 체크하면 탭을 옮겨도 펼침이 남고, 한 쪽 TAG_PAGE 건씩 나눈다
+function foldHtml(kind,key,label,meta,items,ctx){
+  const f=FOLD[kind],on=f.open.has(key),k=esc(key);
+  const pages=Math.ceil(items.length/TAG_PAGE),pg=on?Math.min(f.open.get(key),pages-1):0;
+  if(on)f.open.set(key,pg);
+  return `<div class="sc-tgrp" data-tp="${k}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="grp" data-kind="${kind}" data-tp="${k}">
+      <div><div class="sc-wrow-label">${label}</div><div class="sc-wrow-meta">${meta}</div></div>
+      <div class="sc-tright"><input type="checkbox" class="sc-tkeep" data-act="grp-keep" data-kind="${kind}" data-tp="${k}" title="탭을 옮겨도 펼침 유지"${f.keep.has(key)?' checked':''}><span>›</span></div>
+    </div>${on?pageNavHtml(kind,key,pg,pages)+`<div class="sc-tbody">${scrollHtml(items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE),ctx,'')}</div>`:''}</div>`;
+}
+
 // 펼친 태그의 메모가 한 쪽을 넘으면 태그 줄 바로 아래에 이전·쪽 번호·다음을 단다
-function pageNavHtml(t,pg,pages){
+function pageNavHtml(kind,t,pg,pages){
   if(pages<2)return '';
-  const btn=(p,label,cls)=>`<button class="sc-pgbtn${cls}" data-act="tpage" data-tp="${esc(t)}" data-pg="${p}"${p<0||p>=pages?' disabled':''}>${label}</button>`;
+  const btn=(p,label,cls)=>`<button class="sc-pgbtn${cls}" data-act="grp-page" data-kind="${kind}" data-tp="${esc(t)}" data-pg="${p}"${p<0||p>=pages?' disabled':''}>${label}</button>`;
   return `<div class="sc-pgnav">${btn(pg-1,'이전','')}${Array.from({length:pages},(_,p)=>btn(p,p+1,p===pg?' on':'')).join('')}${btn(pg+1,'다음','')}</div>`;
 }
 
 // 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 태그 줄을 끌어 순서를 바꾼다
 function dragStart(e){
   const row=e.target.closest('.sc-trow');
-  if(!row||e.button>0||drag)return;
+  if(!row||row.dataset.kind!=='tag'||e.button>0||drag)return;
   const grp=row.parentElement;
   drag={grp,y0:e.clientY,on:false,touch:e.pointerType!=='mouse'};
   if(drag.touch)drag.timer=setTimeout(()=>dragBegin(),350);
@@ -640,7 +638,7 @@ function onPlay(e){
 }
 
 function showSub(name){
-  if(name!==sub||!root.querySelector('.sc-sub.on'))openTags=new Map([...keepTags].map(t=>[t,openTags.get(t)||0]));
+  if(name!==sub||!root.querySelector('.sc-sub.on'))for(const f of Object.values(FOLD))f.open=new Map([...f.keep].map(t=>[t,f.open.get(t)||0]));
   sub=name;
   lsSet(LS.sub,name);
   root.querySelectorAll('.sc-sub').forEach(b=>b.classList.toggle('on',b.dataset.sub===name));
@@ -860,17 +858,15 @@ async function onClick(e){
   }
   if(act==='more'){weeksShown++;renderAll();return loadAllShards();}
   if(act==='fold')return b.nextElementSibling.classList.toggle('folded');
-  if(act==='week'){openWeek=b.dataset.wk;return renderAll();}
-  if(act==='tag'){if(dragClick)return;const t=b.dataset.tp;openTags.has(t)?openTags.delete(t):openTags.set(t,0);return renderAll();}
-  if(act==='tag-keep'){
-    const t=b.dataset.tp;
-    if(b.checked){keepTags.add(t);if(!openTags.has(t))openTags.set(t,0);}
-    else keepTags.delete(t);
-    lsSet(LS.keep,JSON.stringify([...keepTags]));
+  if(act==='grp'){if(dragClick)return;const o=FOLD[b.dataset.kind].open,t=b.dataset.tp;o.has(t)?o.delete(t):o.set(t,0);return renderAll();}
+  if(act==='grp-keep'){
+    const f=FOLD[b.dataset.kind],t=b.dataset.tp;
+    if(b.checked){f.keep.add(t);if(!f.open.has(t))f.open.set(t,0);}
+    else f.keep.delete(t);
+    lsSet(f.ls,JSON.stringify([...f.keep]));
     return renderAll();
   }
-  if(act==='tpage'){openTags.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
-  if(act==='weeks-back'){openWeek=null;return renderAll();}
+  if(act==='grp-page'){FOLD[b.dataset.kind].open.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='zoom'){
     if(!b.src)return;
     $('.sc-lightbox img').src=b.src;

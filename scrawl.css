@@ -96,7 +96,6 @@
 .sc-broken code{color:#e05a4a;font-family:'Courier New',monospace}
 
 .sc-more{text-align:center;margin-top:10px}
-.sc-back{background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;margin-bottom:14px;padding:0}
 .sc-wrow{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;cursor:pointer;color:var(--text3)}
 .sc-wrow:hover{border-color:var(--border2);background:var(--surface2)}
 .sc-wrow-label{font-size:14px;font-weight:600;color:var(--text)}
