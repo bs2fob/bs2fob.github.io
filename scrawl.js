@@ -16,7 +16,7 @@ if(sub==='pin'||sub==='topic')sub='tag';
 let memos=cacheLoad()||[];
 let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
-let pending=[],editPending=[],lastTa=null;
+let pending=[],editPending=[],ed=null;
 let weeksShown=1;
 let openWeek=null;
 let openTags=new Set();
@@ -412,24 +412,37 @@ function highlight(text,kw){
   return esc(text).replace(re,m=>`<mark>${m}</mark>`);
 }
 
-function attachHtml(list,id,kw){
+function attItemHtml(a,i,id,kw){
+  const del=`<button class="sc-x" data-act="del-att" data-id="${id}" data-i="${i}" title="첨부 삭제">✕</button>`;
+  if(a.type==='image')return `<div class="sc-img-wrap"><img class="sc-img" data-fn="${esc(a.filename)}" alt="${esc(a.filename)}" data-act="zoom">${del}</div>`;
+  const name=highlight(a.origName||a.filename,kw);
+  if(a.type==='audio')return `<div class="sc-media"><audio controls data-fn="${esc(a.filename)}"></audio><div class="sc-fname">${name}${del}</div></div>`;
+  if(a.type==='pdf')return `<div class="sc-fname"><button class="sc-pdf" data-act="pdf" data-fn="${esc(a.filename)}">PDF</button>${name}${del}</div>`;
+  return '';
+}
+function attachHtml(list,id,kw,notes){
   if(!list||!list.length)return '';
-  return '<div class="sc-attach">'+list.map((a,i)=>{
-    const del=`<button class="sc-x" data-act="del-att" data-id="${id}" data-i="${i}" title="첨부 삭제">✕</button>`;
-    if(a.type==='image')return `<div class="sc-img-wrap"><img class="sc-img" data-fn="${esc(a.filename)}" alt="${esc(a.filename)}" data-act="zoom">${del}</div>`;
-    const name=highlight(a.origName||a.filename,kw);
-    if(a.type==='audio')return `<div class="sc-media"><audio controls data-fn="${esc(a.filename)}"></audio><div class="sc-fname">${name}${del}</div></div>`;
-    if(a.type==='pdf')return `<div class="sc-fname"><button class="sc-pdf" data-act="pdf" data-fn="${esc(a.filename)}">PDF</button>${name}${del}</div>`;
-    return '';
-  }).join('')+'</div>';
+  return '<div class="sc-attach">'+list.map((a,i)=>attItemHtml(a,i,id,kw)
+    +(notes&&notes[i]?`<div class="sc-body">${highlight(notes[i],kw)}</div>`:'')).join('')+'</div>';
+}
+// 본문과 첨부마다 붙는 아래 글. 옛 tail 은 첫 첨부 아래 글로 읽는다
+function slots(m){
+  const at=m.attachments||[];
+  const notes=at.map(a=>a.note||'');
+  let body=m.body||'';
+  if(m.tail){
+    if(at.length)notes[0]=notes[0]?notes[0]+'\n'+m.tail:m.tail;
+    else body=body?body+'\n'+m.tail:m.tail;
+  }
+  return {body,notes};
 }
 
 function entryHtml(m,kw,ctx){
+  const s=slots(m);
   return `<div class="sc-entry">
     <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${tagsOf(m).map(t=>`<b class="sc-pin-tag">${esc(t)}</b>`).join('')}</div>
-    <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${m.body?`<div class="sc-body">${highlight(m.body,kw)}</div>`:''}</div>
-    ${attachHtml(m.attachments,m.id,kw)}
-    ${m.tail?`<div class="sc-body-wrap sc-tail"><div class="sc-body">${highlight(m.tail,kw)}</div></div>`:''}
+    <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${s.body?`<div class="sc-body">${highlight(s.body,kw)}</div>`:''}</div>
+    ${attachHtml(m.attachments,m.id,kw,s.notes)}
     <div class="sc-acts">
       <button data-act="edit" data-id="${m.id}" data-ctx="${ctx}">수정</button>
       <button class="del" data-act="del" data-id="${m.id}">삭제</button>
@@ -496,7 +509,7 @@ function renderSearch(){
   const qcOnly=/^\d{2}w\d{2}\d?$/.test(kw);
   const hits=qcOnly?memos.filter(m=>m.qc.startsWith(kw)):memos.filter(m=>
     (m.body&&m.body.includes(kw))||(m.tail&&m.tail.includes(kw))||tagsOf(m).some(t=>t.includes(kw))||m.qc.includes(kw)||
-    (m.attachments||[]).some(a=>(a.origName||'').includes(kw)||(a.filename||'').includes(kw)));
+    (m.attachments||[]).some(a=>(a.origName||'').includes(kw)||(a.filename||'').includes(kw)||(a.note||'').includes(kw)));
   const groups=groupByWeek(hits);
   const keys=[...groups.keys()].sort().reverse();
   label.textContent=`${hits.length}개 결과 · ${keys.length}개 주차`;
@@ -611,10 +624,31 @@ function fitAll(){if(live())root.querySelectorAll('textarea.sc-input').forEach(f
 
 function renderPreview(){
   $('.sc-card .sc-preview').innerHTML=previewHtml(pending,'unpend');
-  const ed=root.querySelector('.sc-entry.editing .sc-preview');
-  if(ed)ed.innerHTML=previewHtml(editPending,'unpend-edit');
   syncTail($('.sc-card'));
-  syncTail(root.querySelector('.sc-entry.editing'));
+  renderEdit();
+}
+
+// 수정 창은 본문과 첨부별 아래 글을 칸으로 나눠 칸마다 글추가·글수정·편집완료로 여닫는다
+function edText(k){return k==='b'?ed.body:k[0]==='a'?ed.notes[+k.slice(1)]:editPending[+k.slice(1)].note||'';}
+function setEdText(k,v){
+  if(k==='b')ed.body=v;
+  else if(k[0]==='a')ed.notes[+k.slice(1)]=v;
+  else editPending[+k.slice(1)].note=v;
+}
+function blkHtml(k){
+  const t=edText(k),open=ed.open.has(k);
+  return `<div class="sc-blk"><button class="sc-btn ghost sc-blkbtn" data-act="blk" data-k="${k}">${open?'편집완료':t?'글수정':'글추가'}</button>
+    ${open?`<div class="sc-ed">${charsHtml()}<textarea class="sc-input sc-edit" data-k="${k}">${esc(t)}</textarea></div>`:t?`<div class="sc-body">${esc(t)}</div>`:''}</div>`;
+}
+function renderEdit(){
+  const entry=root.querySelector('.sc-entry.editing');
+  if(!entry||!ed)return;
+  const m=findMemo(ed.id);
+  entry.querySelector('.sc-edblocks').innerHTML=blkHtml('b')
+    +(m.attachments||[]).map((a,i)=>`<div class="sc-attach">${attItemHtml(a,i,m.id,'')}</div>${blkHtml('a'+i)}`).join('')
+    +editPending.map((a,i)=>`<div class="sc-preview">${previewHtml([a],'unpend-edit',i)}</div>${blkHtml('p'+i)}`).join('');
+  entry.querySelectorAll('.sc-edblocks textarea').forEach(fit);
+  hydrate();
 }
 // 첨부가 있고 추가작성 칸이 아직 없을 때만 추가작성 버튼을 띄운다
 function syncTail(scope){
@@ -623,13 +657,13 @@ function syncTail(scope){
   btn.hidden=!scope.querySelector('.sc-attach > *, .sc-pv')||!!scope.querySelector('.sc-tailin');
 }
 function tailTaHtml(v,cls){
-  return `<textarea class="sc-input ${cls} sc-tailin" placeholder="추가작성...">${esc(v)}</textarea>`;
+  return `<div class="sc-ed">${charsHtml()}<textarea class="sc-input ${cls} sc-tailin" placeholder="추가작성...">${esc(v)}</textarea></div>`;
 }
-function previewHtml(list,act){
+function previewHtml(list,act,base=0){
   return list.map((a,i)=>`<div class="sc-pv">
     ${a.type==='image'?`<img src="${a.url}" alt="">`:`<span class="sc-pv-ic">${a.type==='pdf'?'PDF':'♪'}</span>`}
     <div class="sc-pv-info"><div>${esc(a.file.name)}</div><small>${(a.file.size/1024).toFixed(0)}KB</small></div>
-    <button class="sc-x" data-act="${act}" data-i="${i}">✕</button>
+    <button class="sc-x" data-act="${act}" data-i="${base+i}">✕</button>
   </div>`).join('');
 }
 function dropEditPending(){
@@ -694,7 +728,7 @@ async function saveMemo(){
   const now=Date.now();
   const memo={id:now,qc,body,attachments,mt:now};
   if(tags.length)memo.tags=tags;
-  if(tail)memo.tail=tail;
+  if(tail&&attachments.length)attachments[attachments.length-1].note=tail;
   memos.unshift(memo);
   clearWrite();
   renderAll();
@@ -730,6 +764,15 @@ async function onClick(e){
   const act=b.dataset.act;
   if(act==='sub')return showSub(b.dataset.sub);
   if(act==='clip')return pasteImage(b);
+  if(act==='blk'){
+    const k=b.dataset.k;
+    if(ed.open.has(k)){ed.open.delete(k);setEdText(k,edText(k).trim());}
+    else ed.open.add(k);
+    renderEdit();
+    const ta=ed.open.has(k)&&root.querySelector(`.sc-entry.editing textarea[data-k="${k}"]`);
+    if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}
+    return;
+  }
   if(act==='tp-pick'){
     const row=b.closest('.sc-row'),open=row.nextElementSibling;
     if(open&&open.classList.contains('sc-tplist'))return open.remove();
@@ -747,10 +790,10 @@ async function onClick(e){
     return;
   }
   if(act==='char'){
-    const scope=b.closest('.sc-card, .sc-entry');
-    const ta=lastTa&&scope.contains(lastTa)?lastTa:scope.querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
+    const ta=b.closest('.sc-ed').querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
     ta.value=ta.value.slice(0,s)+t+ta.value.slice(ta.selectionEnd);
     ta.selectionStart=ta.selectionEnd=s+t.length;ta.focus();fit(ta);
+    if(ta.dataset.k&&ed)setEdText(ta.dataset.k,ta.value);
     if(ta===$('.sc-input'))lsSet(LS.draft,ta.value);
     return;
   }
@@ -767,7 +810,8 @@ async function onClick(e){
   if(act==='unpend-edit'){
     URL.revokeObjectURL(editPending[b.dataset.i].url);
     editPending.splice(+b.dataset.i,1);
-    return renderPreview();
+    ed.open=new Set([...ed.open].filter(k=>k[0]!=='p'));
+    return renderEdit();
   }
   if(act==='unpend'){
     URL.revokeObjectURL(pending[b.dataset.i].url);
@@ -800,17 +844,12 @@ async function onClick(e){
     const entry=wrap.closest('.sc-entry'),acts=entry.querySelector('.sc-acts');
     entry.classList.add('editing');
     dropEditPending();
-    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m.body||'')}</textarea>`;
-    let tail=entry.querySelector('.sc-tail');
-    if(!tail){acts.insertAdjacentHTML('beforebegin','<div class="sc-body-wrap sc-tail"></div>');tail=entry.querySelector('.sc-tail');}
-    tail.insertAdjacentHTML('beforebegin','<div class="sc-preview"></div>');
-    tail.innerHTML=m.tail?tailTaHtml(m.tail,'sc-edit'):'';
-    acts.insertAdjacentHTML('beforebegin',`<div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
+    const s=slots(m);
+    ed={id:m.id,body:s.body,notes:s.notes,open:new Set()};
+    [...entry.children].forEach(c=>{if(!c.matches('.sc-qc, .sc-acts'))c.remove();});
+    acts.insertAdjacentHTML('beforebegin',`<div class="sc-edblocks"></div><div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
       <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${tagHtml(tagsOf(m))}</div></div>`);
-    syncTail(entry);
-    const ta=wrap.querySelector('textarea');
-    entry.querySelectorAll('textarea').forEach(fit);
-    ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+    renderEdit();
     return;
   }
   if(act==='commit'){
@@ -819,10 +858,12 @@ async function onClick(e){
     let added;
     try{added=await uploadAll(m.qc,editPending,ctl.querySelector('.sc-prog'));}
     catch(e){b.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
+    added.forEach((a,i)=>{const n=(editPending[i].note||'').trim();if(n)a.note=n;});
     dropEditPending();
-    const tIn=entry.querySelector('.sc-tailin'),t=tIn?tIn.value.trim():'';
-    m.body=entry.querySelector('.sc-body-wrap:not(.sc-tail) .sc-edit').value.trim();
-    if(t)m.tail=t;else delete m.tail;
+    m.body=ed.body.trim();
+    (m.attachments||[]).forEach((a,i)=>{const n=(ed.notes[i]||'').trim();if(n)a.note=n;else delete a.note;});
+    delete m.tail;
+    ed=null;
     if(added.length)m.attachments=(m.attachments||[]).concat(added);
     const tg=readTags(ctl.querySelector('.sc-tp'));
     if(tg.length)m.tags=tg;else delete m.tags;
@@ -843,13 +884,16 @@ async function onClick(e){
   }
   if(act==='del-att'){
     const a=m.attachments[+b.dataset.i];
-    if(!a||!confirm(`첨부 ${a.origName||a.filename} 을 삭제합니까?`))return;
-    m.attachments.splice(+b.dataset.i,1);
+    const i=+b.dataset.i,editing=!!(b.closest('.sc-entry.editing')&&ed&&ed.id===m.id);
+    const note=editing?ed.notes[i]:slots(m).notes[i];
+    if(!a||!confirm(`첨부 ${a.origName||a.filename} 을 삭제합니까?${note?'\n첨부 아래 글도 함께 지워집니다.':''}`))return;
+    m.attachments.splice(i,1);
+    if(i===0)delete m.tail;
     m.mt=Date.now();
-    const entry=b.closest('.sc-entry.editing');
-    if(entry){
-      entry.querySelector('.sc-attach').outerHTML=attachHtml(m.attachments,m.id,'')||'<div class="sc-attach"></div>';
-      syncTail(entry);
+    if(editing){
+      ed.notes.splice(i,1);
+      ed.open=new Set([...ed.open].flatMap(k=>k[0]!=='a'?[k]:+k.slice(1)===i?[]:+k.slice(1)>i?['a'+(+k.slice(1)-1)]:[k]));
+      renderEdit();
     }else renderAll();
     await saveMemos();
     return deleteRaw([a.filename]);
@@ -858,6 +902,7 @@ async function onClick(e){
 function onCancel(e){
   if(!e.target.closest('[data-act=cancel]'))return;
   dropEditPending();
+  ed=null;
   renderAll();
 }
 
@@ -892,8 +937,7 @@ function mount(el){
     <div class="sc-page" data-page="write">
       <div class="sc-card">
         <div class="sc-stamp"></div>
-        ${charsHtml()}
-        <textarea class="sc-input" placeholder="낙서..."></textarea>
+        <div class="sc-ed">${charsHtml()}<textarea class="sc-input" placeholder="낙서..."></textarea></div>
         <div class="sc-preview"></div>
         <div class="sc-body-wrap sc-tail"></div>
         ${attachBarHtml()}
@@ -917,8 +961,11 @@ function mount(el){
   root.addEventListener('touchmove',e=>{if(drag&&drag.on)e.preventDefault();},{passive:false});
   root.addEventListener('contextmenu',e=>{if(drag&&e.target.closest('.sc-trow'))e.preventDefault();});
   root.addEventListener('click',onCancel);
-  root.addEventListener('focusin',e=>{if(e.target.matches('textarea'))lastTa=e.target;});
-  root.addEventListener('input',e=>{if(e.target.matches('textarea.sc-input'))fit(e.target);});
+  root.addEventListener('input',e=>{
+    if(!e.target.matches('textarea.sc-input'))return;
+    fit(e.target);
+    if(e.target.dataset.k&&ed)setEdText(e.target.dataset.k,e.target.value);
+  });
   const ta=$('.sc-input');
   ta.value=lsGet(LS.draft)||'';
   ta.addEventListener('input',()=>lsSet(LS.draft,ta.value));

@@ -77,6 +77,10 @@
 
 .sc-attach{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .sc-tail{margin-top:10px}
+.sc-blk{margin:10px 0}
+.sc-blkbtn{padding:4px 12px;font-size:12px}
+.sc-blk .sc-body{margin-top:6px}
+.sc-edblocks .sc-attach,.sc-edblocks .sc-preview{margin-top:10px}
 .sc-tail:empty{display:none}
 .sc-img-wrap{position:relative;display:inline-block;align-self:flex-start;max-width:100%}
 .sc-img{display:block;max-width:100%;min-height:40px;border-radius:var(--radius-sm);cursor:zoom-in;background:var(--surface2)}
