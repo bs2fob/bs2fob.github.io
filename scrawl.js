@@ -504,7 +504,7 @@ function renderSearch(){
 }
 
 function topicOf(m){return m.topic||(m.pin?'비망':'');}
-function renderTopic(){
+function topicGroups(){
   const map=new Map();
   for(const m of memos){
     const t=topicOf(m);
@@ -514,6 +514,10 @@ function renderTopic(){
   }
   const rank=new Map(topicOrder.order.map((t,i)=>[t,i]));
   const keys=[...map.keys()].sort((a,b)=>rank.has(a)&&rank.has(b)?rank.get(a)-rank.get(b):rank.has(a)?-1:rank.has(b)?1:a.localeCompare(b,'ko'));
+  return {map,keys};
+}
+function renderTopic(){
+  const {map,keys}=topicGroups();
   $('.sc-page[data-page=topic]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map(t=>{
     const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id),on=openTopics.has(t);
     return `<div class="sc-tgrp" data-tp="${esc(t)}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="topic" data-tp="${esc(t)}">
@@ -641,6 +645,7 @@ function clearWrite(){
   $('.sc-input').value='';
   fit($('.sc-input'));
   setTopic($('.sc-card .sc-tp'),'');
+  const tl=$('.sc-card .sc-tplist');if(tl)tl.remove();
   lsSet(LS.draft,null);
   pending.forEach(a=>URL.revokeObjectURL(a.url));
   pending=[];
@@ -722,6 +727,21 @@ async function onClick(e){
   const act=b.dataset.act;
   if(act==='sub')return showSub(b.dataset.sub);
   if(act==='clip')return pasteImage(b);
+  if(act==='tp-pick'){
+    const row=b.closest('.sc-row'),open=row.nextElementSibling;
+    if(open&&open.classList.contains('sc-tplist'))return open.remove();
+    const keys=topicGroups().keys;
+    row.insertAdjacentHTML('afterend',`<div class="sc-tplist">${keys.length
+      ?keys.map(t=>`<button class="sc-tpchip" data-act="tp-set" data-tp="${esc(t)}">${esc(t)}</button>`).join('')
+      :'<span class="sc-tpnone">등록된 주제가 없습니다.</span>'}</div>`);
+    return;
+  }
+  if(act==='tp-set'){
+    const list=b.closest('.sc-tplist'),tp=list.previousElementSibling.querySelector('.sc-tp');
+    setTopic(tp,b.dataset.tp);
+    list.remove();
+    return;
+  }
   if(act==='char'){
     const scope=b.closest('.sc-card, .sc-entry');
     const ta=lastTa&&scope.contains(lastTa)?lastTa:scope.querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
@@ -837,7 +857,7 @@ function onCancel(e){
 }
 
 function topicHtml(t){
-  return `<span class="sc-tp"><label class="sc-pin"><input type="checkbox"${t?' checked':''}>주제</label><input class="sc-topic" type="text" maxlength="10" value="${esc(t||'비망')}"></span>`;
+  return `<span class="sc-tp"><label class="sc-pin"><input type="checkbox"${t?' checked':''}>주제</label><input class="sc-topic" type="text" maxlength="10" value="${esc(t||'비망')}"><button class="sc-btn ghost sc-tpbtn" data-act="tp-pick">선택</button></span>`;
 }
 function readTopic(el){return el.querySelector('input[type=checkbox]').checked?el.querySelector('.sc-topic').value.trim()||'비망':'';}
 function setTopic(el,t){el.querySelector('input[type=checkbox]').checked=!!t;el.querySelector('.sc-topic').value=t||'비망';}
