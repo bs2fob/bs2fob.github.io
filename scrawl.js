@@ -21,6 +21,7 @@ let weeksShown=1;
 const FOLD={tag:{open:new Map(),keep:readKeep(LS.keep),ls:LS.keep},week:{open:new Map(),keep:new Set()}};
 const WEEK_PAGE=10;
 let weekPg=0;
+let writePg=new Map();
 const TAG_PAGE=5;
 let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
@@ -476,10 +477,17 @@ function scrollHtml(items,ctx,kw){
     return sep+entryHtml(m,kw,ctx);
   }).join('')+'</div>';
 }
-function weekHtml(wk,items,ctx,kw){
+function weekHtml(wk,items,ctx,kw,paged){
+  let nav='',shown=items;
+  if(paged){
+    const pages=Math.ceil(items.length/TAG_PAGE),pg=Math.max(0,Math.min(writePg.get(wk)||0,pages-1));
+    writePg.set(wk,pg);
+    shown=items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE);
+    nav=navHtml(pg,pages,`data-act="wr-page" data-wk="${wk}"`);
+  }
   return `<div class="sc-week">
     <div class="sc-week-head" data-act="fold"><span class="sc-wk">${weekLabel(wk)}</span><span class="sc-wc">${items.length}건 · ${wk}</span></div>
-    <div class="sc-week-body">${items.length?scrollHtml(items,ctx,kw):'<div class="sc-empty">이 주차 기록이 없습니다.</div>'}</div>
+    <div class="sc-week-body">${nav}${items.length?scrollHtml(shown,ctx,kw):'<div class="sc-empty">이 주차 기록이 없습니다.</div>'}</div>
   </div>`;
 }
 
@@ -489,7 +497,7 @@ function renderWrite(){
   const cur=weekKey(buildQcode(new Date()));
   if(!keys.includes(cur))keys.unshift(cur);
   if(weeksShown>keys.length)weeksShown=keys.length;
-  $('.sc-cur').innerHTML=keys.slice(0,weeksShown).map(wk=>weekHtml(wk,groups.get(wk)||[],'c','')).join('')
+  $('.sc-cur').innerHTML=keys.slice(0,weeksShown).map(wk=>weekHtml(wk,groups.get(wk)||[],'c','',true)).join('')
     +(weeksShown<keys.length?'<div class="sc-more"><button class="sc-btn ghost" data-act="more">이전 주차 더보기</button></div>':'');
 }
 
@@ -649,6 +657,7 @@ function showSub(name){
   if(name!==sub||!root.querySelector('.sc-sub.on')){
     for(const f of Object.values(FOLD))f.open=new Map([...f.keep].map(t=>[t,f.open.get(t)||0]));
     weekPg=0;
+    writePg.clear();
   }
   sub=name;
   lsSet(LS.sub,name);
@@ -779,6 +788,7 @@ async function saveMemo(){
   if(tags.length)memo.tags=tags;
   if(tail&&attachments.length)attachments[attachments.length-1].note=tail;
   memos.unshift(memo);
+  writePg.delete(weekKey(qc));
   clearWrite();
   renderAll();
   btn.disabled=false;
@@ -877,6 +887,7 @@ async function onClick(e){
     lsSet(f.ls,JSON.stringify([...f.keep]));
     return renderAll();
   }
+  if(act==='wr-page'){writePg.set(b.dataset.wk,+b.dataset.pg);return renderAll();}
   if(act==='wk-page'){weekPg=+b.dataset.pg;return renderAll();}
   if(act==='grp-page'){FOLD[b.dataset.kind].open.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='zoom'){
