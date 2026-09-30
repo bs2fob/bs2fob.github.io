@@ -694,6 +694,26 @@ async function saveMemo(){
   await saveMemos();
 }
 
+// 클립보드에서 이미지 하나를 받아 파일 선택과 같은 대기열에 넣는다
+async function pasteImage(b){
+  let items;
+  try{
+    if(!navigator.clipboard||!navigator.clipboard.read)throw new Error('이 브라우저는 클립보드 읽기를 지원하지 않습니다.');
+    items=await navigator.clipboard.read();
+  }catch(e){alert(`클립보드를 읽지 못했습니다.
+${e.message}`);return;}
+  for(const it of items){
+    const type=it.types.find(t=>t.startsWith('image/'));
+    if(!type)continue;
+    const blob=await it.getType(type);
+    const file=new File([blob],`clipboard.${type.split('/')[1]||'png'}`,{type});
+    (b.closest('.sc-edctl')?editPending:pending).push({file,type:'image',url:URL.createObjectURL(file)});
+    renderPreview();
+    return;
+  }
+  alert('클립보드에 이미지가 없습니다.');
+}
+
 function findMemo(id){return memos.find(m=>m.id===+id);}
 
 async function onClick(e){
@@ -701,6 +721,7 @@ async function onClick(e){
   if(!b||!root.contains(b))return;
   const act=b.dataset.act;
   if(act==='sub')return showSub(b.dataset.sub);
+  if(act==='clip')return pasteImage(b);
   if(act==='char'){
     const scope=b.closest('.sc-card, .sc-entry');
     const ta=lastTa&&scope.contains(lastTa)?lastTa:scope.querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
@@ -824,6 +845,7 @@ function setTopic(el,t){el.querySelector('input[type=checkbox]').checked=!!t;el.
 function attachBarHtml(){
   return `<div class="sc-attach-bar">
     <button class="sc-btn ghost" data-act="tail-add" hidden>추가작성</button>
+    <button class="sc-btn ghost" data-act="clip">클립보드</button>
     <label class="sc-btn ghost">이미지<input type="file" accept="image/*" multiple data-type="image"></label>
     <label class="sc-btn ghost">오디오<input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" multiple data-type="audio"></label>
     <label class="sc-btn ghost">PDF<input type="file" accept="application/pdf" multiple data-type="pdf"></label>
