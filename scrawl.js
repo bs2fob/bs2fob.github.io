@@ -544,10 +544,10 @@ async function onClick(e){
   const act=b.dataset.act;
   if(act==='sub')return showSub(b.dataset.sub);
   if(act==='char'){
-    const ta=$('.sc-input'),s=ta.selectionStart,t=b.textContent;
+    const ta=b.closest('.sc-card, .sc-body-wrap').querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
     ta.value=ta.value.slice(0,s)+t+ta.value.slice(ta.selectionEnd);
     ta.selectionStart=ta.selectionEnd=s+t.length;ta.focus();
-    lsSet(LS.draft,ta.value);
+    if(!ta.classList.contains('sc-edit'))lsSet(LS.draft,ta.value);
     return;
   }
   if(act==='save')return saveMemo();
@@ -580,7 +580,7 @@ async function onClick(e){
     const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}`);
     if(!wrap||wrap.querySelector('textarea'))return;
     wrap.closest('.sc-entry').classList.add('editing');
-    wrap.innerHTML=`<textarea class="sc-input sc-edit">${esc(m.body||'')}</textarea>
+    wrap.innerHTML=`${charsHtml()}<textarea class="sc-input sc-edit">${esc(m.body||'')}</textarea>
       <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button></div>`;
     const ta=wrap.querySelector('textarea');
     ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
@@ -616,6 +616,10 @@ function onCancel(e){
   renderAll();
 }
 
+function charsHtml(){
+  return `<div class="sc-chars">${CHARS.map(c=>`<button class="sc-char" data-act="char">${c}</button>`).join('')}</div>`;
+}
+
 function mount(el){
   root=document.createElement('div');
   root.className='sc';
@@ -627,7 +631,7 @@ function mount(el){
     <div class="sc-page" data-page="write">
       <div class="sc-card">
         <div class="sc-stamp"></div>
-        <div class="sc-chars">${CHARS.map(c=>`<button class="sc-char" data-act="char">${c}</button>`).join('')}</div>
+        ${charsHtml()}
         <textarea class="sc-input" placeholder="낙서..."></textarea>
         <div class="sc-attach-bar">
           <label class="sc-btn ghost">이미지<input type="file" accept="image/*" multiple data-type="image"></label>
