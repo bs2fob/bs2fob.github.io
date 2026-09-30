@@ -602,6 +602,7 @@ function renderAll(){
 }
 
 function showSub(name){
+  if(name!==sub||!root.querySelector('.sc-sub.on'))openTags.clear();
   sub=name;
   lsSet(LS.sub,name);
   root.querySelectorAll('.sc-sub').forEach(b=>b.classList.toggle('on',b.dataset.sub===name));
