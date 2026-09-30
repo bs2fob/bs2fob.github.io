@@ -23,7 +23,7 @@ const blobs=new Map();
 
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(e){}}
-function token(){return lsGet(ADMIN)||'';}
+function token(){return lsGet('bs2fob-admin-off')?'':lsGet(ADMIN)||'';}
 function live(){return !!root&&document.body.contains(root);}
 function $(sel){return root.querySelector(sel);}
 

@@ -253,6 +253,18 @@
     <section id="notice" hidden></section>
   </div>
 
+  <div class="admin-modal" id="logout-modal" hidden>
+    <div class="admin-box">
+      <b>로그아웃</b>
+      <div class="hint">로그아웃은 관리자 화면만 끄고 토큰은 이 기기에 남깁니다. 열쇠를 다시 누르면 입력 없이 들어갑니다. 다른 사람과 함께 쓰는 기기라면 토큰까지 지우세요. 낙서장의 기기 사본도 함께 지워집니다.</div>
+      <div class="admin-row">
+        <button class="pg" id="logout-cancel">취소</button>
+        <button class="pg" id="logout-wipe">토큰까지 지우기</button>
+        <button class="pg" id="logout-ok">로그아웃</button>
+      </div>
+    </div>
+  </div>
+
   <div class="admin-modal" id="admin-modal" hidden>
     <div class="admin-box">
       <b>관리자 로그인</b>
@@ -316,6 +328,7 @@
   var cache = {};
   var REPO = 'https://api.github.com/repos/bs2fob/bs2fob.github.io';
   var ADMIN = 'bs2fob-admin';
+  var ADMIN_OFF = 'bs2fob-admin-off';
   var deleting = {};
   var writing = false;
   var publishing = false;
@@ -329,6 +342,9 @@
   document.getElementById('admin-btn').addEventListener('click', adminClick);
   document.getElementById('admin-cancel').addEventListener('click', closeLogin);
   document.getElementById('admin-ok').addEventListener('click', login);
+  document.getElementById('logout-cancel').addEventListener('click', function(){ document.getElementById('logout-modal').hidden = true; });
+  document.getElementById('logout-ok').addEventListener('click', function(){ logout(false); });
+  document.getElementById('logout-wipe').addEventListener('click', function(){ logout(true); });
   document.getElementById('admin-token').addEventListener('keydown', function(e){ if (e.key === 'Enter') login(); });
   document.getElementById('home').addEventListener('click', goHome);
   document.addEventListener('click', playClip);
@@ -949,8 +965,14 @@
 
   // 관리자 토큰은 이 기기에만 두고, 삭제는 저장소의 del_post 작업을 불러 한 커밋으로 처리한다
 
-  function adminToken(){
+  // 로그아웃해도 토큰은 남기고 꺼짐 표시만 둔다
+  function storedToken(){
     try { return localStorage.getItem(ADMIN) || ''; } catch (e) { return ''; }
+  }
+
+  function adminToken(){
+    try { if (localStorage.getItem(ADMIN_OFF)) return ''; } catch (e) {}
+    return storedToken();
   }
 
   function gh(path, token, opt){
@@ -965,13 +987,27 @@
   }
 
   function adminClick(){
-    if (!adminToken()) {
-      document.getElementById('admin-err').hidden = true;
-      document.getElementById('admin-modal').hidden = false;
-      document.getElementById('admin-token').focus();
+    if (adminToken()) { document.getElementById('logout-modal').hidden = false; return; }
+    if (storedToken()) {
+      try { localStorage.removeItem(ADMIN_OFF); } catch (e) {}
+      relist();
       return;
     }
-    try { localStorage.removeItem(ADMIN); } catch (e) {}
+    document.getElementById('admin-err').hidden = true;
+    document.getElementById('admin-modal').hidden = false;
+    document.getElementById('admin-token').focus();
+  }
+
+  function logout(wipe){
+    if (wipe && localStorage.getItem('bs2fob-scrawl-dirty') && !confirm('낙서장에 아직 올라가지 않은 메모가 있습니다. 지우면 사라집니다. 계속합니까?')) return;
+    try {
+      if (wipe) {
+        Object.keys(localStorage).forEach(function(k){
+          if (k === ADMIN || k === ADMIN_OFF || k.indexOf('bs2fob-scrawl-') === 0) localStorage.removeItem(k);
+        });
+      } else localStorage.setItem(ADMIN_OFF, '1');
+    } catch (e) {}
+    document.getElementById('logout-modal').hidden = true;
     relist();
   }
 
@@ -986,7 +1022,7 @@
     if (!token) return;
     gh('/actions/workflows/del_post.yml', token).then(function(r){
       if (!r.ok) throw new Error('토큰 확인 실패 (' + r.status + ')');
-      try { localStorage.setItem(ADMIN, token); } catch (e) {}
+      try { localStorage.setItem(ADMIN, token); localStorage.removeItem(ADMIN_OFF); } catch (e) {}
       closeLogin();
       relist();
     }).catch(function(e){
@@ -1404,7 +1440,7 @@
   }
 })();
 </script>
-<script src="scrawl.js?v=1"></script>
+<script src="scrawl.js?v=2"></script>
 <script data-goatcounter="https://bs2fob.goatcounter.com/count"
         data-goatcounter-settings='{"no_onload": true}'
         async src="//gc.zgo.at/count.js"></script>
