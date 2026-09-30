@@ -901,29 +901,34 @@
     fetch(file + '?t=' + Date.now())
       .then(function(r){ return r.text(); })
       .then(function(html){
-        var doc = new DOMParser().parseFromString(html, 'text/html');
-        var parts = doc.querySelectorAll('.post-head, .epigraph, .ep-trans, main, .gloss');
-        if (!parts.length) return;
-
-        var frag = document.createDocumentFragment(), taken = [];
-        Array.prototype.forEach.call(parts, function(el){
-          if (taken.some(function(p){ return p.contains(el); })) return;
-          taken.push(el);
-          frag.appendChild(document.importNode(el, true));
-        });
-
-        var base = file.replace(/[^/]+$/, '');
-        Array.prototype.forEach.call(frag.querySelectorAll('img'), function(img){
-          var src = img.getAttribute('src') || '';
-          if (src && src.charAt(0) !== '/' && src.indexOf('://') < 0) {
-            img.setAttribute('src', base + src);
-          }
-        });
-
+        var frag = extract(html, file);
+        if (!frag) return;
         cache[file] = frag;
         paint(target, frag, done, post);
       })
       .catch(function(){});
+  }
+
+  function extract(html, file){
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var parts = doc.querySelectorAll('.post-head, .epigraph, .ep-trans, main, .gloss');
+    if (!parts.length) return null;
+
+    var frag = document.createDocumentFragment(), taken = [];
+    Array.prototype.forEach.call(parts, function(el){
+      if (taken.some(function(p){ return p.contains(el); })) return;
+      taken.push(el);
+      frag.appendChild(document.importNode(el, true));
+    });
+
+    var base = file.replace(/[^/]+$/, '');
+    Array.prototype.forEach.call(frag.querySelectorAll('img'), function(img){
+      var src = img.getAttribute('src') || '';
+      if (src && src.charAt(0) !== '/' && src.indexOf('://') < 0) {
+        img.setAttribute('src', base + src);
+      }
+    });
+    return frag;
   }
 
   function paint(target, frag, done, post){
@@ -1410,27 +1415,66 @@
 
     ed.saving = true;
     lockEdit(true);
-    edMsg('저장 중입니다. 1~2분 걸립니다.');
+    edMsg('저장 요청 중입니다.');
     var since = Date.now() - 10000;
+    var post = ed.post, oldTitle = ed.v.title;
     gh('/actions/workflows/edit_post.yml/dispatches', token, {
       method: 'POST',
       body: JSON.stringify({ ref: 'main', inputs: { file: ed.file, edits: payload, title: title } })
     }).then(function(r){
       if (r.status !== 204) throw new Error('저장 요청 실패 (' + r.status + ')');
-      return waitRun(token, since, 'edit_post.yml');
-    }).then(function(){
-      edMsg('저장소에 올라갔습니다. 사이트 반영을 기다립니다.');
-      return waitChange(ed.file, ed.raw);
-    }).then(function(){
+      var frag = extract(applyEdits(ed.raw, edits), ed.file);
+      if (frag) cache[ed.file] = frag;
       if (title) ed.v.title = title;
-      cache = {};
-      if (current === ed.post.stamp) apply({ stamp: current, tab: tab, page: page });
+      post.pending = true;
+      editing = null;
+      refreshPost(post);
+      waitRun(token, since, 'edit_post.yml').then(function(){
+        return waitChange(ed.file, ed.raw);
+      }).then(function(){
+        delete post.pending;
+        delete cache[ed.file];
+        refreshPost(post);
+      }).catch(function(e){
+        delete post.pending;
+        delete cache[ed.file];
+        ed.v.title = oldTitle;
+        refreshPost(post);
+        alert('수정을 저장하지 못했습니다. 화면을 원래 글로 되돌렸습니다.\n' + e.message);
+      });
     }).catch(function(e){
       ed.saving = false;
       if (editing !== ed) return alert(e.message);
       lockEdit(false);
       edMsg(e.message, true);
     });
+  }
+
+  // 그 글을 보고 있으면 제자리에서 다시 그리고, 목록이면 목록을 다시 그린다
+  function refreshPost(post){
+    if (editing) return;
+    if (current === post.stamp) load(post, bodyEl);
+    else if (!current) renderList();
+  }
+
+  // 서버의 edit_post.py 와 같은 순번으로 원본 문자열에 고친 자리를 끼워 넣는다
+  function applyEdits(raw, edits){
+    var segs = [], paras = [], last = 0, open = -1, m;
+    TOKEN_RE.lastIndex = 0;
+    while ((m = TOKEN_RE.exec(raw))) {
+      if (TEXT_RE.test(raw.slice(last, m.index))) segs.push([last, m.index]);
+      last = TOKEN_RE.lastIndex;
+      if (/^<p[\s>]/i.test(m[0])) open = last;
+      else if (/^<\/p\s*>/i.test(m[0]) && open >= 0) { paras.push([open, m.index]); open = -1; }
+    }
+    if (TEXT_RE.test(raw.slice(last))) segs.push([last, raw.length]);
+    var swaps = edits.map(function(e){
+      var at = Array.isArray(e) ? segs[e[0]] : paras[e.p];
+      return [at[0], at[1], Array.isArray(e) ? e[2] : e.new];
+    });
+    swaps.sort(function(a, b){ return b[0] - a[0]; });
+    swaps.forEach(function(x){ raw = raw.slice(0, x[0]) + x[2] + raw.slice(x[1]); });
+    return raw;
   }
 
   // 사이트가 고친 판을 내줄 때까지 기다린다
