@@ -36,16 +36,17 @@ def segments(raw):
     return out
 
 
-# <p> 안쪽 HTML 의 위치. 브라우저의 rawParas 와 같은 순번을 매긴다
+# <p> 의 안쪽·바깥쪽 위치와 앞 공백. 브라우저의 rawParas·applyEdits 와 같은 순번을 매긴다
 def paragraphs(raw):
-    out, start = [], -1
+    out, tag = [], None
     for m in TOKEN_RE.finditer(raw):
         t = m.group(0)
         if re.match(r"<p[\s>]", t, re.I):
-            start = m.end()
-        elif re.match(r"</p\s*>", t, re.I) and start >= 0:
-            out.append((start, m.start()))
-            start = -1
+            tag = m
+        elif re.match(r"</p\s*>", t, re.I) and tag:
+            ws = re.search(r"[ \t\r\n]*$", raw[:tag.start()]).group(0)
+            out.append(dict(s=tag.end(), e=m.start(), os=tag.start() - len(ws), oe=m.end(), ws=ws or "\n"))
+            tag = None
     return out
 
 
@@ -65,12 +66,21 @@ def main():
     swaps = []
     for e in edits:
         if isinstance(e, dict):
-            j, old, new = e["p"], e["old"], e["new"]
-            if not (0 <= j < len(paras)) or raw[paras[j][0]:paras[j][1]] != old:
+            j = e["a"] if "add" in e else e["p"]
+            if not (0 <= j < len(paras)) or raw[paras[j]["s"]:paras[j]["e"]] != e["old"]:
                 sys.exit("원본이 바뀌어 %d 번 문단이 맞지 않습니다" % j)
-            if BLOCK_RE.search(new):
-                sys.exit("%d 번 문단에 블록 태그가 들어 있습니다" % j)
-            swaps.append((paras[j][0], paras[j][1], new))
+            q = paras[j]
+            if "add" in e:
+                if any(BLOCK_RE.search(t) for t in e["add"]):
+                    sys.exit("%d 번 문단 뒤 추가 문단에 블록 태그가 들어 있습니다" % j)
+                gap = paras[j + 1]["ws"] if j + 1 < len(paras) else q["ws"]
+                swaps.append((q["oe"], q["oe"], "".join(gap + "<p>" + t + "</p>" for t in e["add"])))
+            elif e["new"] == "":
+                swaps.append((q["os"], q["oe"], ""))
+            else:
+                if BLOCK_RE.search(e["new"]):
+                    sys.exit("%d 번 문단에 블록 태그가 들어 있습니다" % j)
+                swaps.append((q["s"], q["e"], e["new"]))
         else:
             i, old, new = e
             if not (0 <= i < len(segs)) or raw[segs[i][0]:segs[i][1]] != old:

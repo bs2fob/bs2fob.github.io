@@ -67,6 +67,9 @@
 .ed-t:focus{outline:1px dotted var(--accent);background:var(--surface2)}
 .ed-p{display:block;width:100%;box-sizing:border-box;margin:0 0 1.15em;padding:8px 10px;background:var(--surface);color:var(--text);border:1px dotted var(--border2);border-radius:var(--radius-sm);font-family:Consolas,D2,monospace;font-size:13.5px;line-height:1.7;resize:vertical;overflow:hidden}
 .ed-p:focus{outline:none;border-color:var(--accent)}
+.ed-add{display:none;margin:-0.6em 0 1.15em;background:none;border:1px dotted var(--border2);border-radius:var(--radius-sm);color:var(--text3);font-family:inherit;font-size:12px;padding:3px 12px;cursor:pointer}
+.ed-add:hover{color:var(--accent);border-color:var(--accent)}
+.ed-p.cur + .ed-add{display:block}
 .log-tools{display:flex;justify-content:flex-end;margin:-10px 0 14px}
 .editor{display:flex;flex-direction:column;gap:10px;margin-bottom:34px}
 .editor input,.editor textarea{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;line-height:1.7;padding:9px 12px}
@@ -1354,28 +1357,53 @@
         n.parentNode.replaceChild(sp, n);
       });
       var areas = shownP.map(function(p, k){
-        var ta = document.createElement('textarea');
         var j = docAllP.indexOf(docP[k]);
-        ta.className = 'ed-p';
-        ta.spellcheck = false;
-        ta.value = paras[j];
+        var ta = paraBox(paras[j], j);
         ta.dataset.j = j;
         p.style.display = 'none';
         p.parentNode.insertBefore(ta, p.nextSibling);
-        ta.addEventListener('input', function(){ fitArea(ta); });
+        ta.parentNode.insertBefore(ta.addBtn, ta.nextSibling);
         return ta;
       });
       editing = { post: post, v: got.v, file: file, raw: raw, segs: segs, all: all, paras: paras };
 
       var bar = document.createElement('div');
       bar.className = 'edit-bar';
-      bar.innerHTML = '<div class="ed-msg" id="ed-msg">문단은 태그째로, 표제와 장 제목은 점선 칸에서 고친 뒤 저장하세요.</div>'
+      bar.innerHTML = '<div class="ed-msg" id="ed-msg">문단은 태그째로 고치고, 비우면 지워지고, 칸 아래 + 로 새 문단을 넣습니다. 표제와 장 제목은 점선 칸에서 고칩니다.</div>'
         + '<div class="admin-row"><button class="pg" id="ed-cancel">취소</button><button class="pg" id="ed-send">저장</button></div>';
       bodyEl.insertBefore(bar, bodyEl.firstChild);
       areas.forEach(fitArea);
       document.getElementById('ed-cancel').addEventListener('click', function(){ apply({ stamp: current, tab: tab, page: page }); });
       document.getElementById('ed-send').addEventListener('click', saveEdit);
     }).catch(function(e){ alert(e.message); });
+  }
+
+  // 문단 입력칸과 그 아래 문단 추가 단추. 단추는 편집 중인 칸 아래에만 보인다
+  function paraBox(value, anchor){
+    var ta = document.createElement('textarea');
+    ta.className = 'ed-p';
+    ta.spellcheck = false;
+    ta.value = value;
+    ta.dataset.a = anchor;
+    ta.addEventListener('input', function(){ fitArea(ta); });
+    ta.addEventListener('focus', function(){
+      bodyEl.querySelectorAll('.ed-p.cur').forEach(function(x){ x.classList.remove('cur'); });
+      ta.classList.add('cur');
+    });
+    var add = document.createElement('button');
+    add.className = 'ed-add';
+    add.textContent = '+ 문단 추가';
+    add.addEventListener('mousedown', function(e){ e.preventDefault(); });
+    add.addEventListener('click', function(){
+      var nb = paraBox('', anchor);
+      nb.classList.add('ed-new');
+      add.parentNode.insertBefore(nb, add.nextSibling);
+      nb.parentNode.insertBefore(nb.addBtn, nb.nextSibling);
+      fitArea(nb);
+      nb.focus();
+    });
+    ta.addBtn = add;
+    return ta;
   }
 
   function lockEdit(on){
@@ -1399,13 +1427,24 @@
       edits.push([i, ed.segs[i], encodeText(t)]);
       if (sp.closest('.post-title')) titled = true;
     });
+    var adds = {};
     bodyEl.querySelectorAll('.ed-p').forEach(function(ta, n){
-      var j = +ta.dataset.j, old = ed.paras[j], t = ta.value;
-      if (err || t === old) return;
+      if (err) return;
+      var j = +ta.dataset.a, old = ed.paras[j], t = ta.value;
+      if (ta.classList.contains('ed-new')) {
+        if (!TEXT_RE.test(t)) return;
+        var whyNew = checkPara(t, '');
+        if (whyNew) { err = (n + 1) + '번째 문단: ' + whyNew; ta.focus(); return; }
+        (adds[j] = adds[j] || []).push(t);
+        return;
+      }
+      if (!TEXT_RE.test(t)) t = '';
+      if (t === old) return;
       var why = checkPara(t, old);
       if (why) { err = (n + 1) + '번째 문단: ' + why; ta.focus(); return; }
       edits.push({ p: j, old: old, new: t });
     });
+    Object.keys(adds).forEach(function(j){ edits.push({ a: +j, old: ed.paras[j], add: adds[j] }); });
     if (err) return edMsg(err, true);
     if (!edits.length) return apply({ stamp: current, tab: tab, page: page });
     var h = bodyEl.querySelector('.post-title');
@@ -1457,22 +1496,29 @@
     else if (!current) renderList();
   }
 
-  // 서버의 edit_post.py 와 같은 순번으로 원본 문자열에 고친 자리를 끼워 넣는다
+  // 서버의 edit_post.py 와 같은 규칙으로 원본 문자열에 고친 자리를 끼워 넣는다. 비운 문단은 지우고 추가 문단은 기준 문단 뒤에 붙인다
   function applyEdits(raw, edits){
-    var segs = [], paras = [], last = 0, open = -1, m;
+    var segs = [], paras = [], last = 0, open = null, m;
     TOKEN_RE.lastIndex = 0;
     while ((m = TOKEN_RE.exec(raw))) {
       if (TEXT_RE.test(raw.slice(last, m.index))) segs.push([last, m.index]);
       last = TOKEN_RE.lastIndex;
-      if (/^<p[\s>]/i.test(m[0])) open = last;
-      else if (/^<\/p\s*>/i.test(m[0]) && open >= 0) { paras.push([open, m.index]); open = -1; }
+      if (/^<p[\s>]/i.test(m[0])) open = [m.index, last];
+      else if (/^<\/p\s*>/i.test(m[0]) && open) {
+        var ws = raw.slice(0, open[0]).match(/[ \t\r\n]*$/)[0];
+        paras.push({ s: open[1], e: m.index, os: open[0] - ws.length, oe: last, ws: ws || '\n' });
+        open = null;
+      }
     }
     if (TEXT_RE.test(raw.slice(last))) segs.push([last, raw.length]);
     var swaps = edits.map(function(e){
-      var at = Array.isArray(e) ? segs[e[0]] : paras[e.p];
-      return [at[0], at[1], Array.isArray(e) ? e[2] : e.new];
+      if (Array.isArray(e)) return [segs[e[0]][0], segs[e[0]][1], e[2]];
+      var q = paras[e.a !== undefined ? e.a : e.p];
+      var gap = (paras[e.a + 1] || q).ws;
+      if (e.add) return [q.oe, q.oe, e.add.map(function(t){ return gap + '<p>' + t + '</p>'; }).join('')];
+      return e.new === '' ? [q.os, q.oe, ''] : [q.s, q.e, e.new];
     });
-    swaps.sort(function(a, b){ return b[0] - a[0]; });
+    swaps.sort(function(a, b){ return b[0] - a[0] || b[1] - a[1]; });
     swaps.forEach(function(x){ raw = raw.slice(0, x[0]) + x[2] + raw.slice(x[1]); });
     return raw;
   }
