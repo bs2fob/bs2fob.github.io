@@ -7,20 +7,20 @@ const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
 const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics'};
 const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
-const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['topic','주제']];
+const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['tag','태그']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
 
 let root=null;
 let sub=lsGet(LS.sub)||'write';
-if(sub==='pin')sub='topic';
+if(sub==='pin'||sub==='topic')sub='tag';
 let memos=cacheLoad()||[];
 let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
 let pending=[],editPending=[],lastTa=null;
 let weeksShown=1;
 let openWeek=null;
-let openTopics=new Set();
-let topicOrder=readOrder(),orderSha,drag=null,dragClick=false;
+let openTags=new Set();
+let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
 let sync={state:'',text:''};
 const blobs=new Map();
@@ -268,7 +268,7 @@ async function saveMemos({quiet=false}={}){
   }
 }
 
-// 주제 순서는 덩어리와 따로 topics.json 한 파일에 두고 mt 가 최신인 쪽을 쓴다
+// 태그 순서는 덩어리와 따로 topics.json 한 파일에 두고 mt 가 최신인 쪽을 쓴다
 function readOrder(){
   try{const v=JSON.parse(lsGet(LS.order)||'null');if(v&&Array.isArray(v.order))return v;}catch(e){}
   return {order:[],mt:0};
@@ -285,17 +285,17 @@ async function fetchOrder(){
 async function loadOrder(){
   try{
     const v=await fetchOrder();
-    if(v&&(v.mt||0)>(topicOrder.mt||0)){
-      topicOrder=v;lsSet(LS.order,JSON.stringify(v));
-      if(sub==='topic'&&!drag)renderAll();
-    }else if((topicOrder.mt||0)>((v&&v.mt)||0))await saveOrder();
+    if(v&&(v.mt||0)>(tagOrder.mt||0)){
+      tagOrder=v;lsSet(LS.order,JSON.stringify(v));
+      if(sub==='tag'&&!drag)renderAll();
+    }else if((tagOrder.mt||0)>((v&&v.mt)||0))await saveOrder();
   }catch(e){}
 }
 async function saveOrder(){
-  lsSet(LS.order,JSON.stringify(topicOrder));
+  lsSet(LS.order,JSON.stringify(tagOrder));
   if(!token())return;
   const body=()=>{
-    const b={message:`scrawl topics ${buildQcode(new Date())}`,content:b64enc(JSON.stringify(topicOrder))};
+    const b={message:`scrawl topics ${buildQcode(new Date())}`,content:b64enc(JSON.stringify(tagOrder))};
     if(orderSha)b.sha=orderSha;
     return b;
   };
@@ -305,7 +305,7 @@ async function saveOrder(){
     if(r.status===409||r.status===422){await fetchOrder();r=await put(ORDER_PATH,body());}
     if(!r.ok)throw new Error(`HTTP ${r.status}`);
     orderSha=(await r.json()).content.sha;
-  }catch(e){setSync('err','주제 순서 저장 대기 · 로컬 보관');}
+  }catch(e){setSync('err','태그 순서 저장 대기 · 로컬 보관');}
 }
 
 // ── 첨부 ──
@@ -426,7 +426,7 @@ function attachHtml(list,id,kw){
 
 function entryHtml(m,kw,ctx){
   return `<div class="sc-entry">
-    <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${topicOf(m)?`<b class="sc-pin-tag">${esc(topicOf(m))}</b>`:''}</div>
+    <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${tagsOf(m).map(t=>`<b class="sc-pin-tag">${esc(t)}</b>`).join('')}</div>
     <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${m.body?`<div class="sc-body">${highlight(m.body,kw)}</div>`:''}</div>
     ${attachHtml(m.attachments,m.id,kw)}
     ${m.tail?`<div class="sc-body-wrap sc-tail"><div class="sc-body">${highlight(m.tail,kw)}</div></div>`:''}
@@ -495,7 +495,7 @@ function renderSearch(){
   if(!kw){label.textContent='';out.innerHTML='';return;}
   const qcOnly=/^\d{2}w\d{2}\d?$/.test(kw);
   const hits=qcOnly?memos.filter(m=>m.qc.startsWith(kw)):memos.filter(m=>
-    (m.body&&m.body.includes(kw))||(m.tail&&m.tail.includes(kw))||topicOf(m).includes(kw)||m.qc.includes(kw)||
+    (m.body&&m.body.includes(kw))||(m.tail&&m.tail.includes(kw))||tagsOf(m).some(t=>t.includes(kw))||m.qc.includes(kw)||
     (m.attachments||[]).some(a=>(a.origName||'').includes(kw)||(a.filename||'').includes(kw)));
   const groups=groupByWeek(hits);
   const keys=[...groups.keys()].sort().reverse();
@@ -503,30 +503,33 @@ function renderSearch(){
   out.innerHTML=hits.length?keys.map(wk=>weekHtml(wk,groups.get(wk),'s',qcOnly?'':kw)).join(''):'<div class="sc-empty">결과 없음</div>';
 }
 
-function topicOf(m){return m.topic||(m.pin?'비망':'');}
-function topicGroups(){
+function tagsOf(m){
+  if(Array.isArray(m.tags))return m.tags;
+  if(m.topic)return [m.topic];
+  return m.pin?['비망']:[];
+}
+function parseTags(s){return [...new Set(s.split(/[,，]/).map(t=>t.trim()).filter(Boolean))];}
+function tagGroups(){
   const map=new Map();
-  for(const m of memos){
-    const t=topicOf(m);
-    if(!t)continue;
+  for(const m of memos)for(const t of tagsOf(m)){
     if(!map.has(t))map.set(t,[]);
     map.get(t).push(m);
   }
-  const rank=new Map(topicOrder.order.map((t,i)=>[t,i]));
+  const rank=new Map(tagOrder.order.map((t,i)=>[t,i]));
   const keys=[...map.keys()].sort((a,b)=>rank.has(a)&&rank.has(b)?rank.get(a)-rank.get(b):rank.has(a)?-1:rank.has(b)?1:a.localeCompare(b,'ko'));
   return {map,keys};
 }
-function renderTopic(){
-  const {map,keys}=topicGroups();
-  $('.sc-page[data-page=topic]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map(t=>{
-    const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id),on=openTopics.has(t);
-    return `<div class="sc-tgrp" data-tp="${esc(t)}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="topic" data-tp="${esc(t)}">
+function renderTag(){
+  const {map,keys}=tagGroups();
+  $('.sc-page[data-page=tag]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map((t,i)=>{
+    const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id),on=openTags.has(t);
+    return `<div class="sc-tgrp" data-tp="${esc(t)}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="tag" data-tp="${esc(t)}">
       <div><div class="sc-wrow-label">${esc(t)}</div><div class="sc-wrow-meta">${items.length}건</div></div><span>›</span>
-    </div>${on?`<div class="sc-tbody">${scrollHtml(items,'t','')}</div>`:''}</div>`;
-  }).join('')+'</div>':'<div class="sc-empty">주제가 붙은 메모가 없습니다.</div>';
+    </div>${on?`<div class="sc-tbody">${scrollHtml(items,'t'+i,'')}</div>`:''}</div>`;
+  }).join('')+'</div>':'<div class="sc-empty">태그가 붙은 메모가 없습니다.</div>';
 }
 
-// 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 주제 줄을 끌어 순서를 바꾼다
+// 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 태그 줄을 끌어 순서를 바꾼다
 function dragStart(e){
   const row=e.target.closest('.sc-trow');
   if(!row||e.button>0||drag)return;
@@ -570,9 +573,9 @@ function dragEnd(){
   d.grp.classList.remove('dragging');
   dragClick=true;setTimeout(()=>{dragClick=false;},0);
   const shown=[...d.grp.parentElement.children].map(g=>g.dataset.tp);
-  const order=shown.concat(topicOrder.order.filter(t=>!shown.includes(t)));
-  if(JSON.stringify(order)===JSON.stringify(topicOrder.order))return;
-  topicOrder={order,mt:Date.now()};
+  const order=shown.concat(tagOrder.order.filter(t=>!shown.includes(t)));
+  if(JSON.stringify(order)===JSON.stringify(tagOrder.order))return;
+  tagOrder={order,mt:Date.now()};
   saveOrder();
 }
 
@@ -581,7 +584,7 @@ function renderAll(){
   if(sub==='write')renderWrite();
   if(sub==='weeks')renderWeeks();
   if(sub==='search')renderSearch();
-  if(sub==='topic')renderTopic();
+  if(sub==='tag')renderTag();
   hydrate();
 }
 
@@ -644,7 +647,7 @@ function updateQnow(){
 function clearWrite(){
   $('.sc-input').value='';
   fit($('.sc-input'));
-  setTopic($('.sc-card .sc-tp'),'');
+  setTags($('.sc-card .sc-tp'),[]);
   const tl=$('.sc-card .sc-tplist');if(tl)tl.remove();
   lsSet(LS.draft,null);
   pending.forEach(a=>URL.revokeObjectURL(a.url));
@@ -683,14 +686,14 @@ async function saveMemo(){
   const prog=$('.sc-prog');
   btn.disabled=true;
   const qc=buildQcode(new Date());
-  const topic=readTopic($('.sc-card .sc-tp'));
+  const tags=readTags($('.sc-card .sc-tp'));
   const tIn=$('.sc-card .sc-tailin'),tail=tIn?tIn.value.trim():'';
   let attachments;
   try{attachments=await uploadAll(qc,pending,prog);}
   catch(e){btn.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
   const now=Date.now();
   const memo={id:now,qc,body,attachments,mt:now};
-  if(topic)memo.topic=topic;
+  if(tags.length)memo.tags=tags;
   if(tail)memo.tail=tail;
   memos.unshift(memo);
   clearWrite();
@@ -730,16 +733,17 @@ async function onClick(e){
   if(act==='tp-pick'){
     const row=b.closest('.sc-row'),open=row.nextElementSibling;
     if(open&&open.classList.contains('sc-tplist'))return open.remove();
-    const keys=topicGroups().keys;
+    const keys=tagGroups().keys;
     row.insertAdjacentHTML('afterend',`<div class="sc-tplist">${keys.length
       ?keys.map(t=>`<button class="sc-tpchip" data-act="tp-set" data-tp="${esc(t)}">${esc(t)}</button>`).join('')
-      :'<span class="sc-tpnone">등록된 주제가 없습니다.</span>'}</div>`);
+      :'<span class="sc-tpnone">등록된 태그가 없습니다.</span>'}</div>`);
     return;
   }
   if(act==='tp-set'){
-    const list=b.closest('.sc-tplist'),tp=list.previousElementSibling.querySelector('.sc-tp');
-    setTopic(tp,b.dataset.tp);
-    list.remove();
+    const tp=b.closest('.sc-tplist').previousElementSibling.querySelector('.sc-tp');
+    const cur=parseTags(tp.querySelector('.sc-topic').value);
+    if(!cur.includes(b.dataset.tp))cur.push(b.dataset.tp);
+    setTags(tp,cur);
     return;
   }
   if(act==='char'){
@@ -773,7 +777,7 @@ async function onClick(e){
   if(act==='more'){weeksShown++;renderAll();return loadAllShards();}
   if(act==='fold')return b.nextElementSibling.classList.toggle('folded');
   if(act==='week'){openWeek=b.dataset.wk;return renderAll();}
-  if(act==='topic'){if(dragClick)return;const t=b.dataset.tp;openTopics.has(t)?openTopics.delete(t):openTopics.add(t);return renderAll();}
+  if(act==='tag'){if(dragClick)return;const t=b.dataset.tp;openTags.has(t)?openTags.delete(t):openTags.add(t);return renderAll();}
   if(act==='weeks-back'){openWeek=null;return renderAll();}
   if(act==='zoom'){
     if(!b.src)return;
@@ -802,7 +806,7 @@ async function onClick(e){
     tail.insertAdjacentHTML('beforebegin','<div class="sc-preview"></div>');
     tail.innerHTML=m.tail?tailTaHtml(m.tail,'sc-edit'):'';
     acts.insertAdjacentHTML('beforebegin',`<div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
-      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${topicHtml(topicOf(m))}</div></div>`);
+      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${tagHtml(tagsOf(m))}</div></div>`);
     syncTail(entry);
     const ta=wrap.querySelector('textarea');
     entry.querySelectorAll('textarea').forEach(fit);
@@ -820,8 +824,9 @@ async function onClick(e){
     m.body=entry.querySelector('.sc-body-wrap:not(.sc-tail) .sc-edit').value.trim();
     if(t)m.tail=t;else delete m.tail;
     if(added.length)m.attachments=(m.attachments||[]).concat(added);
-    const tp=readTopic(ctl.querySelector('.sc-tp'));
-    if(tp)m.topic=tp;else delete m.topic;
+    const tg=readTags(ctl.querySelector('.sc-tp'));
+    if(tg.length)m.tags=tg;else delete m.tags;
+    delete m.topic;
     delete m.pin;
     m.mt=Date.now();
     renderAll();
@@ -856,11 +861,11 @@ function onCancel(e){
   renderAll();
 }
 
-function topicHtml(t){
-  return `<span class="sc-tp"><label class="sc-pin"><input type="checkbox"${t?' checked':''}>주제</label><input class="sc-topic" type="text" maxlength="10" value="${esc(t||'비망')}"><button class="sc-btn ghost sc-tpbtn" data-act="tp-pick">선택</button></span>`;
+function tagHtml(tags){
+  return `<span class="sc-tp"><label class="sc-pin"><input type="checkbox"${tags.length?' checked':''}>태그</label><input class="sc-topic" type="text" placeholder="쉼표로 구분" value="${esc(tags.join(', '))}"><button class="sc-btn ghost sc-tpbtn" data-act="tp-pick">선택</button></span>`;
 }
-function readTopic(el){return el.querySelector('input[type=checkbox]').checked?el.querySelector('.sc-topic').value.trim()||'비망':'';}
-function setTopic(el,t){el.querySelector('input[type=checkbox]').checked=!!t;el.querySelector('.sc-topic').value=t||'비망';}
+function readTags(el){return el.querySelector('input[type=checkbox]').checked?parseTags(el.querySelector('.sc-topic').value):[];}
+function setTags(el,tags){el.querySelector('input[type=checkbox]').checked=!!tags.length;el.querySelector('.sc-topic').value=tags.join(', ');}
 
 function attachBarHtml(){
   return `<div class="sc-attach-bar">
@@ -893,7 +898,7 @@ function mount(el){
         <div class="sc-body-wrap sc-tail"></div>
         ${attachBarHtml()}
         <div class="sc-prog" hidden></div>
-        <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button>${topicHtml('')}</div>
+        <div class="sc-row"><button class="sc-btn" data-act="save">저장</button><button class="sc-btn ghost" data-act="clear">지우기</button>${tagHtml([])}</div>
       </div>
       <div class="sc-cur"></div>
     </div>
@@ -903,7 +908,7 @@ function mount(el){
       <div class="sc-label"></div>
       <div class="sc-results"></div>
     </div>
-    <div class="sc-page" data-page="topic"></div>
+    <div class="sc-page" data-page="tag"></div>
     <div class="sc-lightbox" data-act="lightbox" hidden><img alt=""></div>`;
   el.innerHTML='';
   el.appendChild(root);
