@@ -482,7 +482,18 @@ function showSub(name){
   renderAll();
   if(name!=='write')loadAllShards();
   if(name==='search')$('.sc-search').focus();
+  fitAll();
 }
+
+// 입력 칸 높이를 글 높이에 한 줄 여유를 더한 값으로 맞춘다. 최소 높이는 서식이 정한다
+function fit(ta){
+  if(!ta.offsetParent)return;
+  const min=ta.style.minHeight;
+  ta.style.minHeight='0';ta.style.height='0';
+  const h=ta.scrollHeight+parseFloat(getComputedStyle(ta).lineHeight)+ta.offsetHeight-ta.clientHeight;
+  ta.style.minHeight=min;ta.style.height=h+'px';
+}
+function fitAll(){if(live())root.querySelectorAll('textarea.sc-input').forEach(fit);}
 
 function renderPreview(){
   $('.sc-card .sc-preview').innerHTML=previewHtml(pending,'unpend');
@@ -521,6 +532,7 @@ function updateQnow(){
 
 function clearWrite(){
   $('.sc-input').value='';
+  fit($('.sc-input'));
   $('.sc-card .sc-pin input').checked=false;
   lsSet(LS.draft,null);
   pending.forEach(a=>URL.revokeObjectURL(a.url));
@@ -586,7 +598,7 @@ async function onClick(e){
     const scope=b.closest('.sc-card, .sc-entry');
     const ta=lastTa&&scope.contains(lastTa)?lastTa:scope.querySelector('textarea'),s=ta.selectionStart,t=b.textContent;
     ta.value=ta.value.slice(0,s)+t+ta.value.slice(ta.selectionEnd);
-    ta.selectionStart=ta.selectionEnd=s+t.length;ta.focus();
+    ta.selectionStart=ta.selectionEnd=s+t.length;ta.focus();fit(ta);
     if(ta===$('.sc-input'))lsSet(LS.draft,ta.value);
     return;
   }
@@ -595,6 +607,7 @@ async function onClick(e){
     const slot=scope.querySelector('.sc-tail');
     slot.innerHTML=tailTaHtml('',scope.classList.contains('sc-card')?'':'sc-edit');
     syncTail(scope);
+    fit(slot.querySelector('textarea'));
     return slot.querySelector('textarea').focus();
   }
   if(act==='save')return saveMemo();
@@ -643,6 +656,7 @@ async function onClick(e){
       <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${pinHtml(m.pin)}</div></div>`);
     syncTail(entry);
     const ta=wrap.querySelector('textarea');
+    entry.querySelectorAll('textarea').forEach(fit);
     ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
     return;
   }
@@ -743,6 +757,7 @@ function mount(el){
   root.addEventListener('click',onClick);
   root.addEventListener('click',onCancel);
   root.addEventListener('focusin',e=>{if(e.target.matches('textarea'))lastTa=e.target;});
+  root.addEventListener('input',e=>{if(e.target.matches('textarea.sc-input'))fit(e.target);});
   const ta=$('.sc-input');
   ta.value=lsGet(LS.draft)||'';
   ta.addEventListener('input',()=>lsSet(LS.draft,ta.value));
@@ -773,6 +788,7 @@ setInterval(()=>{if(token()&&isDirty())saveMemos({quiet:true});},60000);
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'&&live())loadMemos();
 });
+window.addEventListener('resize',fitAll);
 window.addEventListener('beforeunload',e=>{
   if(!isDirty()&&!pending.length&&!editPending.length)return;
   e.preventDefault();
