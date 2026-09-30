@@ -5,7 +5,8 @@ const REPO='https://api.github.com/repos/bs2fob/scrawl';
 const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
-const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub'};
+const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics'};
+const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
 const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['topic','주제']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
 
@@ -19,6 +20,7 @@ let pending=[],editPending=[],lastTa=null;
 let weeksShown=1;
 let openWeek=null;
 let openTopics=new Set();
+let topicOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
 let sync={state:'',text:''};
 const blobs=new Map();
@@ -173,6 +175,7 @@ async function loadMemos(){
   setSync('busy','불러오는 중...');
   try{
     await checkRepo();
+    loadOrder();
     const cur=currentShard();
     const st=await fetchShard(cur);
     memos=mergeLogs(st.logs,memos);
@@ -263,6 +266,46 @@ async function saveMemos({quiet=false}={}){
   }finally{
     saving=false;
   }
+}
+
+// 주제 순서는 덩어리와 따로 topics.json 한 파일에 두고 mt 가 최신인 쪽을 쓴다
+function readOrder(){
+  try{const v=JSON.parse(lsGet(LS.order)||'null');if(v&&Array.isArray(v.order))return v;}catch(e){}
+  return {order:[],mt:0};
+}
+async function fetchOrder(){
+  const r=await gh(ORDER_PATH);
+  if(r.status===404){orderSha=null;return null;}
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  const d=await r.json();
+  orderSha=d.sha;
+  const v=JSON.parse(b64dec(d.content));
+  return v&&Array.isArray(v.order)?v:null;
+}
+async function loadOrder(){
+  try{
+    const v=await fetchOrder();
+    if(v&&(v.mt||0)>(topicOrder.mt||0)){
+      topicOrder=v;lsSet(LS.order,JSON.stringify(v));
+      if(sub==='topic'&&!drag)renderAll();
+    }else if((topicOrder.mt||0)>((v&&v.mt)||0))await saveOrder();
+  }catch(e){}
+}
+async function saveOrder(){
+  lsSet(LS.order,JSON.stringify(topicOrder));
+  if(!token())return;
+  const body=()=>{
+    const b={message:`scrawl topics ${buildQcode(new Date())}`,content:b64enc(JSON.stringify(topicOrder))};
+    if(orderSha)b.sha=orderSha;
+    return b;
+  };
+  try{
+    if(orderSha===undefined)await fetchOrder();
+    let r=await put(ORDER_PATH,body());
+    if(r.status===409||r.status===422){await fetchOrder();r=await put(ORDER_PATH,body());}
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    orderSha=(await r.json()).content.sha;
+  }catch(e){setSync('err','주제 순서 저장 대기 · 로컬 보관');}
 }
 
 // ── 첨부 ──
@@ -469,13 +512,64 @@ function renderTopic(){
     if(!map.has(t))map.set(t,[]);
     map.get(t).push(m);
   }
-  const keys=[...map.keys()].sort((a,b)=>a.localeCompare(b,'ko'));
-  $('.sc-page[data-page=topic]').innerHTML=keys.length?keys.map(t=>{
+  const rank=new Map(topicOrder.order.map((t,i)=>[t,i]));
+  const keys=[...map.keys()].sort((a,b)=>rank.has(a)&&rank.has(b)?rank.get(a)-rank.get(b):rank.has(a)?-1:rank.has(b)?1:a.localeCompare(b,'ko'));
+  $('.sc-page[data-page=topic]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map(t=>{
     const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id),on=openTopics.has(t);
-    return `<div class="sc-wrow sc-trow${on?' on':''}" data-act="topic" data-tp="${esc(t)}">
+    return `<div class="sc-tgrp" data-tp="${esc(t)}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="topic" data-tp="${esc(t)}">
       <div><div class="sc-wrow-label">${esc(t)}</div><div class="sc-wrow-meta">${items.length}건</div></div><span>›</span>
-    </div>${on?`<div class="sc-tbody">${scrollHtml(items,'t','')}</div>`:''}`;
-  }).join(''):'<div class="sc-empty">주제가 붙은 메모가 없습니다.</div>';
+    </div>${on?`<div class="sc-tbody">${scrollHtml(items,'t','')}</div>`:''}</div>`;
+  }).join('')+'</div>':'<div class="sc-empty">주제가 붙은 메모가 없습니다.</div>';
+}
+
+// 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 주제 줄을 끌어 순서를 바꾼다
+function dragStart(e){
+  const row=e.target.closest('.sc-trow');
+  if(!row||e.button>0||drag)return;
+  const grp=row.parentElement;
+  drag={grp,y0:e.clientY,on:false,touch:e.pointerType!=='mouse'};
+  if(drag.touch)drag.timer=setTimeout(()=>dragBegin(),350);
+  window.addEventListener('pointermove',dragMove);
+  window.addEventListener('pointerup',dragEnd);
+  window.addEventListener('pointercancel',dragEnd);
+}
+function dragBegin(){
+  if(!drag)return;
+  drag.on=true;
+  drag.grp.classList.add('dragging');
+  if(navigator.vibrate)navigator.vibrate(15);
+}
+function dragMove(e){
+  if(!drag)return;
+  if(!drag.on){
+    if(Math.abs(e.clientY-drag.y0)<(drag.touch?8:5))return;
+    if(drag.touch)return dragEnd();
+    dragBegin();
+  }
+  e.preventDefault();
+  const list=drag.grp.parentElement;
+  const next=[...list.children].find(g=>{
+    if(g===drag.grp)return false;
+    const r=g.querySelector('.sc-trow').getBoundingClientRect();
+    return e.clientY<r.top+r.height/2;
+  });
+  if(next!==drag.grp.nextElementSibling)list.insertBefore(drag.grp,next||null);
+}
+function dragEnd(){
+  if(!drag)return;
+  clearTimeout(drag.timer);
+  window.removeEventListener('pointermove',dragMove);
+  window.removeEventListener('pointerup',dragEnd);
+  window.removeEventListener('pointercancel',dragEnd);
+  const d=drag;drag=null;
+  if(!d.on)return;
+  d.grp.classList.remove('dragging');
+  dragClick=true;setTimeout(()=>{dragClick=false;},0);
+  const shown=[...d.grp.parentElement.children].map(g=>g.dataset.tp);
+  const order=shown.concat(topicOrder.order.filter(t=>!shown.includes(t)));
+  if(JSON.stringify(order)===JSON.stringify(topicOrder.order))return;
+  topicOrder={order,mt:Date.now()};
+  saveOrder();
 }
 
 function renderAll(){
@@ -638,7 +732,7 @@ async function onClick(e){
   if(act==='more'){weeksShown++;renderAll();return loadAllShards();}
   if(act==='fold')return b.nextElementSibling.classList.toggle('folded');
   if(act==='week'){openWeek=b.dataset.wk;return renderAll();}
-  if(act==='topic'){const t=b.dataset.tp;openTopics.has(t)?openTopics.delete(t):openTopics.add(t);return renderAll();}
+  if(act==='topic'){if(dragClick)return;const t=b.dataset.tp;openTopics.has(t)?openTopics.delete(t):openTopics.add(t);return renderAll();}
   if(act==='weeks-back'){openWeek=null;return renderAll();}
   if(act==='zoom'){
     if(!b.src)return;
@@ -772,6 +866,9 @@ function mount(el){
   el.innerHTML='';
   el.appendChild(root);
   root.addEventListener('click',onClick);
+  root.addEventListener('pointerdown',dragStart);
+  root.addEventListener('touchmove',e=>{if(drag&&drag.on)e.preventDefault();},{passive:false});
+  root.addEventListener('contextmenu',e=>{if(drag&&e.target.closest('.sc-trow'))e.preventDefault();});
   root.addEventListener('click',onCancel);
   root.addEventListener('focusin',e=>{if(e.target.matches('textarea'))lastTa=e.target;});
   root.addEventListener('input',e=>{if(e.target.matches('textarea.sc-input'))fit(e.target);});
