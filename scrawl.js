@@ -266,7 +266,7 @@ async function saveMemos({quiet=false}={}){
 // ── 첨부 ──
 function fileExt(name){const m=name.match(/\.([^.]+)$/);return m?m[1].toLowerCase():'bin';}
 const MIME={webp:'image/webp',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',
-  mp3:'audio/mpeg',m4a:'audio/mp4',ogg:'audio/ogg',wav:'audio/wav',pdf:'application/pdf'};
+  mp3:'audio/mpeg',m4a:'audio/mp4',pdf:'application/pdf'};
 
 // 이미지는 WebP 90 으로 바꾸고, 인코딩을 못 하는 브라우저는 JPEG 로 물러선다
 function encodeImage(file){
@@ -635,7 +635,7 @@ function mount(el){
         <textarea class="sc-input" placeholder="낙서..."></textarea>
         <div class="sc-attach-bar">
           <label class="sc-btn ghost">이미지<input type="file" accept="image/*" multiple data-type="image"></label>
-          <label class="sc-btn ghost">오디오<input type="file" accept="audio/*" multiple data-type="audio"></label>
+          <label class="sc-btn ghost">오디오<input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" multiple data-type="audio"></label>
           <label class="sc-btn ghost">PDF<input type="file" accept="application/pdf" multiple data-type="pdf"></label>
         </div>
         <div class="sc-preview"></div>
@@ -659,7 +659,12 @@ function mount(el){
   ta.value=lsGet(LS.draft)||'';
   ta.addEventListener('input',()=>lsSet(LS.draft,ta.value));
   root.querySelectorAll('input[type=file]').forEach(inp=>inp.addEventListener('change',()=>{
-    for(const f of inp.files)pending.push({file:f,type:inp.dataset.type,url:URL.createObjectURL(f)});
+    const skip=[];
+    for(const f of inp.files){
+      if(inp.dataset.type==='audio'&&!/^(mp3|m4a)$/.test(fileExt(f.name))){skip.push(f.name);continue;}
+      pending.push({file:f,type:inp.dataset.type,url:URL.createObjectURL(f)});
+    }
+    if(skip.length)alert(`오디오는 mp3·m4a 만 받습니다.\n${skip.join('\n')}`);
     inp.value='';
     renderPreview();
   }));
