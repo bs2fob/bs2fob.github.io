@@ -875,7 +875,7 @@
     var meta = got ? got.v : (p[lang] || p.ko || p.en || {});
     var foot = [];
 
-    if (p.pending) foot.push('<span class="tag fallback">' + UI[lang].pending + '</span>');
+    if (p.pending || deleting[p.stamp]) foot.push('<span class="tag fallback">' + UI[lang].pending + '</span>');
     if (got && got.fell) foot.push('<span class="tag fallback">' + UI[lang].fallback + '</span>');
     (p.tags || []).forEach(function(t){ foot.push('<span class="tag">' + esc(t) + '</span>'); });
     if (p.download) {
@@ -884,7 +884,7 @@
     }
 
     return '<div class="post' + (got ? '' : ' flat') + (deleting[p.stamp] ? ' deleting' : '') + '" data-stamp="' + esc(p.stamp) + '">'
-      + (adminToken() && !p.pending ? '<button class="del-btn">' + (deleting[p.stamp] ? '…' : UI[lang].del) + '</button>' : '')
+      + (adminToken() && !p.pending && !deleting[p.stamp] ? '<button class="del-btn">' + UI[lang].del + '</button>' : '')
       + '<div class="post-stamp">' + esc(seriesNo(p) || p.stamp || '') + '</div>'
       + '<div class="card-title">' + esc(meta.title || '') + '</div>'
       + (meta.lede ? '<div class="post-lede">' + esc(meta.lede) + '</div>' : '')
@@ -937,7 +937,7 @@
     if (target === bodyEl) target.innerHTML = '';
     var node = frag.cloneNode(true);
     var stamp = node.querySelector('.post-head .post-stamp');
-    if (stamp && post && post.pending) {
+    if (stamp && post && (post.pending || deleting[post.stamp])) {
       var tagRow = document.createElement('div');
       tagRow.className = 'stamp-row';
       stamp.parentNode.insertBefore(tagRow, stamp);
@@ -962,8 +962,7 @@
         var d = document.createElement('button');
         d.className = 'del-link';
         d.dataset.stamp = post.stamp;
-        d.textContent = deleting[post.stamp] ? '…' : UI[lang].del;
-        d.disabled = !!deleting[post.stamp];
+        d.textContent = UI[lang].del;
         btns.appendChild(d);
       }
       btns.appendChild(b);
@@ -1054,7 +1053,7 @@
 
     var since = Date.now() - 10000;
     deleting[post.stamp] = true;
-    markDeleting(post.stamp);
+    markDeleting(post);
     gh('/actions/workflows/del_post.yml/dispatches', token, {
       method: 'POST',
       body: JSON.stringify({ ref: 'main', inputs: { stamp: post.stamp } })
@@ -1069,19 +1068,14 @@
       else apply({ stamp: current, tab: tab, page: clampPage(page), home: home });
     }).catch(function(e){
       delete deleting[post.stamp];
-      markDeleting(post.stamp);
+      markDeleting(post);
       alert(e.message);
     });
   }
 
-  function markDeleting(stamp){
-    var on = !!deleting[stamp];
-    document.querySelectorAll('.del-link').forEach(function(b){
-      if (b.dataset.stamp !== stamp) return;
-      b.textContent = on ? '…' : UI[lang].del;
-      b.disabled = on;
-    });
-    if (!current) renderList();
+  function markDeleting(post){
+    if (current === post.stamp) { if (!editing) load(post, bodyEl); }
+    else if (!current) renderList();
   }
 
   // 부른 작업이 끝날 때까지 5초 간격으로 확인한다
