@@ -68,6 +68,8 @@
 .sc-img-wrap{position:relative;display:inline-block;align-self:flex-start;max-width:100%}
 .sc-img{display:block;max-width:100%;min-height:40px;border-radius:var(--radius-sm);cursor:zoom-in;background:var(--surface2)}
 .sc-img-wrap .sc-x{position:absolute;top:5px;right:5px}
+.sc-attach .sc-x{display:none}
+.sc-entry.editing .sc-attach .sc-x{display:block}
 .sc-media audio{width:100%}
 .sc-fname{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);min-width:0}
 .sc-pdf{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:12px;padding:5px 10px;cursor:pointer}

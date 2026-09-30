@@ -579,6 +579,7 @@ async function onClick(e){
   if(act==='edit'){
     const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}`);
     if(!wrap||wrap.querySelector('textarea'))return;
+    wrap.closest('.sc-entry').classList.add('editing');
     wrap.innerHTML=`<textarea class="sc-input sc-edit">${esc(m.body||'')}</textarea>
       <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button></div>`;
     const ta=wrap.querySelector('textarea');
