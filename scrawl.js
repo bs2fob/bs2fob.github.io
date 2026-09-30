@@ -19,7 +19,8 @@ let saving=false;
 let pending=[],editPending=[],ed=null;
 let weeksShown=1;
 let openWeek=null;
-let openTags=new Set();
+let openTags=new Map();
+const TAG_PAGE=10;
 let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
 let sync={state:'',text:''};
@@ -536,10 +537,19 @@ function renderTag(){
   const {map,keys}=tagGroups();
   $('.sc-page[data-page=tag]').innerHTML=keys.length?'<div class="sc-tlist">'+keys.map((t,i)=>{
     const items=map.get(t).sort((a,b)=>a.qc<b.qc?1:a.qc>b.qc?-1:b.id-a.id),on=openTags.has(t);
+    const pages=Math.ceil(items.length/TAG_PAGE),pg=on?Math.min(openTags.get(t),pages-1):0;
+    if(on)openTags.set(t,pg);
     return `<div class="sc-tgrp" data-tp="${esc(t)}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="tag" data-tp="${esc(t)}">
       <div><div class="sc-wrow-label">${esc(t)}</div><div class="sc-wrow-meta">${items.length}건</div></div><span>›</span>
-    </div>${on?`<div class="sc-tbody">${scrollHtml(items,'t'+i,'')}</div>`:''}</div>`;
+    </div>${on?pageNavHtml(t,pg,pages)+`<div class="sc-tbody">${scrollHtml(items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE),'t'+i,'')}</div>`:''}</div>`;
   }).join('')+'</div>':'<div class="sc-empty">태그가 붙은 메모가 없습니다.</div>';
+}
+
+// 펼친 태그의 메모가 한 쪽을 넘으면 태그 줄 바로 아래에 이전·쪽 번호·다음을 단다
+function pageNavHtml(t,pg,pages){
+  if(pages<2)return '';
+  const btn=(p,label,cls)=>`<button class="sc-pgbtn${cls}" data-act="tpage" data-tp="${esc(t)}" data-pg="${p}"${p<0||p>=pages?' disabled':''}>${label}</button>`;
+  return `<div class="sc-pgnav">${btn(pg-1,'이전','')}${Array.from({length:pages},(_,p)=>btn(p,p+1,p===pg?' on':'')).join('')}${btn(pg+1,'다음','')}</div>`;
 }
 
 // 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 태그 줄을 끌어 순서를 바꾼다
@@ -822,7 +832,8 @@ async function onClick(e){
   if(act==='more'){weeksShown++;renderAll();return loadAllShards();}
   if(act==='fold')return b.nextElementSibling.classList.toggle('folded');
   if(act==='week'){openWeek=b.dataset.wk;return renderAll();}
-  if(act==='tag'){if(dragClick)return;const t=b.dataset.tp;openTags.has(t)?openTags.delete(t):openTags.add(t);return renderAll();}
+  if(act==='tag'){if(dragClick)return;const t=b.dataset.tp;openTags.has(t)?openTags.delete(t):openTags.set(t,0);return renderAll();}
+  if(act==='tpage'){openTags.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='weeks-back'){openWeek=null;return renderAll();}
   if(act==='zoom'){
     if(!b.src)return;

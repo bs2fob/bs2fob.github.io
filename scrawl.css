@@ -105,6 +105,11 @@
 .sc-trow.on{border-color:#d4a030}
 .sc-trow.on span{transform:rotate(90deg)}
 .sc-tbody{margin:4px 0 16px}
+.sc-pgnav{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:2px 0 8px}
+.sc-pgbtn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-size:12px;min-width:30px;padding:3px 8px;cursor:pointer}
+.sc-pgbtn:hover:not(:disabled){color:var(--text);border-color:var(--border2)}
+.sc-pgbtn.on{color:#111;background:#d4a030;border-color:#d4a030;font-weight:600}
+.sc-pgbtn:disabled{opacity:.35;cursor:default}
 .sc-trow{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .sc-tgrp.dragging .sc-trow{border-color:var(--accent);background:var(--surface2);box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:grabbing}
 .sc-tgrp.dragging .sc-tbody{opacity:.4}
