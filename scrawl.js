@@ -604,11 +604,34 @@ function dragEnd(){
 
 function renderAll(){
   if(!live())return;
+  const playing=[...root.querySelectorAll('audio')].filter(a=>!a.paused);
   if(sub==='write')renderWrite();
   if(sub==='weeks')renderWeeks();
   if(sub==='search')renderSearch();
   if(sub==='tag')renderTag();
+  keepPlaying(playing);
   hydrate();
+  syncAudioStop();
+}
+
+// 다시 그려 떨어져 나간 재생 중 오디오를 새 목록의 같은 파일 자리에 옮겨 끊기지 않게 한다
+function keepPlaying(list){
+  for(const a of list){
+    if(a.isConnected)continue;
+    const n=root.querySelector(`audio[data-fn="${CSS.escape(a.dataset.fn)}"]:not([data-got])`);
+    if(n)n.replaceWith(a);
+  }
+}
+// 재생 중인 오디오가 숨은 탭에 있을 때만 우측 상단 끄기 버튼을 띄운다
+function syncAudioStop(){
+  if(!live())return;
+  const off=[...root.querySelectorAll('audio')].some(a=>!a.paused&&a.closest('.sc-page').hidden);
+  $('.sc-audio-stop').hidden=!off;
+}
+function onPlay(e){
+  if(e.target.tagName!=='AUDIO')return;
+  root.querySelectorAll('audio').forEach(a=>{if(a!==e.target&&!a.paused)a.pause();});
+  syncAudioStop();
 }
 
 function showSub(name){
@@ -618,6 +641,7 @@ function showSub(name){
   root.querySelectorAll('.sc-sub').forEach(b=>b.classList.toggle('on',b.dataset.sub===name));
   root.querySelectorAll('.sc-page').forEach(p=>{p.hidden=p.dataset.page!==name;});
   renderAll();
+  syncAudioStop();
   if(name!=='write')loadAllShards();
   if(name==='search')$('.sc-search').focus();
   fitAll();
@@ -841,6 +865,7 @@ async function onClick(e){
     $('.sc-lightbox').hidden=false;
     return;
   }
+  if(act==='audio-stop'){root.querySelectorAll('audio').forEach(a=>a.pause());return syncAudioStop();}
   if(act==='lightbox'){$('.sc-lightbox').hidden=true;return;}
   if(act==='pdf'){
     const w=window.open('','_blank');
@@ -965,10 +990,14 @@ function mount(el){
       <div class="sc-results"></div>
     </div>
     <div class="sc-page" data-page="tag"></div>
+    <button class="sc-audio-stop" data-act="audio-stop" hidden>■ 오디오 끄기</button>
     <div class="sc-lightbox" data-act="lightbox" hidden><img alt=""></div>`;
   el.innerHTML='';
   el.appendChild(root);
   root.addEventListener('click',onClick);
+  root.addEventListener('play',onPlay,true);
+  root.addEventListener('pause',syncAudioStop,true);
+  root.addEventListener('ended',syncAudioStop,true);
   root.addEventListener('pointerdown',dragStart);
   root.addEventListener('touchmove',e=>{if(drag&&drag.on)e.preventDefault();},{passive:false});
   root.addEventListener('contextmenu',e=>{if(drag&&e.target.closest('.sc-trow'))e.preventDefault();});
