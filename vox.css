@@ -1,4 +1,4 @@
-/* voxchat.css */
+/* vox.css */
 /* 질문을 흐름의 뼈대로 세우고 절 제목은 작은 부제로 내린다 */
 main.vx .vx-ep{margin:6px 0 50px;padding:24px 0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2)}
 main.vx .vx-ep p{font-family:'Noto Serif KR',serif;font-size:18px;line-height:1.9;color:var(--text);text-align:center;text-align-last:center;word-break:keep-all;margin:0}

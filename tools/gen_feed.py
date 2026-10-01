@@ -233,7 +233,7 @@ def write_heads(root, posts):
 TABS = [
     ("write", "작문", "Writing"),
     ("verse", "시문", "Verse"),
-    ("voxchat", "복스", "Vox"),
+    ("vox", "복스", "Vox"),
     ("snap", "스냅", "Snap"),
     ("notice", "로그", "Log"),
     ("code", "코딩", "Code"),

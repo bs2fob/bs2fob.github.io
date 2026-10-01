@@ -19,7 +19,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="post.css?v=24">
 <link rel="stylesheet" href="verse.css?v=3">
-<link rel="stylesheet" href="voxchat.css?v=3">
+<link rel="stylesheet" href="vox.css?v=3">
 <link rel="stylesheet" href="tabula.css?v=19">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
@@ -218,9 +218,9 @@
 </ul>
 <h2>복스 · Vox</h2>
 <ul>
-<li><a href="p/26w394v084_voxchat0003.ko.html">그놈의 에테르</a> · <a href="p/26w394v084_voxchat0003.en.html" hreflang="en">That Damned Ether</a> — 에테르의 시원에서 출발해.. 마술을 없애려던 요구가 에테르 없이 시공간으로 채워지고 중력자와 나비에-스토크스 두 갈래로 갈라지는 데까지 간 문답.</li>
-<li><a href="p/26w394v053_voxchat0002.ko.html">지켜야 할 인지, 뽑아야 할 인지</a> · <a href="p/26w394v053_voxchat0002.en.html" hreflang="en">The Mind to Keep, the Mind to Choose</a> — 수명의 천장을 묻는 데서 출발해.. 몸은 교체되어도 인지는 원본으로 남고 권한은 인지로 걸러져야 한다는 데까지 간 문답.</li>
-<li><a href="p/26w393v174_voxchat0001.ko.html">시간에서 질량까지</a> · <a href="p/26w393v174_voxchat0001.en.html" hreflang="en">From Time to Mass</a> — 물리량의 정의 순서를 묻는 데서 출발해.. 질량이 공간상 정지된 시간 속 진동수라는 데까지 간 문답.</li>
+<li><a href="p/26w394v084_vox0003.ko.html">그놈의 에테르</a> · <a href="p/26w394v084_vox0003.en.html" hreflang="en">That Damned Ether</a> — 에테르의 시원에서 출발해.. 마술을 없애려던 요구가 에테르 없이 시공간으로 채워지고 중력자와 나비에-스토크스 두 갈래로 갈라지는 데까지 간 문답.</li>
+<li><a href="p/26w394v053_vox0002.ko.html">지켜야 할 인지, 뽑아야 할 인지</a> · <a href="p/26w394v053_vox0002.en.html" hreflang="en">The Mind to Keep, the Mind to Choose</a> — 수명의 천장을 묻는 데서 출발해.. 몸은 교체되어도 인지는 원본으로 남고 권한은 인지로 걸러져야 한다는 데까지 간 문답.</li>
+<li><a href="p/26w393v174_vox0001.ko.html">시간에서 질량까지</a> · <a href="p/26w393v174_vox0001.en.html" hreflang="en">From Time to Mass</a> — 물리량의 정의 순서를 묻는 데서 출발해.. 질량이 공간상 정지된 시간 속 진동수라는 데까지 간 문답.</li>
 </ul>
 <h2>스냅 · Snap</h2>
 <ul>
@@ -293,7 +293,7 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 5;
-  var TABS = ['notice', 'verse', 'write', 'voxchat', 'snap', 'code'];
+  var TABS = ['notice', 'verse', 'write', 'vox', 'snap', 'code'];
   var DEFAULT_TAB = 'write';
 
   var UI = {
@@ -301,12 +301,12 @@
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
           fallback: '한국어 원문', del: '삭제', edit: '수정', write: '쓰기', copy: 'URL 복사', copied: '복사됨', pending: '반영 중', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
-          tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스', snap: '스냅', code: '코딩', tabula: '서판' } },
+          tab: { notice: '로그', verse: '시문', write: '작문', vox: '복스', snap: '스냅', code: '코딩', tabula: '서판' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
           fallback: 'Korean original', del: 'Del', edit: 'Edit', write: 'Write', copy: 'Copy URL', copied: 'Copied', pending: 'Publishing', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
-          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'Vox', snap: 'Snap', code: 'Code', tabula: 'Tabula' } }
+          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', vox: 'Vox', snap: 'Snap', code: 'Code', tabula: 'Tabula' } }
   };
 
   var clockEl = document.getElementById('clock');
