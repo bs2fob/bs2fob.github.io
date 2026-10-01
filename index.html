@@ -18,7 +18,6 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="post.css?v=24">
-<link rel="stylesheet" href="verse.css?v=3">
 <link rel="stylesheet" href="vox.css?v=3">
 <link rel="stylesheet" href="tabula.css?v=19">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
@@ -70,11 +69,6 @@
 .ed-add{display:none;margin:-0.6em 0 1.15em;background:none;border:1px dotted var(--border2);border-radius:var(--radius-sm);color:var(--text3);font-family:inherit;font-size:12px;padding:3px 12px;cursor:pointer}
 .ed-add:hover{color:var(--accent);border-color:var(--accent)}
 .ed-p.cur + .ed-add{display:block}
-.log-tools{display:flex;justify-content:flex-end;margin:-10px 0 14px}
-.editor{display:flex;flex-direction:column;gap:10px;margin-bottom:34px}
-.editor input,.editor textarea{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;line-height:1.7;padding:9px 12px}
-.editor textarea{resize:vertical;min-height:320px}
-.editor input:focus,.editor textarea:focus{outline:none;border-color:var(--accent)}
 .ed-msg{font-size:12px;color:var(--text3);min-height:1em}
 .ed-msg.err{color:#d9534f}
 
@@ -141,18 +135,10 @@
 #latest .post-title{font-size:26px}
 .latest-mark{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;text-align:center}
 
-#notice{max-width:680px;margin:38px auto 0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:22px 26px 26px}
-#notice .post-head{padding-block:0 10px}
-#notice .post-title{font-size:17px}
-#notice .post-stamp{font-size:11px}
 .stamp-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px}
 .stamp-row .post-stamp{margin-top:0}
 .copy-link{flex-shrink:0;background:none;border:none;padding:0;color:var(--text3);font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .copy-link:hover,.copy-link.done{color:var(--text2)}
-#notice p{font-size:15px;color:var(--text);margin-bottom:.9em;line-height:1.8}
-#notice p:last-child{margin-bottom:0}
-#notice .quote p{color:var(--text2);margin:0}
-.notice-mark{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -205,17 +191,6 @@
 <li><a href="p/26w395v185_filter.ko.html">&lt;인지공리05_5&gt; 격률로 거른다</a> · <a href="p/26w395v185_filter.en.html" hreflang="en">&lt;Cognitive Axioms 05_5&gt; Filtering by the Maxim</a> — 정보량은 목적이 세운 축의 눈금을 정하는 데 쓰이므로.. 그 눈금을 움직이지 못하는 명제는 빠진다.</li>
 <li><a href="p/26w395v190_governing.ko.html">&lt;인지공리05_6&gt; 거버닝과 핸들링</a> · <a href="p/26w395v190_governing.en.html" hreflang="en">&lt;Cognitive Axioms 05_6&gt; Governing and Handling</a> — 다층 제어 구조를 운영의 영역에 옮겨 보면.. 별일 없음이 이어지는 동안 다음 축이 선다는 것이 드러난다.</li>
 </ul>
-<h2>시문 · Verse</h2>
-<ul>
-<li><a href="p/26w395v101_verse0008.en.html">사태를.미리막은</a> — </li>
-<li><a href="p/26w392v134_verse0007.en.html">빈서판에.주입된</a> — </li>
-<li><a href="p/26w385v030_verse0006.en.html">아무도.언급않는</a> — </li>
-<li><a href="p/26w384v154_verse0005.en.html">밈플렉스.에갇힌</a> — </li>
-<li><a href="p/26w384v152_verse0004.en.html">논쟁을.유도하는</a> — </li>
-<li><a href="p/26w384v143_verse0003.en.html">제대로된.지옥을</a> — </li>
-<li><a href="p/26w384v142_verse0002.en.html">그것을.제대로</a> — </li>
-<li><a href="p/26w384v140_verse0001.en.html">우리는.지금여기</a> — </li>
-</ul>
 <h2>복스 · Vox</h2>
 <ul>
 <li><a href="p/26w394v084_vox0003.ko.html">그놈의 에테르</a> · <a href="p/26w394v084_vox0003.en.html" hreflang="en">That Damned Ether</a> — 에테르의 시원에서 출발해.. 마술을 없애려던 요구가 에테르 없이 시공간으로 채워지고 중력자와 나비에-스토크스 두 갈래로 갈라지는 데까지 간 문답.</li>
@@ -230,29 +205,11 @@
 <li><a href="p/26w386v144_fob.ko.html">입자물리학과 확보된거점</a> · <a href="p/26w386v144_fob.en.html" hreflang="en">Particle Physics and the Established Foothold</a> — 박문호 박사 강연의 33분 50초부터 1시간 19분 34초까지. 원자핵의 발견에서 코펜하겐 연구소까지.. 거점이 서고 다음 출발점이 되는 과정.</li>
 <li><a href="p/26w384v193_claymore.ko.html">클레이모어 이야기</a> · <a href="p/26w384v193_claymore.en.html" hreflang="en">A Word About Claymore</a> — 요력을 몇 퍼센트까지 열 것인가. 계기판 하나에서 출발해 식인을 대가로 건 서사의 틀이 어디서 시작되어 어디까지 퍼졌는지 짚는다.</li>
 </ul>
-<h2>로그 · Log</h2>
-<ul>
-<li><a href="p/26w393v183_changes.ko.html">몇 가지 구조와 설정의 변경</a> · <a href="p/26w393v183_changes.en.html" hreflang="en">A Few Changes to Structure and Settings</a> — 술어 탭을 빼고 복스 탭을 넣었다. 개별 글의 주소를 전하는 URL 복사 버튼과.. 메신저에 표제를 실어 보내는 중간층도 만들었다.</li>
-<li><a href="p/26w393v014_reset.ko.html">카운터 리셋</a> · <a href="p/26w393v014_reset.en.html" hreflang="en">Counter Reset</a> — 웨이백 머신 박제를 자동화하자 수집기 접속이 카운터에 찍혀 카운터를 0으로 리셋하고 리눅스헤더 유입을 집계에서 뺐다.</li>
-<li><a href="p/26w392v153_wayback.ko.html">웨이백 머신</a> · <a href="p/26w392v153_wayback.en.html" hreflang="en">Wayback Machine</a> — 옛날부터 알고 있던 사이트 박제공간 archive.org 가 원본성을 증명하는 웨이백 머신이라는 것을 알게 되었다.</li>
-<li><a href="p/26w392v021_prevnext.ko.html">이전글과 다음글 버튼</a> · <a href="p/26w392v021_prevnext.en.html" hreflang="en">Previous and Next Buttons</a> — 글 하단에 같은 탭의 이전글과 다음글로 넘어가는 버튼을 박았다. 좌우 배치는 탭 목록의 정렬 방향을 따른다.</li>
-<li><a href="p/26w391v211_threshold.ko.html">진입문턱의 조율</a> · <a href="p/26w391v211_threshold.en.html" hreflang="en">Tuning the Threshold</a> — 04 세트의 도입부를 일상 소재로 낮췄다. 압축진술이 기본이고 쉽게 풀어 전하는 것은 부가 서비스이다.</li>
-<li><a href="p/26w391v202_order.ko.html">목록순서 조정</a> · <a href="p/26w391v202_order.en.html" hreflang="en">Reordering the Lists</a> — 작문탭과 시문탭의 목록을 첫 편부터 보이게 바꿨다. 앞의 글이 뒤의 글보다 훨씬 무겁다.</li>
-<li><a href="p/26w391v180_renumber.ko.html">번호체계의 수정 등</a> · <a href="p/26w391v180_renumber.en.html" hreflang="en">Renumbering, and a Few Other Things</a> — 인지공리 번호를 ##_# 방식으로 바꿨다. 04 세트를 올리며 끝까지 붙들었던 동일성과 유사성 이야기.</li>
-<li><a href="p/26w386v193_pause.ko.html">별생각 없이 007까지 전개</a> · <a href="p/26w386v193_pause.en.html" hreflang="en">Up to 007 Without Much Thought</a> — 지력삼분법 하나로 시작한 것이 007까지 이어졌다. 켜진산자는 당분간 보류한다.</li>
-<li><a href="p/26w386v004_handling.ko.html">AI 핸들링 장치들</a> · <a href="p/26w386v004_handling.en.html" hreflang="en">AI Handling Devices</a> — 클로드 코드에서 AI를 다루는 장치를 강제력 순서로 정리했다.</li>
-<li><a href="p/26w385v094_delegate.ko.html">확정연산 도구위임</a> · <a href="p/26w385v094_delegate.en.html" hreflang="en">Delegate Deterministic Operations to External Tools</a> — llm이 절대 넘을 수 없는 벽 중에 하나가.. 확률적추론만으로 확정연산에 직접 대응하는 것이다.</li>
-<li><a href="p/26w384v161_versetab.ko.html">시문탭을 추가</a> · <a href="p/26w384v161_versetab.en.html" hreflang="en">A Verse Tab</a> — 로그와 작문 사이에 시문탭을 추가했다. 넘버링은 네 자리이며 9999개의 슬롯이다.</li>
-<li><a href="p/26w384v135_tabs.ko.html">탭구조 리뉴얼</a> · <a href="p/26w384v135_tabs.en.html" hreflang="en">Reworking the Tabs</a> — 기존의 리뷰를 스냅으로 바꾸었고 술어라는 탭을 추가했다.</li>
-<li><a href="p/26w383v121_log.ko.html">인지공리001 수정과 몇 가지 설정변경</a> · <a href="p/26w383v121_log.en.html" hreflang="en">Rewriting 001, and a few settings</a> — 문체를 다시 잡고 비료 이야기를 붙였다. 양쪽정렬과 모바일 레이아웃, 연작 번호 체계를 정했다.</li>
-<li><a href="p/26w376v181_notice.ko.html">당분간의 작업 방향</a> · <a href="p/26w376v181_notice.en.html" hreflang="en">What the next stretch looks like</a> — 세팅을 정돈하는 중이다. 기존 원고를 분화시켜 짧게 끊어 올리는 작업이 당분간 중심이 된다.</li>
-</ul>
 </nav>
 <script>document.getElementById('static-index').remove();</script>
 <!--/static-index-->
     <nav class="pager" id="pager" hidden></nav>
     <section id="latest" hidden></section>
-    <section id="notice" hidden></section>
   </div>
 
   <div class="admin-modal" id="logout-modal" hidden>
@@ -293,25 +250,24 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 5;
-  var TABS = ['notice', 'verse', 'write', 'vox', 'snap', 'code'];
+  var TABS = ['write', 'vox', 'snap', 'code'];
   var DEFAULT_TAB = 'write';
 
   var UI = {
     ko: { sub: '확보된 거점 &mdash; 세운 것을 다음 출발점으로 넘긴다',
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
-          fallback: '한국어 원문', del: '삭제', edit: '수정', write: '쓰기', copy: 'URL 복사', copied: '복사됨', pending: '반영 중', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
-          tab: { notice: '로그', verse: '시문', write: '작문', vox: '복스', snap: '스냅', code: '코딩', tabula: '서판' } },
+          fallback: '한국어 원문', del: '삭제', edit: '수정', copy: 'URL 복사', copied: '복사됨', pending: '반영 중', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글',
+          tab: { write: '작문', vox: '복스', snap: '스냅', code: '코딩', tabula: '서판' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
-          fallback: 'Korean original', del: 'Del', edit: 'Edit', write: 'Write', copy: 'Copy URL', copied: 'Copied', pending: 'Publishing', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
-          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', vox: 'Vox', snap: 'Snap', code: 'Code', tabula: 'Tabula' } }
+          fallback: 'Korean original', del: 'Del', edit: 'Edit', copy: 'Copy URL', copied: 'Copied', pending: 'Publishing', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next',
+          tab: { write: 'Writing', vox: 'Vox', snap: 'Snap', code: 'Code', tabula: 'Tabula' } }
   };
 
   var clockEl = document.getElementById('clock');
   var tabbarEl = document.getElementById('tabbar');
-  var noticeEl = document.getElementById('notice');
   var listEl = document.getElementById('list');
   var pagerEl = document.getElementById('pager');
   var latestEl = document.getElementById('latest');
@@ -332,9 +288,6 @@
   var ADMIN = 'bs2fob-admin';
   var ADMIN_OFF = 'bs2fob-admin-off';
   var deleting = {};
-  var writing = false;
-  var publishing = false;
-  var DRAFT = 'bs2fob-log-draft';
   var editing = null;
 
   document.querySelectorAll('.lang-btn').forEach(function(b){
@@ -723,21 +676,15 @@
     pagerEl.hidden = true;
     pagerEl.innerHTML = '';
     renderTabs();
-    renderNotice();
     if (tab === 'tabula') { Tabula.mount(listEl); return; }
-
-    var logAdmin = tab === 'notice' && !!adminToken();
-    if (logAdmin && writing) { renderEditor(); return; }
-    var tools = logAdmin ? '<div class="log-tools"><button class="pg" id="write-btn">' + UI[lang].write + '</button></div>' : '';
 
     var mine = tabPosts();
     if (!mine.length) {
-      listEl.innerHTML = tools + '<div class="empty">' + UI[lang].empty + '</div>';
-      bindWrite();
+      listEl.innerHTML = '<div class="empty">' + UI[lang].empty + '</div>';
       return;
     }
 
-    // 작문·시문 탭은 첫 편부터 읽도록 정순으로 늘어놓고, 페이지를 자른 뒤 시리즈를 묶는다
+    // 작문 탭은 첫 편부터 읽도록 정순으로 늘어놓고, 페이지를 자른 뒤 시리즈를 묶는다
     var ordered = isOrdered(tab) ? mine.slice().reverse() : mine;
     var slice = ordered.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
     var groups = [], index = {};
@@ -747,7 +694,7 @@
       groups[index[key]].items.push(p);
     });
 
-    listEl.innerHTML = tools + groups.map(function(g){
+    listEl.innerHTML = groups.map(function(g){
       return '<section class="series">'
         + (g.name ? '<div class="series-name">' + esc(g.name) + '</div>' : '')
         + g.items.map(card).join('')
@@ -763,7 +710,6 @@
     listEl.querySelectorAll('.del-btn').forEach(function(el){
       el.addEventListener('click', function(e){ e.stopPropagation(); delPost(find(el.closest('.post').dataset.stamp)); });
     });
-    bindWrite();
 
     renderPager();
 
@@ -829,25 +775,8 @@
     }
   }
 
-  // 가장 최근 로그는 처음 화면에만 걸어 둔다
-  function renderNotice(){
-    noticeEl.hidden = true;
-    noticeEl.innerHTML = '';
-    if (!home) return;
-
-    var latest = tabPosts('notice')[0];
-    if (!latest || !pick(latest)) return;
-    fitViewport(true);
-
-    var mark = document.createElement('div');
-    mark.className = 'notice-mark';
-    mark.textContent = UI[lang].notice;
-    noticeEl.appendChild(mark);
-    load(latest, noticeEl, function(){ noticeEl.hidden = false; });
-  }
-
   function isOrdered(t){
-    return t === 'write' || t === 'verse';
+    return t === 'write';
   }
 
   function seriesName(p){
@@ -913,7 +842,7 @@
 
   function extract(html, file){
     var doc = new DOMParser().parseFromString(html, 'text/html');
-    var parts = doc.querySelectorAll('.post-head, .epigraph, .ep-trans, main, .gloss');
+    var parts = doc.querySelectorAll('.post-head, .epigraph, .ep-trans, main');
     if (!parts.length) return null;
 
     var frag = document.createDocumentFragment(), taken = [];
@@ -1097,59 +1026,6 @@
     });
   }
 
-  // 사이트 빌드가 끝나 새 글 파일이 실제로 뜰 때까지 기다린다
-  function waitFile(file){
-    return new Promise(function(done, fail){
-      var tries = 0;
-      (function poll(){
-        if (++tries > 36) return fail(new Error('글은 저장소에 올라갔으나 3분 안에 사이트에 뜨지 않았습니다. 잠시 뒤 새로고침하세요.'));
-        fetch(file + '?t=' + Date.now(), { method: 'HEAD' })
-          .then(function(r){ if (r.ok) done(); else setTimeout(poll, 5000); })
-          .catch(function(){ setTimeout(poll, 5000); });
-      })();
-    });
-  }
-
-  // 로그 탭 쓰기. 제목·요약·본문을 받아 new_log 작업으로 로그 양식의 한국어판을 올린다
-  var FIELDS = ['title', 'lede', 'body'];
-
-  function bindWrite(){
-    var b = document.getElementById('write-btn');
-    if (b) b.addEventListener('click', function(){ writing = true; renderList(); });
-  }
-
-  function loadDraft(){
-    try { return JSON.parse(localStorage.getItem(DRAFT) || '{}') || {}; } catch (e) { return {}; }
-  }
-
-  function saveDraft(){
-    var d = {};
-    FIELDS.forEach(function(k){ d[k] = document.getElementById('ed-' + k).value; });
-    try { localStorage.setItem(DRAFT, JSON.stringify(d)); } catch (e) {}
-    return d;
-  }
-
-  function renderEditor(){
-    listEl.innerHTML = '<div class="editor">'
-      + '<input id="ed-title" placeholder="제목">'
-      + '<input id="ed-lede" placeholder="요약 한 줄. 목록 카드에 뜹니다">'
-      + '<textarea id="ed-body" placeholder="본문. 줄마다 한 문단이 됩니다"></textarea>'
-      + '<div class="ed-msg" id="ed-msg"></div>'
-      + '<div class="admin-row"><button class="pg" id="ed-cancel">취소</button><button class="pg" id="ed-send">게시</button></div>'
-      + '</div>';
-    var d = loadDraft();
-    FIELDS.forEach(function(k){
-      var el = document.getElementById('ed-' + k);
-      el.value = d[k] || '';
-      el.disabled = publishing;
-      el.addEventListener('input', saveDraft);
-    });
-    document.getElementById('ed-send').disabled = publishing;
-    if (publishing) edMsg('게시 중입니다. 1~2분 걸립니다.');
-    document.getElementById('ed-cancel').addEventListener('click', function(){ writing = false; renderList(); });
-    document.getElementById('ed-send').addEventListener('click', publishLog);
-  }
-
   function edMsg(text, err){
     var m = document.getElementById('ed-msg');
     if (!m) return;
@@ -1157,73 +1033,8 @@
     m.classList.toggle('err', !!err);
   }
 
-  function lockEditor(on){
-    publishing = on;
-    FIELDS.forEach(function(k){ var el = document.getElementById('ed-' + k); if (el) el.disabled = on; });
-    var b = document.getElementById('ed-send');
-    if (b) b.disabled = on;
-  }
-
-  // 요청이 받아들여지면 쓴 내용으로 바로 그리고, 사이트 반영은 뒤에서 확인한다
-  function publishLog(){
-    var token = adminToken();
-    var f = saveDraft();
-    var title = f.title.trim(), lede = f.lede.trim(), body = f.body.trim();
-    if (!token || publishing) return;
-    if (!title || !body) return edMsg('제목과 본문을 채우세요.', true);
-    if (title.length + lede.length + body.length > 60000) return edMsg('글이 너무 깁니다. 6만 자 이내로 줄이세요.', true);
-    var p = seoulParts(new Date());
-    var stamp = weekStamp(p) + 'v' + p.hour + p.minute.charAt(0) + '_' + p.month + p.day;
-    if (find(stamp)) return edMsg('같은 10분 안에 올린 글이 이미 있습니다. 잠시 뒤 다시 게시하세요.', true);
-    var file = 'p/' + stamp.split('_')[0] + '_log.ko.html';
-
-    var since = Date.now() - 10000;
-    lockEditor(true);
-    edMsg('게시 요청 중입니다.');
-    gh('/actions/workflows/new_log.yml/dispatches', token, {
-      method: 'POST',
-      body: JSON.stringify({ ref: 'main', inputs: { stamp: stamp, title: title, lede: lede, slug: '', body: body } })
-    }).then(function(r){
-      if (r.status !== 204) throw new Error('게시 요청 실패 (' + r.status + ')');
-      lockEditor(false);
-      writing = false;
-      try { localStorage.removeItem(DRAFT); } catch (e) {}
-      var post = { stamp: stamp, ko: { title: title, lede: lede, file: file }, tab: 'notice', pending: true };
-      posts.unshift(post);
-      cache[file] = draftFrag(title, stamp, body);
-      openPost(post);
-      waitRun(token, since, 'new_log.yml').then(function(){
-        return waitFile(file);
-      }).then(function(){
-        delete post.pending;
-        delete cache[file];
-        if (editing) return;
-        if (current === stamp) load(post, bodyEl);
-        else if (!current) renderList();
-      }).catch(function(e){
-        posts = posts.filter(function(x){ return x !== post; });
-        delete cache[file];
-        try { localStorage.setItem(DRAFT, JSON.stringify(f)); } catch (x) {}
-        if (current === stamp || !current) apply({ stamp: null, tab: 'notice', page: 0 });
-        alert('게시하지 못했습니다. 쓴 내용은 쓰기 창에 남아 있습니다.\n' + e.message);
-      });
-    }).catch(function(e){
-      lockEditor(false);
-      edMsg(e.message, true);
-    });
-  }
-
-  function draftFrag(title, stamp, body){
-    var d = document.createElement('div');
-    d.innerHTML = '<header class="post-head"><h1 class="post-title">' + esc(title) + '</h1><div class="post-stamp">' + esc(stamp) + ' Bs2FoB</div></header><main>'
-      + body.split('\n').map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){ return '<p>' + esc(l) + '</p>'; }).join('') + '</main>';
-    var frag = document.createDocumentFragment();
-    while (d.firstChild) frag.appendChild(d.firstChild);
-    return frag;
-  }
-
   // 문구 수정. 문단은 원본의 안쪽 HTML 을 통째로, 문단 밖 글자는 조각마다 따로 입력받는다
-  var PARTS = '.post-head, .epigraph, .ep-trans, main, .gloss';
+  var PARTS = '.post-head, .epigraph, .ep-trans, main';
   var TOKEN_RE = /<!--[\s\S]*?-->|<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>|<[^>]*>/gi;
   var TEXT_RE = /[^\t\n\f\r ]/;
 

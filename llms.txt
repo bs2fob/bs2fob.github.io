@@ -2,7 +2,7 @@
 
 > Essays by Bs2FoB on cognition, reasoning tools and method, published in Korean (original) and English. The core is the Cognitive Axioms series (인지공리).
 
-Every post is a static HTML file readable without JavaScript. Korean files end in `.ko.html`, English files in `.en.html`; the Korean text is the original and the English is the author's translation. Verse posts have a single file that carries the Korean poem with an English gloss. Series numbers read `set_part` (e.g. `02_3` is set 2, part 3). Machine-readable index: https://bs2fob.com/posts.json
+Every post is a static HTML file readable without JavaScript. Korean files end in `.ko.html`, English files in `.en.html`; the Korean text is the original and the English is the author's translation. Series numbers read `set_part` (e.g. `02_3` is set 2, part 3). Machine-readable index: https://bs2fob.com/posts.json
 
 ## Writing
 
@@ -24,17 +24,6 @@ Every post is a static HTML file readable without JavaScript. Korean files end i
 - [<Cognitive Axioms 05_5> Filtering by the Maxim](https://bs2fob.com/p/26w395v185_filter.en.html): Information is used to set the scale on the axes a purpose raises, so a proposition that can't move that scale drops out. Korean original: https://bs2fob.com/p/26w395v185_filter.ko.html
 - [<Cognitive Axioms 05_6> Governing and Handling](https://bs2fob.com/p/26w395v190_governing.en.html): Move the multilayer control structure into the domain of operations, and it turns out that the next axis goes up while nothing happens. Korean original: https://bs2fob.com/p/26w395v190_governing.ko.html
 
-## Verse
-
-- [사태를.미리막은](https://bs2fob.com/p/26w395v101_verse0008.en.html): 
-- [빈서판에.주입된](https://bs2fob.com/p/26w392v134_verse0007.en.html): 
-- [아무도.언급않는](https://bs2fob.com/p/26w385v030_verse0006.en.html): 
-- [밈플렉스.에갇힌](https://bs2fob.com/p/26w384v154_verse0005.en.html): 
-- [논쟁을.유도하는](https://bs2fob.com/p/26w384v152_verse0004.en.html): 
-- [제대로된.지옥을](https://bs2fob.com/p/26w384v143_verse0003.en.html): 
-- [그것을.제대로](https://bs2fob.com/p/26w384v142_verse0002.en.html): 
-- [우리는.지금여기](https://bs2fob.com/p/26w384v140_verse0001.en.html): 
-
 ## Vox
 
 - [That Damned Ether](https://bs2fob.com/p/26w394v084_vox0003.en.html): A dialogue that starts from the origin of ether and ends where the demand to get rid of magic is met by spacetime without ether, splitting into the graviton and Navier–Stokes. Korean original: https://bs2fob.com/p/26w394v084_vox0003.ko.html
@@ -48,20 +37,3 @@ Every post is a static HTML file readable without JavaScript. Korean files end i
 - [Why Billing Needs a Fixed Basis](https://bs2fob.com/p/26w391v162_billing.en.html): 1% used. Of what? One gauge with no denominator, and why AI services need a billing basis that never changes. Korean original: https://bs2fob.com/p/26w391v162_billing.ko.html
 - [Particle Physics and the Established Foothold](https://bs2fob.com/p/26w386v144_fob.en.html): Dr. Park Moon-ho's lecture, 33:50 to 1:19:34. From the discovery of the nucleus to the Copenhagen institute: each foothold secured, then used as the next starting point. Korean original: https://bs2fob.com/p/26w386v144_fob.ko.html
 - [A Word About Claymore](https://bs2fob.com/p/26w384v193_claymore.en.html): How far do you open it? One gauge, and from there the template that charges cannibalism as the price — where it started and how far it spread. Korean original: https://bs2fob.com/p/26w384v193_claymore.ko.html
-
-## Optional
-
-- [A Few Changes to Structure and Settings](https://bs2fob.com/p/26w393v183_changes.en.html): The Lexicon tab is out and a Vox tab is in. I also added a Copy URL button for individual posts, plus a middle layer that carries each post's title into messenger previews. Korean original: https://bs2fob.com/p/26w393v183_changes.ko.html
-- [Counter Reset](https://bs2fob.com/p/26w393v014_reset.en.html): Automating Wayback Machine pinning put the crawler on my counter, so I reset it to zero and stopped counting Linux-header visits. Korean original: https://bs2fob.com/p/26w393v014_reset.ko.html
-- [Wayback Machine](https://bs2fob.com/p/26w392v153_wayback.en.html): The site-pinning space I've long known, archive.org, turns out to be the Wayback Machine, a way to prove originality. Korean original: https://bs2fob.com/p/26w392v153_wayback.ko.html
-- [Previous and Next Buttons](https://bs2fob.com/p/26w392v021_prevnext.en.html): Each post now ends with buttons to the previous and next pieces in its tab, laid out to match the direction of that tab’s list. Korean original: https://bs2fob.com/p/26w392v021_prevnext.ko.html
-- [Tuning the Threshold](https://bs2fob.com/p/26w391v211_threshold.en.html): I lowered the entry to the 04 set with everyday material. Compressed statement is my default; easing it for readers is an extra service. Korean original: https://bs2fob.com/p/26w391v211_threshold.ko.html
-- [Reordering the Lists](https://bs2fob.com/p/26w391v202_order.en.html): The Writing and Verse tabs now list from the first piece. The earlier pieces weigh far more than the later ones. Korean original: https://bs2fob.com/p/26w391v202_order.ko.html
-- [Renumbering, and a Few Other Things](https://bs2fob.com/p/26w391v180_renumber.en.html): Cognitive Axioms numbering is now ##_#. And the question of identity and similarity that stayed with me through the 04 set. Korean original: https://bs2fob.com/p/26w391v180_renumber.ko.html
-- [Up to 007 Without Much Thought](https://bs2fob.com/p/26w386v193_pause.en.html): What began with the intelligence trichotomy ran on to 007. The active living cognizer is on hold for now. Korean original: https://bs2fob.com/p/26w386v193_pause.ko.html
-- [AI Handling Devices](https://bs2fob.com/p/26w386v004_handling.en.html): The devices that steer the AI in Claude Code, ordered by how hard they bind. Korean original: https://bs2fob.com/p/26w386v004_handling.ko.html
-- [Delegate Deterministic Operations to External Tools](https://bs2fob.com/p/26w385v094_delegate.en.html): One wall an LLM can never climb: answering deterministic operations head-on with nothing but probabilistic inference. Korean original: https://bs2fob.com/p/26w385v094_delegate.ko.html
-- [A Verse Tab](https://bs2fob.com/p/26w384v161_versetab.en.html): A Verse tab went in between Log and Writing. Four digits, so 9999 slots. Korean original: https://bs2fob.com/p/26w384v161_versetab.ko.html
-- [Reworking the Tabs](https://bs2fob.com/p/26w384v135_tabs.en.html): Review became Snap, and a Lexicon tab went in. Korean original: https://bs2fob.com/p/26w384v135_tabs.ko.html
-- [Rewriting 001, and a few settings](https://bs2fob.com/p/26w383v121_log.en.html): The tone got reset and the fertilizer section went in. Justified text, mobile layout, and the numbering scheme are now decided. Korean original: https://bs2fob.com/p/26w383v121_log.ko.html
-- [What the next stretch looks like](https://bs2fob.com/p/26w376v181_notice.en.html): Still settling the setup. For a while the work is splitting older drafts into short pieces and putting them up. Korean original: https://bs2fob.com/p/26w376v181_notice.ko.html

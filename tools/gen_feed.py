@@ -232,10 +232,8 @@ def write_heads(root, posts):
 
 TABS = [
     ("write", "작문", "Writing"),
-    ("verse", "시문", "Verse"),
     ("vox", "복스", "Vox"),
     ("snap", "스냅", "Snap"),
-    ("notice", "로그", "Log"),
     ("code", "코딩", "Code"),
 ]
 STATIC_RE = re.compile(r"<!--static-index-->.*?<!--/static-index-->", re.S)
@@ -268,8 +266,7 @@ def build_llms(posts):
         "",
         "Every post is a static HTML file readable without JavaScript. Korean files end in"
         " `.ko.html`, English files in `.en.html`; the Korean text is the original and the"
-        " English is the author's translation. Verse posts have a single file that carries"
-        " the Korean poem with an English gloss. Series numbers read `set_part`"
+        " English is the author's translation. Series numbers read `set_part`"
         " (e.g. `02_3` is set 2, part 3). Machine-readable index: %sposts.json" % SITE_URL,
         "",
     ]
@@ -277,7 +274,7 @@ def build_llms(posts):
         items = tab_posts(posts, tab)
         if not items:
             continue
-        lines += ["## Optional" if tab == "notice" else "## %s" % en_name, ""]
+        lines += ["## %s" % en_name, ""]
         for p in items:
             en, ko = pick(p, "en"), pick(p, "ko")
             note = en.get("lede", "")
