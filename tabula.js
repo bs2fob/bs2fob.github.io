@@ -429,29 +429,44 @@ function attItemHtml(a,i,id,kw){
   if(a.type==='pdf')return `<div class="sc-fname"><button class="sc-pdf" data-act="pdf" data-fn="${esc(a.filename)}">PDF</button>${name}${del}</div>`;
   return '';
 }
-function attachHtml(list,id,kw,notes){
-  if(!list||!list.length)return '';
-  return '<div class="sc-attach">'+list.map((a,i)=>attItemHtml(a,i,id,kw)
-    +(notes&&notes[i]?`<div class="sc-body">${highlight(notes[i],kw)}</div>`:'')).join('')+'</div>';
-}
-// 본문과 첨부마다 붙는 아래 글. 옛 tail 은 첫 첨부 아래 글로 읽는다
-function slots(m){
+// 글단락과 첨부를 보이는 순서대로 편다. blocks 가 없는 옛 메모는 본문·첨부·아래 글 순서로 읽는다
+function blocksOf(m){
   const at=m.attachments||[];
-  const notes=at.map(a=>a.note||'');
-  let body=m.body||'';
-  if(m.tail){
-    if(at.length)notes[0]=notes[0]?notes[0]+'\n'+m.tail:m.tail;
-    else body=body?body+'\n'+m.tail:m.tail;
+  if(m.blocks){
+    const out=m.blocks.filter(b=>b.t||at.some(a=>a.filename===b.f)).map(b=>({...b}));
+    at.forEach(a=>{if(!out.some(b=>b.f===a.filename))out.push({f:a.filename});});
+    return out;
   }
-  return {body,notes};
+  const out=[];
+  let body=m.body||'';
+  if(m.tail&&!at.length)body=body?body+'\n'+m.tail:m.tail;
+  if(body)out.push({t:body});
+  at.forEach((a,i)=>{
+    out.push({f:a.filename});
+    const n=i===0&&m.tail?(a.note?a.note+'\n'+m.tail:m.tail):a.note||'';
+    if(n)out.push({t:n});
+  });
+  return out;
+}
+function setBlocks(m,blocks){
+  m.blocks=blocks;
+  m.body='';
+  delete m.tail;
+  (m.attachments||[]).forEach(a=>{delete a.note;});
+}
+function blocksHtml(m,kw){
+  const at=m.attachments||[];
+  return blocksOf(m).map(b=>{
+    if(b.t)return `<div class="sc-body">${highlight(b.t,kw)}</div>`;
+    const i=at.findIndex(a=>a.filename===b.f);
+    return `<div class="sc-attach">${attItemHtml(at[i],i,m.id,kw)}</div>`;
+  }).join('');
 }
 
 function entryHtml(m,kw,ctx){
-  const s=slots(m);
   return `<div class="sc-entry">
     <div class="sc-qc">${esc(m.qc)}<span>${esc(qcodeLabel(m.qc))}</span>${tagsOf(m).map(t=>`<b class="sc-pin-tag">${esc(t)}</b>`).join('')}</div>
-    <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${s.body?`<div class="sc-body">${highlight(s.body,kw)}</div>`:''}</div>
-    ${attachHtml(m.attachments,m.id,kw,s.notes)}
+    <div class="sc-body-wrap" id="sc-${ctx}-${m.id}">${blocksHtml(m,kw)}</div>
     <div class="sc-acts">
       <button data-act="edit" data-id="${m.id}" data-ctx="${ctx}">수정</button>
       <button class="del" data-act="del" data-id="${m.id}">삭제</button>
@@ -521,8 +536,8 @@ function renderSearch(){
   if(!kw){label.textContent='';out.innerHTML='';return;}
   const qcOnly=/^\d{2}w\d{2}\d?$/.test(kw);
   const hits=qcOnly?memos.filter(m=>m.qc.startsWith(kw)):memos.filter(m=>
-    (m.body&&m.body.includes(kw))||(m.tail&&m.tail.includes(kw))||tagsOf(m).some(t=>t.includes(kw))||m.qc.includes(kw)||
-    (m.attachments||[]).some(a=>(a.origName||'').includes(kw)||(a.filename||'').includes(kw)||(a.note||'').includes(kw)));
+    blocksOf(m).some(b=>b.t&&b.t.includes(kw))||tagsOf(m).some(t=>t.includes(kw))||m.qc.includes(kw)||
+    (m.attachments||[]).some(a=>(a.origName||'').includes(kw)||(a.filename||'').includes(kw)));
   const groups=groupByWeek(hits);
   const keys=[...groups.keys()].sort().reverse();
   label.textContent=`${hits.length}개 결과 · ${keys.length}개 주차`;
@@ -576,9 +591,11 @@ function navHtml(pg,pages,attrs){
 
 // 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 태그 줄을 끌어 순서를 바꾼다
 function dragStart(e){
+  if(e.button>0||drag)return;
   const row=e.target.closest('.sc-trow');
-  if(!row||row.dataset.kind!=='tag'||e.button>0||drag)return;
-  const grp=row.parentElement;
+  let grp=row&&row.dataset.kind==='tag'?row.parentElement:null;
+  if(!row&&!e.target.closest('textarea, button, input, audio, label'))grp=e.target.closest('.sc-edblocks .sc-it');
+  if(!grp)return;
   drag={grp,y0:e.clientY,on:false,touch:e.pointerType!=='mouse'};
   if(drag.touch)drag.timer=setTimeout(()=>dragBegin(),350);
   window.addEventListener('pointermove',dragMove);
@@ -602,9 +619,9 @@ function dragMove(e){
   const list=drag.grp.parentElement;
   const next=[...list.children].find(g=>{
     if(g===drag.grp)return false;
-    const r=g.querySelector('.sc-trow').getBoundingClientRect();
+    const r=(g.querySelector('.sc-trow')||g).getBoundingClientRect();
     return e.clientY<r.top+r.height/2;
-  });
+  })||list.querySelector(':scope > [data-act=blk-add]');
   if(next!==drag.grp.nextElementSibling)list.insertBefore(drag.grp,next||null);
 }
 function dragEnd(){
@@ -617,6 +634,11 @@ function dragEnd(){
   if(!d.on)return;
   d.grp.classList.remove('dragging');
   dragClick=true;setTimeout(()=>{dragClick=false;},0);
+  if(d.grp.classList.contains('sc-it')){
+    const ks=[...d.grp.parentElement.querySelectorAll(':scope > .sc-it')].map(g=>g.dataset.k);
+    if(ed)ed.items.sort((a,b)=>ks.indexOf(a.k)-ks.indexOf(b.k));
+    return;
+  }
   const shown=[...d.grp.parentElement.children].map(g=>g.dataset.tp);
   const order=shown.concat(tagOrder.order.filter(t=>!shown.includes(t)));
   if(JSON.stringify(order)===JSON.stringify(tagOrder.order))return;
@@ -689,25 +711,30 @@ function renderPreview(){
   renderEdit();
 }
 
-// 수정 창은 본문과 첨부별 아래 글을 칸으로 나눠 칸마다 글추가·글수정·편집완료로 여닫는다
-function edText(k){return k==='b'?ed.body:k[0]==='a'?ed.notes[+k.slice(1)]:editPending[+k.slice(1)].note||'';}
-function setEdText(k,v){
-  if(k==='b')ed.body=v;
-  else if(k[0]==='a')ed.notes[+k.slice(1)]=v;
-  else editPending[+k.slice(1)].note=v;
-}
-function blkHtml(k){
-  const t=edText(k),open=ed.open.has(k);
-  return `<div class="sc-blk"><button class="sc-btn ghost sc-blkbtn" data-act="blk" data-k="${k}">${open?'편집완료':t?'글수정':'글추가'}</button>
-    ${open?`<div class="sc-ed">${charsHtml()}<textarea class="sc-input sc-edit" data-k="${k}">${esc(t)}</textarea></div>`:t?`<div class="sc-body">${esc(t)}</div>`:''}</div>`;
+// 수정 창은 글단락과 첨부를 한 줄로 늘어놓는다. 항목을 끌어 순서를 바꾸고 글단락은 글수정·편집완료로 여닫는다
+let edSeq=0;
+function edItem(o){return {k:'e'+(++edSeq),...o};}
+function edFind(k){return ed.items.find(x=>x.k===k);}
+function edText(k){const it=edFind(k);return it?it.t||'':'';}
+function setEdText(k,v){const it=edFind(k);if(it)it.t=v;}
+function blkHtml(it){
+  const open=ed.open.has(it.k);
+  return `<div class="sc-blk"><button class="sc-btn ghost sc-blkbtn" data-act="blk" data-k="${it.k}">${open?'편집완료':'글수정'}</button>
+    ${open?`<div class="sc-ed">${charsHtml()}<textarea class="sc-input sc-edit" data-k="${it.k}">${esc(it.t||'')}</textarea></div>`:`<div class="sc-body">${esc(it.t||'')}</div>`}</div>`;
 }
 function renderEdit(){
   const entry=root.querySelector('.sc-entry.editing');
   if(!entry||!ed)return;
-  const m=findMemo(ed.id);
-  entry.querySelector('.sc-edblocks').innerHTML=blkHtml('b')
-    +(m.attachments||[]).map((a,i)=>`<div class="sc-attach">${attItemHtml(a,i,m.id,'')}</div>${blkHtml('a'+i)}`).join('')
-    +editPending.map((a,i)=>`<div class="sc-preview">${previewHtml([a],'unpend-edit',i)}</div>${blkHtml('p'+i)}`).join('');
+  const m=findMemo(ed.id),at=m.attachments||[];
+  ed.items=ed.items.filter(it=>it.p?editPending.includes(it.p):!it.f||at.some(a=>a.filename===it.f));
+  editPending.forEach(p=>{if(!ed.items.some(it=>it.p===p))ed.items.push(edItem({p}));});
+  entry.querySelector('.sc-edblocks').innerHTML=ed.items.map(it=>{
+    let h;
+    if(it.p)h=`<div class="sc-preview">${previewHtml([it.p],'unpend-edit',editPending.indexOf(it.p))}</div>`;
+    else if(it.f){const i=at.findIndex(a=>a.filename===it.f);h=`<div class="sc-attach">${attItemHtml(at[i],i,m.id,'')}</div>`;}
+    else h=blkHtml(it);
+    return `<div class="sc-it" data-k="${it.k}">${h}</div>`;
+  }).join('')+'<button class="sc-btn ghost sc-blkbtn" data-act="blk-add">글추가</button>';
   entry.querySelectorAll('.sc-edblocks textarea').forEach(fit);
   hydrate();
 }
@@ -826,10 +853,14 @@ async function onClick(e){
   const act=b.dataset.act;
   if(act==='sub')return showSub(b.dataset.sub);
   if(act==='clip')return pasteImage(b);
-  if(act==='blk'){
-    const k=b.dataset.k;
-    if(ed.open.has(k)){ed.open.delete(k);setEdText(k,edText(k).trim());}
-    else ed.open.add(k);
+  if(act==='blk'||act==='blk-add'){
+    let k=b.dataset.k;
+    if(act==='blk-add'){const it=edItem({t:''});ed.items.push(it);k=it.k;}
+    if(ed.open.has(k)){
+      ed.open.delete(k);
+      const v=edText(k).trim();
+      if(v)setEdText(k,v);else ed.items=ed.items.filter(x=>x.k!==k);
+    }else ed.open.add(k);
     renderEdit();
     const ta=ed.open.has(k)&&root.querySelector(`.sc-entry.editing textarea[data-k="${k}"]`);
     if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}
@@ -872,7 +903,6 @@ async function onClick(e){
   if(act==='unpend-edit'){
     URL.revokeObjectURL(editPending[b.dataset.i].url);
     editPending.splice(+b.dataset.i,1);
-    ed.open=new Set([...ed.open].filter(k=>k[0]!=='p'));
     return renderEdit();
   }
   if(act==='unpend'){
@@ -894,7 +924,7 @@ async function onClick(e){
   if(act==='wk-page'){weekPg=+b.dataset.pg;return renderAll();}
   if(act==='grp-page'){FOLD[b.dataset.kind].open.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='zoom'){
-    if(!b.src)return;
+    if(dragClick||!b.src)return;
     $('.sc-lightbox img').src=b.src;
     $('.sc-lightbox').hidden=false;
     return;
@@ -915,8 +945,7 @@ async function onClick(e){
     const entry=wrap.closest('.sc-entry'),acts=entry.querySelector('.sc-acts');
     entry.classList.add('editing');
     dropEditPending();
-    const s=slots(m);
-    ed={id:m.id,body:s.body,notes:s.notes,open:new Set()};
+    ed={id:m.id,items:blocksOf(m).map(edItem),open:new Set()};
     [...entry.children].forEach(c=>{if(!c.matches('.sc-qc, .sc-acts'))c.remove();});
     acts.insertAdjacentHTML('beforebegin',`<div class="sc-edblocks"></div><div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
       <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${tagHtml(tagsOf(m))}</div></div>`);
@@ -929,13 +958,11 @@ async function onClick(e){
     let added;
     try{added=await uploadAll(m.qc,editPending,ctl.querySelector('.sc-prog'));}
     catch(e){b.disabled=false;alert(`파일 업로드 실패: ${e.message}`);return;}
-    added.forEach((a,i)=>{const n=(editPending[i].note||'').trim();if(n)a.note=n;});
+    const fresh=new Map(editPending.map((p,i)=>[p,added[i].filename]));
     dropEditPending();
-    m.body=ed.body.trim();
-    (m.attachments||[]).forEach((a,i)=>{const n=(ed.notes[i]||'').trim();if(n)a.note=n;else delete a.note;});
-    delete m.tail;
-    ed=null;
     if(added.length)m.attachments=(m.attachments||[]).concat(added);
+    setBlocks(m,ed.items.map(it=>it.p?{f:fresh.get(it.p)}:it.f?{f:it.f}:{t:(it.t||'').trim()}).filter(x=>x.f||x.t));
+    ed=null;
     const tg=readTags(ctl.querySelector('.sc-tp'));
     if(tg.length)m.tags=tg;else delete m.tags;
     delete m.topic;
@@ -954,18 +981,14 @@ async function onClick(e){
     return deleteRaw(files);
   }
   if(act==='del-att'){
-    const a=m.attachments[+b.dataset.i];
-    const i=+b.dataset.i,editing=!!(b.closest('.sc-entry.editing')&&ed&&ed.id===m.id);
-    const note=editing?ed.notes[i]:slots(m).notes[i];
-    if(!a||!confirm(`첨부 ${a.origName||a.filename} 을 삭제합니까?${note?'\n첨부 아래 글도 함께 지워집니다.':''}`))return;
+    const i=+b.dataset.i,a=m.attachments[i];
+    const editing=!!(b.closest('.sc-entry.editing')&&ed&&ed.id===m.id);
+    if(!a||!confirm(`첨부 ${a.origName||a.filename} 을 삭제합니까?`))return;
+    const rest=blocksOf(m).filter(x=>x.f!==a.filename);
     m.attachments.splice(i,1);
-    if(i===0)delete m.tail;
+    setBlocks(m,rest);
     m.mt=Date.now();
-    if(editing){
-      ed.notes.splice(i,1);
-      ed.open=new Set([...ed.open].flatMap(k=>k[0]!=='a'?[k]:+k.slice(1)===i?[]:+k.slice(1)>i?['a'+(+k.slice(1)-1)]:[k]));
-      renderEdit();
-    }else renderAll();
+    if(editing)renderEdit();else renderAll();
     await saveMemos();
     return deleteRaw([a.filename]);
   }
@@ -1034,7 +1057,8 @@ function mount(el){
   root.addEventListener('ended',syncAudioStop,true);
   root.addEventListener('pointerdown',dragStart);
   root.addEventListener('touchmove',e=>{if(drag&&drag.on)e.preventDefault();},{passive:false});
-  root.addEventListener('contextmenu',e=>{if(drag&&e.target.closest('.sc-trow'))e.preventDefault();});
+  root.addEventListener('contextmenu',e=>{if(drag&&e.target.closest('.sc-trow, .sc-it'))e.preventDefault();});
+  root.addEventListener('dragstart',e=>{if(e.target.closest('.sc-it'))e.preventDefault();});
   root.addEventListener('click',onCancel);
   root.addEventListener('input',e=>{
     if(!e.target.matches('textarea.sc-input'))return;
