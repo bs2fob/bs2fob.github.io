@@ -924,7 +924,7 @@ async function onClick(e){
   if(act==='wk-page'){weekPg=+b.dataset.pg;return renderAll();}
   if(act==='grp-page'){FOLD[b.dataset.kind].open.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='zoom'){
-    if(dragClick||!b.src)return;
+    if(dragClick||!b.src||b.closest('.sc-entry.editing'))return;
     $('.sc-lightbox img').src=b.src;
     $('.sc-lightbox').hidden=false;
     return;

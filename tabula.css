@@ -82,7 +82,7 @@
 .sc-attach+.sc-body{margin-top:10px}
 .sc-edblocks .sc-it{cursor:grab;border-radius:var(--radius-sm);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .sc-edblocks .sc-it textarea{cursor:text;user-select:text;-webkit-user-select:text}
-.sc-edblocks .sc-it img{-webkit-user-drag:none}
+.sc-edblocks .sc-it img{-webkit-user-drag:none;cursor:grab}
 .sc-edblocks .sc-it.dragging{outline:1px solid var(--accent);background:var(--surface2);box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:grabbing}
 .sc-blkbtn{padding:4px 12px;font-size:12px}
 .sc-blk .sc-body{margin-top:6px}
