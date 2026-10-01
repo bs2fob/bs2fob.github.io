@@ -11,8 +11,8 @@ from datetime import datetime, timedelta, timezone
 SITE_URL = "https://bs2fob.com/"
 SITE_TITLE = {"ko": "Bs2FoB", "en": "Bs2FoB"}
 SITE_DESC = {
-    "ko": "확보된 거점 — 세운 것을 다음 출발점으로 넘긴다",
-    "en": "Established footholds — each one becomes the next starting point",
+    "ko": "확보된 거점",
+    "en": "Established footholds",
 }
 AUTHOR = "Bs2FoB"
 LOCALE = {"ko": "ko_KR", "en": "en_US"}
