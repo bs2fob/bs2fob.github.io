@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="post.css?v=24">
 <link rel="stylesheet" href="verse.css?v=3">
 <link rel="stylesheet" href="voxchat.css?v=3">
-<link rel="stylesheet" href="scrawl.css?v=18">
+<link rel="stylesheet" href="tabula.css?v=19">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
@@ -258,7 +258,7 @@
   <div class="admin-modal" id="logout-modal" hidden>
     <div class="admin-box">
       <b>로그아웃</b>
-      <div class="hint">로그아웃은 관리자 화면만 끄고 토큰은 이 기기에 남깁니다. 열쇠를 다시 누르면 입력 없이 들어갑니다. 다른 사람과 함께 쓰는 기기라면 토큰까지 지우세요. 낙서장의 기기 사본도 함께 지워집니다.</div>
+      <div class="hint">로그아웃은 관리자 화면만 끄고 토큰은 이 기기에 남깁니다. 열쇠를 다시 누르면 입력 없이 들어갑니다. 다른 사람과 함께 쓰는 기기라면 토큰까지 지우세요. 서판의 기기 사본도 함께 지워집니다.</div>
       <div class="admin-row">
         <button class="pg" id="logout-cancel">취소</button>
         <button class="pg" id="logout-wipe">토큰까지 지우기</button>
@@ -271,7 +271,7 @@
     <div class="admin-box">
       <b>관리자 로그인</b>
       <input id="admin-token" type="password" placeholder="github_pat_..." autocomplete="off">
-      <div class="hint">Fine-grained token → bs2fob.github.io 저장소 Actions: Read and write, scrawl 저장소 Contents: Read and write. 토큰은 이 기기에만 저장됩니다.</div>
+      <div class="hint">Fine-grained token → bs2fob.github.io 저장소 Actions: Read and write, tabula 저장소 Contents: Read and write. 토큰은 이 기기에만 저장됩니다.</div>
       <div class="err" id="admin-err" hidden></div>
       <div class="admin-row">
         <button class="pg" id="admin-cancel">취소</button>
@@ -301,12 +301,12 @@
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
           fallback: '한국어 원문', del: '삭제', edit: '수정', write: '쓰기', copy: 'URL 복사', copied: '복사됨', pending: '반영 중', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글', notice: '로그',
-          tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩', scrawl: '낙서장' } },
+          tab: { notice: '로그', verse: '시문', write: '작문', voxchat: '복스챗', snap: '스냅', code: '코딩', tabula: '서판' } },
     en: { sub: 'Established footholds &mdash; each one becomes the next starting point',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
           fallback: 'Korean original', del: 'Del', edit: 'Edit', write: 'Write', copy: 'Copy URL', copied: 'Copied', pending: 'Publishing', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next', notice: 'Log',
-          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code', scrawl: 'Scrawl' } }
+          tab: { notice: 'Log', verse: 'Verse', write: 'Writing', voxchat: 'VoxSermo', snap: 'Snap', code: 'Code', tabula: 'Tabula' } }
   };
 
   var clockEl = document.getElementById('clock');
@@ -572,7 +572,7 @@
     if (post) {
       var v = pick(post);
       if (v) count('/' + v.v.file, v.v.title);
-    } else if (tab !== 'scrawl') {
+    } else if (tab !== 'tabula') {
       count('/' + tab + (page ? '/p' + (page + 1) : ''),
             UI[lang].tab[tab] + (page ? ' ' + (page + 1) : ''));
     }
@@ -591,9 +591,9 @@
     return TABS.indexOf(p.tab) >= 0 ? p.tab : DEFAULT_TAB;
   }
 
-  // 낙서장은 관리자에게만 보이는 탭이다
+  // 서판은 관리자에게만 보이는 탭이다
   function shownTabs(){
-    return adminToken() ? TABS.concat('scrawl') : TABS;
+    return adminToken() ? TABS.concat('tabula') : TABS;
   }
 
   function tabPosts(which){
@@ -724,7 +724,7 @@
     pagerEl.innerHTML = '';
     renderTabs();
     renderNotice();
-    if (tab === 'scrawl') { Scrawl.mount(listEl); return; }
+    if (tab === 'tabula') { Tabula.mount(listEl); return; }
 
     var logAdmin = tab === 'notice' && !!adminToken();
     if (logAdmin && writing) { renderEditor(); return; }
@@ -1012,11 +1012,11 @@
   }
 
   function logout(wipe){
-    if (wipe && localStorage.getItem('bs2fob-scrawl-dirty') && !confirm('낙서장에 아직 올라가지 않은 메모가 있습니다. 지우면 사라집니다. 계속합니까?')) return;
+    if (wipe && localStorage.getItem('bs2fob-tabula-dirty') && !confirm('서판에 아직 올라가지 않은 메모가 있습니다. 지우면 사라집니다. 계속합니까?')) return;
     try {
       if (wipe) {
         Object.keys(localStorage).forEach(function(k){
-          if (k === ADMIN || k === ADMIN_OFF || k.indexOf('bs2fob-scrawl-') === 0) localStorage.removeItem(k);
+          if (k === ADMIN || k === ADMIN_OFF || k.indexOf('bs2fob-tabula-') === 0) localStorage.removeItem(k);
         });
       } else localStorage.setItem(ADMIN_OFF, '1');
     } catch (e) {}
@@ -1550,7 +1550,7 @@
   }
 })();
 </script>
-<script src="scrawl.js?v=24"></script>
+<script src="tabula.js?v=25"></script>
 <script data-goatcounter="https://bs2fob.goatcounter.com/count"
         data-goatcounter-settings='{"no_onload": true}'
         async src="//gc.zgo.at/count.js"></script>

@@ -1,5 +1,5 @@
-/* scrawl.css */
-/* 관리자 전용 낙서장 탭. day_log 화면을 사이트 색 변수 위에 옮긴다 */
+/* tabula.css */
+/* 관리자 전용 서판 탭. day_log 화면을 사이트 색 변수 위에 옮긴다 */
 .sc{max-width:680px;margin:0 auto 40px;font-size:15px;line-height:1.6}
 .sc button{font-family:inherit}
 .sc-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:14px}

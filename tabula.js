@@ -1,11 +1,13 @@
-// scrawl.js
-// 관리자 전용 낙서장. day_log 메모 체계를 옮겨 비공개 저장소 bs2fob/scrawl 과 동기화한다
+// tabula.js
+// 관리자 전용 서판. day_log 메모 체계를 옮겨 비공개 저장소 bs2fob/tabula 과 동기화한다
 (function(){
-const REPO='https://api.github.com/repos/bs2fob/scrawl';
+const REPO='https://api.github.com/repos/bs2fob/tabula';
 const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
-const LS={logs:'bs2fob-scrawl-logs',tombs:'bs2fob-scrawl-tombs',dirty:'bs2fob-scrawl-dirty',draft:'bs2fob-scrawl-draft',sub:'bs2fob-scrawl-sub',order:'bs2fob-scrawl-topics',keep:'bs2fob-scrawl-keep'};
+const LS={logs:'bs2fob-tabula-logs',tombs:'bs2fob-tabula-tombs',dirty:'bs2fob-tabula-dirty',draft:'bs2fob-tabula-draft',sub:'bs2fob-tabula-sub',order:'bs2fob-tabula-topics',keep:'bs2fob-tabula-keep'};
+// 옛 scrawl 키로 남은 기기 사본을 새 키로 옮긴다
+try{const OLD='bs2fob-scrawl-';Object.keys(localStorage).forEach(k=>{if(k.indexOf(OLD)!==0)return;const n='bs2fob-tabula-'+k.slice(OLD.length);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k);});}catch(e){}
 const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
 const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['tag','태그']];
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
@@ -168,7 +170,7 @@ async function checkRepo(){
   if(repoChecked)return;
   const r=await gh('');
   if(!r.ok)throw new Error(r.status===404
-    ?'scrawl 저장소에 닿지 못했습니다. 관리자 토큰에 bs2fob/scrawl 저장소의 Contents 읽기·쓰기 권한을 더하세요.'
+    ?'tabula 저장소에 닿지 못했습니다. 관리자 토큰에 bs2fob/tabula 저장소의 Contents 읽기·쓰기 권한을 더하세요.'
     :`저장소 접근 실패 (${r.status})`);
   repoChecked=true;
 }
@@ -224,7 +226,7 @@ async function putShard(sh){
   let c=serializeShard(sh,partitionLogs().get(sh)||[]);
   if(shardSaved[sh]===c)return;
   const body=()=>{
-    const b={message:`scrawl ${sh} ${buildQcode(new Date())}`,content:b64enc(c)};
+    const b={message:`tabula ${sh} ${buildQcode(new Date())}`,content:b64enc(c)};
     if(shardSha[sh])b.sha=shardSha[sh];
     return b;
   };
@@ -301,7 +303,7 @@ async function saveOrder(){
   lsSet(LS.order,JSON.stringify(tagOrder));
   if(!token())return;
   const body=()=>{
-    const b={message:`scrawl topics ${buildQcode(new Date())}`,content:b64enc(JSON.stringify(tagOrder))};
+    const b={message:`tabula topics ${buildQcode(new Date())}`,content:b64enc(JSON.stringify(tagOrder))};
     if(orderSha)b.sha=orderSha;
     return b;
   };
@@ -1075,5 +1077,5 @@ window.addEventListener('beforeunload',e=>{
   e.returnValue='';
 });
 
-window.Scrawl={mount};
+window.Tabula={mount};
 })();
