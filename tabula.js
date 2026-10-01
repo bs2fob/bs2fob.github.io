@@ -47,10 +47,11 @@ function buildQcode(d){
   return `${yy}w${ww}${d.getDay()}v${String(d.getHours()).padStart(2,'0')}${Math.floor(d.getMinutes()/10)}`;
 }
 const DAYS=['일','월','화','수','목','금','토'];
+const DAYS_HJ=['日','月','火','水','木','金','土'];
 function qcodeLabel(qc){
   const m=qc.match(/^(\d{2})w(\d{2})(\d)v(\d{2})(\d)$/);
   if(!m)return qc;
-  return `20${m[1]}년 ${+m[2]}주차 ${DAYS[+m[3]]}요일 ${m[4]}:${m[5]}0`;
+  return `${m[1]}년${+m[2]}주${DAYS_HJ[+m[3]]} ${m[4]}:${m[5]}0`;
 }
 function qcodeToDate(qc){
   const m=qc.match(/^(\d{2})w(\d{2})(\d)/);
