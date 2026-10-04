@@ -509,7 +509,7 @@
     page = clampPage(state.page || 0);
     home = !!state.home && !post;
 
-    fitViewport(!!post);
+    fitViewport(post ? READ_WIDTH : tab === 'tabula' ? TABULA_WIDTH : 0);
     if (post) {
       indexEl.hidden = true;
       readerEl.hidden = false;
@@ -532,11 +532,13 @@
   }
 
   // 폰에서 글을 열면 시구가 줄바꿈되지 않는 폭으로 그린 뒤 화면에 맞춰 줄인다
+  // 서판은 PC 와 같은 한 행 글자 수가 나오는 폭으로 그린다
   var READ_WIDTH = 500;
-  function fitViewport(reading){
+  var TABULA_WIDTH = 720;
+  function fitViewport(width){
     var m = document.querySelector('meta[name=viewport]');
-    m.content = reading && screen.width < READ_WIDTH
-      ? 'width=' + READ_WIDTH
+    m.content = width && screen.width < width
+      ? 'width=' + width
       : 'width=device-width, initial-scale=1.0';
   }
 
@@ -715,7 +717,7 @@
 
     var entry = home && entryPost(mine);
     if (entry) {
-      fitViewport(true);
+      fitViewport(READ_WIDTH);
       var mark = document.createElement('div');
       mark.className = 'latest-mark';
       mark.textContent = UI[lang].latest;
