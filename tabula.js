@@ -24,6 +24,7 @@ const FOLD={tag:{open:new Map(),keep:readKeep(LS.keep),ls:LS.keep},week:{open:ne
 const WEEK_PAGE=10;
 let weekPg=0;
 let writePg=0;
+let tagEdit=null;
 const TAG_PAGE=5;
 let tagOrder=readOrder(),orderSha,drag=null,dragClick=false;
 let query='';
@@ -575,9 +576,36 @@ function foldHtml(kind,key,label,meta,items,ctx){
   const pages=Math.ceil(items.length/TAG_PAGE),pg=on?Math.min(f.open.get(key),pages-1):0;
   if(on)f.open.set(key,pg);
   return `<div class="sc-tgrp" data-tp="${k}"><div class="sc-wrow sc-trow${on?' on':''}" data-act="grp" data-kind="${kind}" data-tp="${k}">
-      <div><div class="sc-wrow-label">${label}</div><div class="sc-wrow-meta">${meta}</div></div>
-      <div class="sc-tright">${kind==='tag'?`<input type="checkbox" class="sc-tkeep" data-act="grp-keep" data-kind="${kind}" data-tp="${k}" title="탭을 옮겨도 펼침 유지"${f.keep.has(key)?' checked':''}>`:''}<span>›</span></div>
+      <div>${kind==='tag'&&tagEdit===key?`<input class="sc-tname" type="text" value="${k}">`:`<div class="sc-wrow-label">${label}</div>`}<div class="sc-wrow-meta">${meta}</div></div>
+      <div class="sc-tright">${kind==='tag'?(tagEdit===key?`<button class="sc-tedit on" data-act="tag-ok" data-tp="${k}">확인</button>`:`<button class="sc-tedit" data-act="tag-edit" data-tp="${k}" title="태그명 수정">✎</button>`)+`<input type="checkbox" class="sc-tkeep" data-act="grp-keep" data-kind="${kind}" data-tp="${k}" title="탭을 옮겨도 펼침 유지"${f.keep.has(key)?' checked':''}>`:''}<span>›</span></div>
     </div>${on?pageNavHtml(kind,key,pg,pages)+`<div class="sc-tbody">${scrollHtml(items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE),ctx,'')}</div>`:''}</div>`;
+}
+
+// 태그명을 바꾸면 그 태그가 붙은 메모 전부와 태그 순서·펼침 기록을 함께 바꾼다. 이미 있는 이름이면 합친다
+async function renameTag(old,name){
+  tagEdit=null;
+  if(!name||name===old)return renderAll();
+  if(/[,，]/.test(name)){alert('태그명에 쉼표를 쓸 수 없습니다.');return renderAll();}
+  await loadAllShards();
+  if(!allLoaded){alert('과거 기록을 모두 불러오지 못해 태그명을 바꾸지 않았습니다.');return renderAll();}
+  if(tagGroups().map.has(name)&&!confirm(`태그 ${name} 이 이미 있습니다. ${old} 를 거기에 합칩니까?`))return renderAll();
+  const now=Date.now();
+  for(const m of memos){
+    const tags=tagsOf(m);
+    if(!tags.includes(old))continue;
+    m.tags=[...new Set(tags.map(t=>t===old?name:t))];
+    delete m.topic;
+    delete m.pin;
+    m.mt=now;
+  }
+  const had=tagOrder.order.includes(name);
+  tagOrder={order:tagOrder.order.map(t=>t===old?name:t).filter((t,i,a)=>!(had&&t===name&&a.indexOf(t)!==i)),mt:now};
+  const f=FOLD.tag;
+  if(f.open.has(old)){if(!f.open.has(name))f.open.set(name,f.open.get(old));f.open.delete(old);}
+  if(f.keep.delete(old)){f.keep.add(name);lsSet(f.ls,JSON.stringify([...f.keep]));}
+  renderAll();
+  saveOrder();
+  return saveMemos();
 }
 
 // 펼친 태그의 메모가 한 쪽을 넘으면 태그 줄 바로 아래에 이전·쪽 번호·다음을 단다
@@ -593,6 +621,7 @@ function navHtml(pg,pages,attrs){
 // 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 태그 줄을 끌어 순서를 바꾼다
 function dragStart(e){
   if(e.button>0||drag)return;
+  if(e.target.closest('.sc-tname, .sc-tedit'))return;
   const row=e.target.closest('.sc-trow');
   let grp=row&&row.dataset.kind==='tag'?row.parentElement:null;
   if(!row&&!e.target.closest('textarea, button, input, audio, label'))grp=e.target.closest('.sc-edblocks .sc-it');
@@ -913,7 +942,14 @@ async function onClick(e){
   }
   if(act==='more'){weeksShown++;renderAll();return loadAllShards();}
   if(act==='fold')return b.nextElementSibling.classList.toggle('folded');
-  if(act==='grp'){if(dragClick)return;const o=FOLD[b.dataset.kind].open,t=b.dataset.tp;o.has(t)?o.delete(t):o.set(t,0);return renderAll();}
+  if(act==='tag-edit'){
+    tagEdit=b.dataset.tp;renderAll();
+    const box=$('.sc-tname');
+    if(box){box.focus();box.select();}
+    return;
+  }
+  if(act==='tag-ok')return renameTag(b.dataset.tp,$('.sc-tname').value.trim());
+  if(act==='grp'){if(dragClick||e.target.closest('.sc-tname'))return;const o=FOLD[b.dataset.kind].open,t=b.dataset.tp;o.has(t)?o.delete(t):o.set(t,0);return renderAll();}
   if(act==='grp-keep'){
     const f=FOLD[b.dataset.kind],t=b.dataset.tp;
     if(b.checked){f.keep.add(t);if(!f.open.has(t))f.open.set(t,0);}
@@ -1066,6 +1102,11 @@ function mount(el){
   root.addEventListener('contextmenu',e=>{if(drag&&e.target.closest('.sc-trow, .sc-it'))e.preventDefault();});
   root.addEventListener('dragstart',e=>{if(e.target.closest('.sc-it'))e.preventDefault();});
   root.addEventListener('click',onCancel);
+  root.addEventListener('keydown',e=>{
+    if(!e.target.classList.contains('sc-tname')||e.isComposing)return;
+    if(e.key==='Enter')renameTag(tagEdit,e.target.value.trim());
+    else if(e.key==='Escape'){tagEdit=null;renderAll();}
+  });
   root.addEventListener('input',e=>{
     if(!e.target.matches('textarea.sc-input'))return;
     fit(e.target);

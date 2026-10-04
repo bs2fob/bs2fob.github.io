@@ -109,6 +109,10 @@
 .sc-trow span{transition:transform .15s}
 .sc-trow.on{border-color:#d4a030}
 .sc-trow.on span{transform:rotate(90deg)}
+.sc-tedit{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-family:inherit;font-size:16.2px;min-width:38px;padding:3px 10px;cursor:pointer}
+.sc-tedit:hover{color:var(--text);border-color:var(--border2)}
+.sc-tedit.on{color:#111;background:#d4a030;border-color:#d4a030;font-weight:600}
+.sc-tname{width:14em;max-width:100%;background:var(--surface2);border:1px solid #d4a030;border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:18.9px;font-weight:600;padding:3px 8px;outline:none;cursor:text}
 .sc-tright{display:flex;align-items:center;gap:12px}
 .sc-tkeep{width:22px;height:22px;accent-color:#d4a030;cursor:pointer;margin:0}
 .sc-tbody{margin:4px 0 16px}
