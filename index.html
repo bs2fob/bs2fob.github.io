@@ -78,6 +78,7 @@
 .admin-box b{display:block;font-size:14px;margin-bottom:10px}
 .admin-box input{width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:monospace;font-size:13px;padding:8px 10px}
 .admin-box .hint{font-size:11px;color:var(--text3);line-height:1.6;margin-top:8px}
+.admin-box .msg{font-size:14px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere}
 .admin-box .err{font-size:12px;color:#d9534f;margin-top:8px}
 .admin-row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
@@ -224,6 +225,16 @@
     </div>
   </div>
 
+  <div class="admin-modal" id="confirm-modal" hidden>
+    <div class="admin-box">
+      <div class="msg" id="confirm-msg"></div>
+      <div class="admin-row">
+        <button class="pg" id="confirm-cancel">취소</button>
+        <button class="pg" id="confirm-ok">확인</button>
+      </div>
+    </div>
+  </div>
+
   <div class="admin-modal" id="admin-modal" hidden>
     <div class="admin-box">
       <b>관리자 로그인</b>
@@ -297,6 +308,24 @@
   document.getElementById('admin-btn').addEventListener('click', adminClick);
   document.getElementById('admin-cancel').addEventListener('click', closeLogin);
   document.getElementById('admin-ok').addEventListener('click', login);
+  var confirmCb = null;
+  function closeConfirm(yes){
+    var cb = confirmCb;
+    confirmCb = null;
+    document.getElementById('confirm-modal').hidden = true;
+    if (cb) cb(yes);
+  }
+  window.askConfirm = function(msg, cb){
+    if (confirmCb) closeConfirm(false);
+    confirmCb = cb;
+    document.getElementById('confirm-msg').textContent = msg;
+    document.getElementById('confirm-modal').hidden = false;
+    document.getElementById('confirm-ok').focus();
+  };
+  document.getElementById('confirm-ok').addEventListener('click', function(){ closeConfirm(true); });
+  document.getElementById('confirm-cancel').addEventListener('click', function(){ closeConfirm(false); });
+  document.getElementById('confirm-modal').addEventListener('click', function(e){ if (e.target === this) closeConfirm(false); });
+  document.addEventListener('keydown', function(e){ if (confirmCb && e.key === 'Escape') closeConfirm(false); });
   document.getElementById('logout-cancel').addEventListener('click', function(){ document.getElementById('logout-modal').hidden = true; });
   document.getElementById('logout-ok').addEventListener('click', function(){ logout(false); });
   document.getElementById('logout-wipe').addEventListener('click', function(){ logout(true); });
@@ -940,8 +969,10 @@
     document.getElementById('admin-token').focus();
   }
 
-  function logout(wipe){
-    if (wipe && localStorage.getItem('bs2fob-tabula-dirty') && !confirm('서판에 아직 올라가지 않은 메모가 있습니다. 지우면 사라집니다. 계속합니까?')) return;
+  function logout(wipe, sure){
+    if (wipe && !sure && localStorage.getItem('bs2fob-tabula-dirty')) {
+      return askConfirm('서판에 아직 올라가지 않은 메모가 있습니다. 지우면 사라집니다. 계속합니까?', function(yes){ if (yes) logout(true, true); });
+    }
     try {
       if (wipe) {
         Object.keys(localStorage).forEach(function(k){
@@ -973,12 +1004,14 @@
     });
   }
 
-  function delPost(post){
+  function delPost(post, sure){
     var token = adminToken();
     if (!post || !token || deleting[post.stamp]) return;
     var got = pick(post);
     var title = got ? got.v.title : '';
-    if (!confirm('[' + post.stamp + '] ' + title + '\n\n이 글을 삭제합니까? 글 파일과 전용 이미지가 저장소에서 지워집니다.')) return;
+    if (!sure) {
+      return askConfirm('[' + post.stamp + '] ' + title + '\n\n이 글을 삭제합니까? 글 파일과 전용 이미지가 저장소에서 지워집니다.', function(yes){ if (yes) delPost(post, true); });
+    }
 
     var since = Date.now() - 10000;
     deleting[post.stamp] = true;
@@ -1361,7 +1394,7 @@
   }
 })();
 </script>
-<script src="tabula.js?v=30"></script>
+<script src="tabula.js?v=31"></script>
 <script data-goatcounter="https://bs2fob.goatcounter.com/count"
         data-goatcounter-settings='{"no_onload": true}'
         async src="//gc.zgo.at/count.js"></script>

@@ -979,7 +979,7 @@ async function onClick(e){
   }
   if(act==='del'){
     const files=(m.attachments||[]).map(a=>a.filename);
-    if(!confirm(files.length?`이 로그와 첨부 ${files.length}개를 함께 삭제합니까?\n되돌릴 수 없습니다.`:'이 로그를 삭제합니까?'))return;
+    if(!await ask(files.length?`이 로그와 첨부 ${files.length}개를 함께 삭제합니까?\n되돌릴 수 없습니다.`:'이 로그를 삭제합니까?'))return;
     addTomb(m.id,shardOf(m.qc));
     memos=memos.filter(x=>x!==m);
     renderAll();
@@ -989,7 +989,7 @@ async function onClick(e){
   if(act==='del-att'){
     const i=+b.dataset.i,a=m.attachments[i];
     const editing=!!(b.closest('.sc-entry.editing')&&ed&&ed.id===m.id);
-    if(!a||!confirm(`첨부 ${a.origName||a.filename} 을 삭제합니까?`))return;
+    if(!a||!await ask(`첨부 ${a.origName||a.filename} 을 삭제합니까?`))return;
     const rest=blocksOf(m).filter(x=>x.f!==a.filename);
     m.attachments.splice(i,1);
     setBlocks(m,rest);
@@ -1022,6 +1022,9 @@ function attachBarHtml(){
   </div>`;
 }
 
+function ask(msg){
+  return new Promise(r=>window.askConfirm(msg,r));
+}
 function charsHtml(){
   return `<div class="sc-chars">${CHARS.map(c=>`<button class="sc-char" data-act="char">${c}</button>`).join('')}</div>`;
 }
