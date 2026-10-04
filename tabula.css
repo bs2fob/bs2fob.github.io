@@ -113,6 +113,7 @@
 .sc-tkeep{width:16px;height:16px;accent-color:#d4a030;cursor:pointer;margin:0}
 .sc-tbody{margin:4px 0 16px}
 .sc-pgnav{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:2px 0 8px}
+.sc-pgnav.btm{margin:10px 0 0}
 .sc-pgbtn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-size:12px;min-width:30px;padding:3px 8px;cursor:pointer}
 .sc-pgbtn:hover:not(:disabled){color:var(--text);border-color:var(--border2)}
 .sc-pgbtn.on{color:#111;background:#d4a030;border-color:#d4a030;font-weight:600}

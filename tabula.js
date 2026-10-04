@@ -496,16 +496,17 @@ function scrollHtml(items,ctx,kw){
   }).join('')+'</div>';
 }
 function weekHtml(wk,items,ctx,kw,paged){
-  let nav='',shown=items;
+  let nav='',btm='',shown=items;
   if(paged){
     const pages=Math.ceil(items.length/TAG_PAGE),pg=Math.max(0,Math.min(writePg.get(wk)||0,pages-1));
     writePg.set(wk,pg);
     shown=items.slice(pg*TAG_PAGE,(pg+1)*TAG_PAGE);
     nav=navHtml(pg,pages,`data-act="wr-page" data-wk="${wk}"`);
+    btm=navHtml(pg,pages,`data-act="wr-page" data-wk="${wk}" data-btm="1"`).replace('sc-pgnav','sc-pgnav btm');
   }
-  return `<div class="sc-week">
+  return `<div class="sc-week" data-wk="${wk}">
     <div class="sc-week-head" data-act="fold"><span class="sc-wk">${weekLabel(wk)}</span><span class="sc-wc">${items.length}건 · ${wk}</span></div>
-    <div class="sc-week-body">${nav}${items.length?scrollHtml(shown,ctx,kw):'<div class="sc-empty">이 주차 기록이 없습니다.</div>'}</div>
+    <div class="sc-week-body">${nav}${items.length?scrollHtml(shown,ctx,kw):'<div class="sc-empty">이 주차 기록이 없습니다.</div>'}${btm}</div>
   </div>`;
 }
 
@@ -920,7 +921,12 @@ async function onClick(e){
     lsSet(f.ls,JSON.stringify([...f.keep]));
     return renderAll();
   }
-  if(act==='wr-page'){writePg.set(b.dataset.wk,+b.dataset.pg);return renderAll();}
+  if(act==='wr-page'){
+    const wk=b.dataset.wk,btm=b.dataset.btm;
+    writePg.set(wk,+b.dataset.pg);renderAll();
+    if(btm){const w=root.querySelector(`.sc-week[data-wk="${wk}"]`);if(w)w.scrollIntoView({block:'start'});}
+    return;
+  }
   if(act==='wk-page'){weekPg=+b.dataset.pg;return renderAll();}
   if(act==='grp-page'){FOLD[b.dataset.kind].open.set(b.dataset.tp,+b.dataset.pg);return renderAll();}
   if(act==='zoom'){
