@@ -1031,7 +1031,7 @@ function mount(el){
     <div class="sc-page" data-page="write">
       <div class="sc-card">
         <div class="sc-stamp"></div>
-        <div class="sc-ed">${charsHtml()}<textarea class="sc-input" placeholder="낙서..."></textarea></div>
+        <div class="sc-ed">${charsHtml()}<textarea class="sc-input" placeholder="입력.."></textarea></div>
         <div class="sc-preview"></div>
         <div class="sc-body-wrap sc-tail"></div>
         ${attachBarHtml()}

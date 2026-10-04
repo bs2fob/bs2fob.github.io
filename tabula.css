@@ -131,3 +131,15 @@
 .sc-lightbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
 .sc-lightbox[hidden]{display:none}
 .sc-lightbox img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:4px}
+
+/* 폰 폭: 특문·첨부 버튼을 한 줄에 맞추고 태그 줄을 카드 폭에 채운다 */
+@media (max-width:480px){
+  .sc-card{padding:12px}
+  .sc-chars{flex-wrap:nowrap;gap:4px}
+  .sc-char{flex:1 1 0;min-width:0;max-width:36px;width:auto;height:34px;padding:0}
+  .sc-attach-bar{gap:6px}
+  .sc-attach-bar .sc-btn{flex:1 1 auto;padding:8px 6px;text-align:center}
+  .sc-tp{flex:1 1 100%}
+  .sc-pin{margin-left:0}
+  .sc-topic{flex:1;min-width:0;width:auto}
+}
