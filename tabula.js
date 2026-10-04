@@ -5,7 +5,7 @@ const REPO='https://api.github.com/repos/bs2fob/tabula';
 const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
-const LS={logs:'bs2fob-tabula-logs',tombs:'bs2fob-tabula-tombs',dirty:'bs2fob-tabula-dirty',draft:'bs2fob-tabula-draft',sub:'bs2fob-tabula-sub',order:'bs2fob-tabula-topics',keep:'bs2fob-tabula-keep'};
+const LS={logs:'bs2fob-tabula-logs',tombs:'bs2fob-tabula-tombs',dirty:'bs2fob-tabula-dirty',draft:'bs2fob-tabula-draft',order:'bs2fob-tabula-topics',keep:'bs2fob-tabula-keep'};
 // 옛 scrawl 키로 남은 기기 사본을 새 키로 옮긴다
 try{const OLD='bs2fob-scrawl-';Object.keys(localStorage).forEach(k=>{if(k.indexOf(OLD)!==0)return;const n='bs2fob-tabula-'+k.slice(OLD.length);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k);});}catch(e){}
 const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
@@ -13,8 +13,7 @@ const SUBS=[['write','작성'],['weeks','주차'],['search','검색'],['tag','�
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
 
 let root=null;
-let sub=lsGet(LS.sub)||'write';
-if(sub==='pin'||sub==='topic')sub='tag';
+let sub='write';
 let memos=cacheLoad()||[];
 let shardSha={},shardSaved={},loaded=new Set(),allLoaded=false;
 let saving=false;
@@ -715,7 +714,6 @@ function showSub(name){
     writePg=0;
   }
   sub=name;
-  lsSet(LS.sub,name);
   root.querySelectorAll('.sc-sub').forEach(b=>b.classList.toggle('on',b.dataset.sub===name));
   root.querySelectorAll('.sc-page').forEach(p=>{p.hidden=p.dataset.page!==name;});
   renderAll();
@@ -1063,6 +1061,7 @@ function charsHtml(){
 }
 
 function mount(el){
+  const stay=root&&root.isConnected;
   root=document.createElement('div');
   root.className='sc';
   root.innerHTML=`<div class="sc-bar">
@@ -1133,7 +1132,7 @@ function mount(el){
   renderPreview();
   updateQnow();
   setSync(sync.state,sync.text);
-  showSub(SUBS.some(x=>x[0]===sub)?sub:'write');
+  showSub(stay?sub:'write');
   loadMemos();
 }
 
