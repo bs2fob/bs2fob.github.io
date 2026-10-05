@@ -756,14 +756,16 @@ function renderEdit(){
   const m=findMemo(ed.id),at=m.attachments||[];
   ed.items=ed.items.filter(it=>it.p?editPending.includes(it.p):!it.f||at.some(a=>a.filename===it.f));
   editPending.forEach(p=>{if(!ed.items.some(it=>it.p===p))ed.items.push(edItem({p}));});
-  const top=ed.items.length&&(ed.items[0].p||ed.items[0].f)?'<button class="sc-btn ghost sc-blkbtn" data-act="blk-add" data-top="1">글추가</button>':'';
+  const isText=it=>it&&!it.p&&!it.f;
+  const add=t=>`<button class="sc-btn ghost sc-blkbtn" data-act="blk-add"${t?' data-top="1"':''}>글추가</button>`;
+  const top=ed.items.length&&!isText(ed.items[0])?add(1):'',end=isText(ed.items[ed.items.length-1])?'':add(0);
   entry.querySelector('.sc-edblocks').innerHTML=top+ed.items.map(it=>{
     let h;
     if(it.p)h=`<div class="sc-preview">${previewHtml([it.p],'unpend-edit',editPending.indexOf(it.p))}</div>`;
     else if(it.f){const i=at.findIndex(a=>a.filename===it.f);h=`<div class="sc-attach">${attItemHtml(at[i],i,m.id,'')}</div>`;}
     else h=blkHtml(it);
     return `<div class="sc-it" data-k="${it.k}">${h}</div>`;
-  }).join('')+'<button class="sc-btn ghost sc-blkbtn" data-act="blk-add">글추가</button>';
+  }).join('')+end;
   entry.querySelectorAll('.sc-edblocks textarea').forEach(fit);
   hydrate();
 }
