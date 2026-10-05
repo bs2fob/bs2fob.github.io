@@ -647,10 +647,10 @@ function dragMove(e){
   e.preventDefault();
   const list=drag.grp.parentElement;
   const next=[...list.children].find(g=>{
-    if(g===drag.grp)return false;
+    if(g===drag.grp||g.dataset.act)return false;
     const r=(g.querySelector('.sc-trow')||g).getBoundingClientRect();
     return e.clientY<r.top+r.height/2;
-  })||list.querySelector(':scope > [data-act=blk-add]');
+  })||list.querySelector(':scope > [data-act=blk-add]:last-child');
   if(next!==drag.grp.nextElementSibling)list.insertBefore(drag.grp,next||null);
 }
 function dragEnd(){
@@ -665,7 +665,7 @@ function dragEnd(){
   dragClick=true;setTimeout(()=>{dragClick=false;},0);
   if(d.grp.classList.contains('sc-it')){
     const ks=[...d.grp.parentElement.querySelectorAll(':scope > .sc-it')].map(g=>g.dataset.k);
-    if(ed)ed.items.sort((a,b)=>ks.indexOf(a.k)-ks.indexOf(b.k));
+    if(ed){ed.items.sort((a,b)=>ks.indexOf(a.k)-ks.indexOf(b.k));renderEdit();}
     return;
   }
   const shown=[...d.grp.parentElement.children].map(g=>g.dataset.tp);
@@ -756,7 +756,8 @@ function renderEdit(){
   const m=findMemo(ed.id),at=m.attachments||[];
   ed.items=ed.items.filter(it=>it.p?editPending.includes(it.p):!it.f||at.some(a=>a.filename===it.f));
   editPending.forEach(p=>{if(!ed.items.some(it=>it.p===p))ed.items.push(edItem({p}));});
-  entry.querySelector('.sc-edblocks').innerHTML=ed.items.map(it=>{
+  const top=ed.items.length&&(ed.items[0].p||ed.items[0].f)?'<button class="sc-btn ghost sc-blkbtn" data-act="blk-add" data-top="1">글추가</button>':'';
+  entry.querySelector('.sc-edblocks').innerHTML=top+ed.items.map(it=>{
     let h;
     if(it.p)h=`<div class="sc-preview">${previewHtml([it.p],'unpend-edit',editPending.indexOf(it.p))}</div>`;
     else if(it.f){const i=at.findIndex(a=>a.filename===it.f);h=`<div class="sc-attach">${attItemHtml(at[i],i,m.id,'')}</div>`;}
@@ -883,7 +884,7 @@ async function onClick(e){
   if(act==='clip')return pasteImage(b);
   if(act==='blk'||act==='blk-add'){
     let k=b.dataset.k;
-    if(act==='blk-add'){const it=edItem({t:''});ed.items.push(it);k=it.k;}
+    if(act==='blk-add'){const it=edItem({t:''});if(b.dataset.top)ed.items.unshift(it);else ed.items.push(it);k=it.k;}
     if(ed.open.has(k)){
       ed.open.delete(k);
       const v=edText(k).trim();
