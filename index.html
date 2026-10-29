@@ -450,6 +450,8 @@
     }).catch(function(){});
   }
 
+  try { Object.keys(localStorage).forEach(function(k){ if (/^dl_/.test(k)) localStorage.removeItem(k); }); } catch (e) {}
+
   function pickLang(){
     var saved;
     try { saved = localStorage.getItem(STORE); } catch (e) {}
