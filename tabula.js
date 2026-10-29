@@ -5,7 +5,7 @@ const REPO='https://api.github.com/repos/bs2fob/tabula';
 const SHARD_DIR='log_data';
 const RAW_DIR='raw';
 const ADMIN='bs2fob-admin';
-const LS={logs:'bs2fob-tabula-logs',tombs:'bs2fob-tabula-tombs',dirty:'bs2fob-tabula-dirty',draft:'bs2fob-tabula-draft',order:'bs2fob-tabula-topics',keep:'bs2fob-tabula-keep'};
+const LS={logs:'bs2fob-tabula-logs',tombs:'bs2fob-tabula-tombs',dirty:'bs2fob-tabula-dirty',draft:'bs2fob-tabula-draft',tail:'bs2fob-tabula-tail',edit:'bs2fob-tabula-edit',order:'bs2fob-tabula-topics',keep:'bs2fob-tabula-keep'};
 // 옛 scrawl 키로 남은 기기 사본을 새 키로 옮긴다
 try{const OLD='bs2fob-scrawl-';Object.keys(localStorage).forEach(k=>{if(k.indexOf(OLD)!==0)return;const n='bs2fob-tabula-'+k.slice(OLD.length);if(localStorage.getItem(n)==null)localStorage.setItem(n,localStorage.getItem(k));localStorage.removeItem(k);});}catch(e){}
 const ORDER_PATH=`/contents/${SHARD_DIR}/topics.json`;
@@ -678,10 +678,12 @@ function dragEnd(){
 function renderAll(){
   if(!live())return;
   const playing=[...root.querySelectorAll('audio')].filter(a=>!a.paused);
+  if(ed)saveEd();
   if(sub==='write')renderWrite();
   if(sub==='weeks')renderWeeks();
   if(sub==='search')renderSearch();
   if(sub==='tag')renderTag();
+  reopenEdit();
   keepPlaying(playing);
   hydrate();
   syncAudioStop();
@@ -744,7 +746,37 @@ let edSeq=0;
 function edItem(o){return {k:'e'+(++edSeq),...o};}
 function edFind(k){return ed.items.find(x=>x.k===k);}
 function edText(k){const it=edFind(k);return it?it.t||'':'';}
-function setEdText(k,v){const it=edFind(k);if(it)it.t=v;}
+function setEdText(k,v){const it=edFind(k);if(it)it.t=v;saveEd();}
+// 수정 중인 글단락·순서·태그를 기기에 남겨 다시 그리거나 새로 열어도 수정 창을 되살린다
+function saveEd(){
+  if(!ed)return lsSet(LS.edit,null);
+  const tp=root&&root.querySelector('.sc-entry.editing .sc-edctl .sc-tp');
+  if(tp)ed.tags=readTags(tp);
+  lsSet(LS.edit,JSON.stringify({id:ed.id,tags:ed.tags,items:ed.items.filter(it=>!it.p).map(it=>({t:it.t,f:it.f,o:ed.open.has(it.k)}))}));
+}
+function loadEd(){
+  let s=null;
+  try{s=JSON.parse(lsGet(LS.edit)||'null');}catch(e){}
+  if(!s||!Array.isArray(s.items))return null;
+  const open=new Set();
+  const items=s.items.map(r=>{const it=edItem(r.f?{f:r.f}:{t:r.t||''});if(r.o)open.add(it.k);return it;});
+  return {id:s.id,items,open,tags:s.tags};
+}
+function openEdit(entry,m){
+  const acts=entry.querySelector('.sc-acts');
+  entry.classList.add('editing');
+  [...entry.children].forEach(c=>{if(!c.matches('.sc-qc, .sc-acts'))c.remove();});
+  acts.insertAdjacentHTML('beforebegin',`<div class="sc-edblocks"></div><div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
+      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${tagHtml(ed.tags||tagsOf(m))}</div></div>`);
+  renderEdit();
+}
+function reopenEdit(){
+  if(!ed||root.querySelector('.sc-entry.editing'))return;
+  const m=findMemo(ed.id);
+  if(!m)return;
+  const wrap=[...root.querySelectorAll(`[id^="sc-"][id$="-${m.id}"]`)].find(w=>w.offsetParent);
+  if(wrap)openEdit(wrap.closest('.sc-entry'),m);
+}
 function blkHtml(it){
   const open=ed.open.has(it.k);
   return `<div class="sc-blk"><button class="sc-btn ghost sc-blkbtn" data-act="blk" data-k="${it.k}">${open?'편집완료':'글수정'}</button>
@@ -767,6 +799,7 @@ function renderEdit(){
     return `<div class="sc-it" data-k="${it.k}">${h}</div>`;
   }).join('')+end;
   entry.querySelectorAll('.sc-edblocks textarea').forEach(fit);
+  saveEd();
   hydrate();
 }
 // 첨부가 있고 추가작성 칸이 아직 없을 때만 추가작성 버튼을 띄운다
@@ -805,6 +838,7 @@ function clearWrite(){
   lsSet(LS.draft,null);
   pending.forEach(a=>URL.revokeObjectURL(a.url));
   pending=[];
+  lsSet(LS.tail,null);
   $('.sc-card .sc-tail').innerHTML='';
   renderPreview();
   $('.sc-stamp').textContent=buildQcode(new Date());
@@ -985,14 +1019,9 @@ async function onClick(e){
   if(act==='edit'){
     const wrap=document.getElementById(`sc-${b.dataset.ctx}-${m.id}`);
     if(!wrap||root.querySelector('.sc-entry.editing'))return;
-    const entry=wrap.closest('.sc-entry'),acts=entry.querySelector('.sc-acts');
-    entry.classList.add('editing');
     dropEditPending();
     ed={id:m.id,items:blocksOf(m).map(edItem),open:new Set()};
-    [...entry.children].forEach(c=>{if(!c.matches('.sc-qc, .sc-acts'))c.remove();});
-    acts.insertAdjacentHTML('beforebegin',`<div class="sc-edblocks"></div><div class="sc-edctl">${attachBarHtml()}<div class="sc-prog" hidden></div>
-      <div class="sc-row"><button class="sc-btn" data-act="commit" data-id="${m.id}">저장</button><button class="sc-btn ghost" data-act="cancel">취소</button>${tagHtml(tagsOf(m))}</div></div>`);
-    renderEdit();
+    openEdit(wrap.closest('.sc-entry'),m);
     return;
   }
   if(act==='commit'){
@@ -1006,6 +1035,7 @@ async function onClick(e){
     if(added.length)m.attachments=(m.attachments||[]).concat(added);
     setBlocks(m,ed.items.map(it=>it.p?{f:fresh.get(it.p)}:it.f?{f:it.f}:{t:(it.t||'').trim()}).filter(x=>x.f||x.t));
     ed=null;
+    saveEd();
     const tg=readTags(ctl.querySelector('.sc-tp'));
     if(tg.length)m.tags=tg;else delete m.tags;
     delete m.topic;
@@ -1040,6 +1070,7 @@ function onCancel(e){
   if(!e.target.closest('[data-act=cancel]'))return;
   dropEditPending();
   ed=null;
+  saveEd();
   renderAll();
 }
 
@@ -1110,13 +1141,20 @@ function mount(el){
     else if(e.key==='Escape'){tagEdit=null;renderAll();}
   });
   root.addEventListener('input',e=>{
+    if(ed&&e.target.closest('.sc-edctl'))saveEd();
     if(!e.target.matches('textarea.sc-input'))return;
     fit(e.target);
     if(e.target.dataset.k&&ed)setEdText(e.target.dataset.k,e.target.value);
+    if(e.target.matches('.sc-card .sc-tailin'))lsSet(LS.tail,e.target.value);
   });
+  root.addEventListener('change',e=>{if(ed&&e.target.closest('.sc-edctl'))saveEd();});
   const ta=$('.sc-input');
   ta.value=lsGet(LS.draft)||'';
   ta.addEventListener('input',()=>lsSet(LS.draft,ta.value));
+  const tl=lsGet(LS.tail);
+  if(tl&&pending.length)$('.sc-card .sc-tail').innerHTML=tailTaHtml(tl,'');
+  else if(tl){ta.value=ta.value?ta.value+'\n'+tl:tl;lsSet(LS.draft,ta.value);lsSet(LS.tail,null);}
+  if(!ed)ed=loadEd();
   root.addEventListener('change',e=>{
     const inp=e.target;
     if(!inp.matches('input[type=file]'))return;
