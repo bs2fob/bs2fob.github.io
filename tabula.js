@@ -598,7 +598,7 @@ async function renameTag(old,name){
     m.mt=now;
   }
   const had=tagOrder.order.includes(name);
-  tagOrder={order:tagOrder.order.map(t=>t===old?name:t).filter((t,i,a)=>!(had&&t===name&&a.indexOf(t)!==i)),mt:now};
+  tagOrder={order:had?tagOrder.order.filter(t=>t!==old):tagOrder.order.map(t=>t===old?name:t),mt:now};
   const f=FOLD.tag;
   if(f.open.has(old)){if(!f.open.has(name))f.open.set(name,f.open.get(old));f.open.delete(old);}
   if(f.keep.delete(old)){f.keep.add(name);lsSet(f.ls,JSON.stringify([...f.keep]));}
