@@ -38,6 +38,8 @@
 .sc-tplist{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm)}
 .sc-tpchip{background:none;border:1px solid #d4a030;border-radius:3px;color:#d4a030;font-size:16.2px;padding:3px 9px;cursor:pointer}
 .sc-tpchip:hover{background:#d4a030;color:#111}
+.sc-tpchip{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.sc-tpchip.dragging{background:var(--surface2);color:#d4a030;box-shadow:0 4px 14px rgba(0,0,0,.35);cursor:grabbing}
 .sc-tpnone{font-size:16.2px;color:var(--text3)}
 .sc-pin-tag{font-family:inherit;font-size:13.5px;font-weight:600;color:#d4a030;border:1px solid #d4a030;border-radius:3px;padding:0 5px;margin-left:8px}
 .sc-prog{font-size:16.2px;color:#d4a030;margin:6px 0}

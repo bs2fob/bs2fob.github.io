@@ -617,15 +617,16 @@ function navHtml(pg,pages,attrs){
   return `<div class="sc-pgnav">${btn(pg-1,'이전','')}${Array.from({length:pages},(_,p)=>btn(p,p+1,p===pg?' on':'')).join('')}${btn(pg+1,'다음','')}</div>`;
 }
 
-// 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 태그 줄을 끌어 순서를 바꾼다
+// 마우스는 5px 움직이면, 터치는 0.35초 누르고 있으면 태그 줄·태그 칩을 끌어 순서를 바꾼다
 function dragStart(e){
   if(e.button>0||drag)return;
   if(e.target.closest('.sc-tname, .sc-tedit'))return;
   const row=e.target.closest('.sc-trow');
   let grp=row&&row.dataset.kind==='tag'?row.parentElement:null;
-  if(!row&&!e.target.closest('textarea, button, input, audio, label'))grp=e.target.closest('.sc-edblocks .sc-it');
+  if(!row)grp=e.target.closest('.sc-tplist .sc-tpchip');
+  if(!row&&!grp&&!e.target.closest('textarea, button, input, audio, label'))grp=e.target.closest('.sc-edblocks .sc-it');
   if(!grp)return;
-  drag={grp,y0:e.clientY,on:false,touch:e.pointerType!=='mouse'};
+  drag={grp,x0:e.clientX,y0:e.clientY,on:false,touch:e.pointerType!=='mouse',chip:grp.classList.contains('sc-tpchip')};
   if(drag.touch)drag.timer=setTimeout(()=>dragBegin(),350);
   window.addEventListener('pointermove',dragMove);
   window.addEventListener('pointerup',dragEnd);
@@ -640,12 +641,21 @@ function dragBegin(){
 function dragMove(e){
   if(!drag)return;
   if(!drag.on){
-    if(Math.abs(e.clientY-drag.y0)<(drag.touch?8:5))return;
+    if(Math.max(Math.abs(e.clientY-drag.y0),drag.chip?Math.abs(e.clientX-drag.x0):0)<(drag.touch?8:5))return;
     if(drag.touch)return dragEnd();
     dragBegin();
   }
   e.preventDefault();
   const list=drag.grp.parentElement;
+  if(drag.chip){
+    const next=[...list.children].find(c=>{
+      if(c===drag.grp)return false;
+      const r=c.getBoundingClientRect();
+      return e.clientY<r.top||(e.clientY<r.bottom&&e.clientX<r.left+r.width/2);
+    });
+    if(next!==drag.grp.nextElementSibling)list.insertBefore(drag.grp,next||null);
+    return;
+  }
   const next=[...list.children].find(g=>{
     if(g===drag.grp||g.dataset.act)return false;
     const r=(g.querySelector('.sc-trow')||g).getBoundingClientRect();
@@ -941,6 +951,7 @@ async function onClick(e){
     return;
   }
   if(act==='tp-set'){
+    if(dragClick)return;
     const tp=b.closest('.sc-tplist').previousElementSibling.querySelector('.sc-tp');
     const cur=parseTags(tp.querySelector('.sc-topic').value);
     if(!cur.includes(b.dataset.tp))cur.push(b.dataset.tp);
