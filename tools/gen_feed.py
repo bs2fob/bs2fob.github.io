@@ -234,7 +234,6 @@ TABS = [
     ("write", "작문", "Writing"),
     ("vox", "복스", "Vox"),
     ("snap", "스냅", "Snap"),
-    ("code", "코딩", "Code"),
 ]
 STATIC_RE = re.compile(r"<!--static-index-->.*?<!--/static-index-->", re.S)
 
