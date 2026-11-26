@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="post.css?v=24">
 <link rel="stylesheet" href="vox.css?v=3">
 <link rel="stylesheet" href="tabula.css?v=27">
-<link rel="stylesheet" href="board.css?v=3">
+<link rel="stylesheet" href="board.css?v=4">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
@@ -345,10 +345,10 @@
     });
 
   // 공유 중간 페이지(s/)가 넘겨준 ?p=스탬프&lang=언어 로 들어오면 그 글을 열고 주소창은 사이트 주소만 남긴다
-  // ?b=게시판.글번호&lang=언어 로 들어오면 게시판 탭에서 그 글을 연다
+  // ?b=게시판번호-글번호&lang=언어 로 들어오면 게시판 탭에서 그 글을 연다
   var boardOpen = null;
   function sharedBoard(){
-    var q = new URLSearchParams(location.search), m = (q.get('b') || '').match(/^(\w+)\.(\d+)$/);
+    var q = new URLSearchParams(location.search), m = (q.get('b') || '').match(/^(\d)-(\d{5})$/);
     if (!m) return null;
     var want = q.get('lang');
     if ((want === 'ko' || want === 'en') && want !== lang) { lang = want; paintChrome(); }
@@ -1409,7 +1409,7 @@
 })();
 </script>
 <script src="tabula.js?v=38"></script>
-<script src="board.js?v=5"></script>
+<script src="board.js?v=6"></script>
 <script data-goatcounter="https://bs2fob.goatcounter.com/count"
         data-goatcounter-settings='{"no_onload": true}'
         async src="//gc.zgo.at/count.js"></script>

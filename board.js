@@ -2,9 +2,9 @@
 // 게시판 탭: 세부 게시판 목록·글 보기·댓글, 관리자 토큰으로 글과 첨부를 사이트 저장소에 쓴다
 (function(){
 const REPO='https://api.github.com/repos/bs2fob/bs2fob.github.io';
-const BOARDS=[['free','자유게시판','Free Board'],['admin','운영자메모','Admin Notes']];
+const BOARDS=[['1','자유게시판','Free Board'],['0','운영자메모','Admin Notes']];
 const PER=15;
-let root=null,adm='',lang='ko',cur='free',view=null,pg=0,mode='list',data={},sha={},pend=[],edit=null,replyTo=null,busy=false,blobs={};
+let root=null,adm='',lang='ko',cur='1',view=null,pg=0,mode='list',data={},sha={},pend=[],edit=null,replyTo=null,busy=false,blobs={};
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);}
 function L(ko,en){return lang==='en'?en:ko;}
@@ -16,6 +16,8 @@ function b64dec(s){return decodeURIComponent(escape(atob(s.replace(/\n/g,''))));
 function fileExt(n){const m=n.match(/\.([^.]+)$/);return m?m[1].toLowerCase():'bin';}
 function kindOf(n){const e=fileExt(n);return /^(webp|jpg|jpeg|png|gif)$/.test(e)?'image':/^(mp3|m4a)$/.test(e)?'audio':e==='pdf'?'pdf':e==='zip'?'zip':'file';}
 function src(f){return blobs[f]||f;}
+function no5(id){return String(id).padStart(5,'0');}
+function code(k,id){return k+'-'+no5(id);}
 
 async function load(k){
   if(adm){
@@ -67,7 +69,7 @@ async function upload(k,id,list,start){
     n++;
     let blob=p.file,ext=fileExt(p.file.name);
     if(p.type==='image'){const e=await encodeImage(p.file);blob=e.blob;ext=e.ext;}
-    const path='board/raw/'+k+'_'+id+'_'+String(n).padStart(2,'0')+'.'+ext;
+    const path='board/raw/'+code(k,id)+'_'+String(n).padStart(2,'0')+'.'+ext;
     msg(L('첨부 올리는 중','Uploading')+' '+n+' · '+p.file.name);
     await putFile(path,await toB64(blob),'게시판 첨부 '+path);
     blobs[path]=URL.createObjectURL(blob);
@@ -88,7 +90,7 @@ function listHtml(){
   const a=sorted(),pc=Math.max(1,Math.ceil(a.length/PER));pg=Math.min(pg,pc-1);
   const rows=a.slice(pg*PER,pg*PER+PER).map(p=>{
     const c=(p.comments||[]).length;
-    return '<tr class="bd-row'+(p.pin?' pin':'')+'" data-id="'+p.id+'"><td class="no">'+(p.pin?L('공지','Notice'):p.id)+'</td><td><span class="ttl">'+esc(p.title)+'</span>'+(c?'<span class="cm">['+c+']</span>':'')+'</td><td class="dt">'+esc(p.date.slice(2,10))+'</td></tr>';
+    return '<tr class="bd-row'+(p.pin?' pin':'')+'" data-id="'+p.id+'"><td class="no">'+(p.pin?L('공지','Notice'):no5(p.id))+'</td><td><span class="ttl">'+esc(p.title)+'</span>'+(c?'<span class="cm">['+c+']</span>':'')+'</td><td class="dt">'+esc(p.date.slice(2,10))+'</td></tr>';
   }).join('');
   let nav='';
   if(pc>1){nav='<div class="bd-nav">'+(pg>0?'<span data-pg="'+(pg-1)+'">'+L('이전','Prev')+'</span>':'');for(let i=0;i<pc;i++)nav+=i===pg?'<b>'+(i+1)+'</b>':'<span data-pg="'+i+'">'+(i+1)+'</span>';nav+=(pg<pc-1?'<span data-pg="'+(pg+1)+'">'+L('다음','Next')+'</span>':'')+'</div>';}
@@ -121,7 +123,7 @@ function commentsHtml(p){
 function cwHtml(re){return '<div class="bd-cw"><textarea class="bd-ct" placeholder="'+(re?L('답글 입력','Reply'):L('댓글 입력','Comment'))+'"></textarea><button class="bd-btn" data-act="csave">'+L('등록','Post')+'</button>'+(re?'<button class="bd-btn" data-act="ccancel">'+L('취소','Cancel')+'</button>':'')+'</div>';}
 function viewHtml(){
   const p=posts().find(x=>x.id===view);if(!p){if(!data[cur])return bar()+'<div class="bd-empty">…</div>';mode='list';return listHtml();}
-  return bar()+'<div class="bd-vh"><div class="bd-vt">'+esc(p.title)+'</div><div class="bd-vm"><span>'+esc(p.date)+' · '+esc(bname(cur))+'</span><button class="copy-link" data-act="copy">'+L('URL 복사','Copy URL')+'</button></div></div>'+
+  return bar()+'<div class="bd-vh"><div class="bd-vt">'+esc(p.title)+'</div><div class="bd-vm"><span>'+code(cur,p.id)+' · '+esc(p.date)+' · '+esc(bname(cur))+'</span><button class="bd-copy" data-act="copy">'+L('URL 복사','Copy URL')+'</button></div></div>'+
     '<div class="bd-vb">'+(p.blocks||[]).map(b=>b.f?attHtml(b):textHtml(b.t)).join('')+'</div>'+commentsHtml(p)+
     '<div class="bd-vf"><button class="bd-btn" data-act="list">'+L('목록','List')+'</button><span>'+(adm?'<button class="bd-btn" data-act="edit">'+L('수정','Edit')+'</button> <button class="bd-btn" data-act="del">'+L('삭제','Delete')+'</button>':'')+'</span></div><div class="bd-msg"></div>';
 }
@@ -256,7 +258,7 @@ function onClick(e){
   else if(act==='edit'){const p=posts().find(x=>x.id===view);edit={id:p.id,title:p.title,pin:!!p.pin,blocks:JSON.parse(JSON.stringify(p.blocks||[]))};pend=[];mode='form';render();}
   else if(act==='del')delPost();
   else if(act==='copy'){
-    const u='https://bs2fob.com/?b='+cur+'.'+view+'&lang='+lang;
+    const u='https://bs2fob.com/?b='+code(cur,view)+'&lang='+lang;
     const done=()=>{a.textContent=L('복사됨','Copied');a.classList.add('done');setTimeout(()=>{a.textContent=L('URL 복사','Copy URL');a.classList.remove('done');},1500);};
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(done,()=>prompt('URL',u));else prompt('URL',u);
   }
