@@ -150,12 +150,21 @@ function viewHtml(){
     '<div class="bd-vb">'+(p.blocks||[]).map(b=>b.f?attHtml(b):textHtml(b.t)).join('')+'</div>'+commentsHtml(p)+
     '<div class="bd-vf"><button class="bd-btn" data-act="list">'+L('목록','List')+'</button><span>'+(adm?'<button class="bd-btn" data-act="edit">'+L('수정','Edit')+'</button> <button class="bd-btn" data-act="del">'+L('삭제','Delete')+'</button>':'')+'</span></div><div class="bd-msg"></div>';
 }
+const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
+function qcode(d){
+  const j=new Date(d.getFullYear(),0,1),s=new Date(j);s.setDate(j.getDate()-j.getDay());
+  const ww=String(Math.floor((d-s)/86400000/7)+1).padStart(2,'0');
+  return String(d.getFullYear()).slice(-2)+'w'+ww+d.getDay()+'v'+String(d.getHours()).padStart(2,'0')+Math.floor(d.getMinutes()/10);
+}
+function edBox(ta){return '<div class="sc-ed"><div class="sc-chars">'+CHARS.map(c=>'<button class="sc-char" data-act="char">'+c+'</button>').join('')+'</div>'+ta+'</div>';}
+function fit(ta){if(!ta.offsetParent)return;ta.style.height='0';ta.style.height=(ta.scrollHeight+parseFloat(getComputedStyle(ta).lineHeight)+ta.offsetHeight-ta.clientHeight)+'px';}
+function fitAll(){root.querySelectorAll('textarea.sc-input').forEach(fit);}
 function attBar(){
-  return '<div class="bd-ab"><button class="bd-btn" data-act="clip">'+L('클립보드','Clipboard')+'</button>'+
-    '<label class="bd-btn">'+L('이미지','Image')+'<input type="file" hidden multiple accept="image/*" data-type="image"></label>'+
-    '<label class="bd-btn">'+L('오디오','Audio')+'<input type="file" hidden multiple accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" data-type="audio"></label>'+
-    '<label class="bd-btn">PDF<input type="file" hidden multiple accept="application/pdf" data-type="pdf"></label>'+
-    '<label class="bd-btn">ZIP<input type="file" hidden multiple accept=".zip,application/zip,application/x-zip-compressed" data-type="zip"></label></div>';
+  return '<div class="sc-attach-bar"><button class="sc-btn ghost" data-act="clip">'+L('클립보드','Clipboard')+'</button>'+
+    '<label class="sc-btn ghost">'+L('이미지','Image')+'<input type="file" multiple accept="image/*" data-type="image"></label>'+
+    '<label class="sc-btn ghost">'+L('오디오','Audio')+'<input type="file" multiple accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" data-type="audio"></label>'+
+    '<label class="sc-btn ghost">PDF<input type="file" multiple accept="application/pdf" data-type="pdf"></label>'+
+    '<label class="sc-btn ghost">ZIP<input type="file" multiple accept=".zip,application/zip,application/x-zip-compressed" data-type="zip"></label></div>';
 }
 function pendHtml(){
   return pend.map((p,i)=>{
@@ -165,20 +174,22 @@ function pendHtml(){
   }).join('');
 }
 function edBlocksHtml(){
-  return edit.blocks.map((b,i)=>'<div class="bd-eb">'+(b.f?attHtml(b):'<textarea class="bd-et" data-i="'+i+'">'+esc(b.t)+'</textarea>')+
+  return edit.blocks.map((b,i)=>'<div class="bd-eb">'+(b.f?attHtml(b):edBox('<textarea class="sc-input bd-et" data-i="'+i+'">'+esc(b.t)+'</textarea>'))+
     '<div class="bd-ec"><button class="bd-btn" data-act="up" data-i="'+i+'">↑</button><button class="bd-btn" data-act="down" data-i="'+i+'">↓</button><button class="bd-btn" data-act="bdel" data-i="'+i+'">✕</button></div></div>').join('')+
     '<button class="bd-btn" data-act="addtext">+ '+L('글단락','Text')+'</button>';
 }
 function formHtml(){
   const isEd=!!edit;
-  return bar()+'<div class="bd-f"><input class="bd-title" placeholder="'+L('제목','Title')+'" value="'+esc(isEd?edit.title:'')+'">'+
-    (isEd?'<div class="bd-eblocks">'+edBlocksHtml()+'</div>':'<textarea class="bd-body" placeholder="'+L('본문','Body')+'"></textarea>')+
+  return bar()+'<div class="sc-card bd-f"><div class="sc-stamp">'+(isEd?code(cur,edit.id):qcode(new Date()))+'</div>'+
+    '<input class="bd-title" placeholder="'+L('제목','Title')+'" value="'+esc(isEd?edit.title:'')+'">'+
+    (isEd?'<div class="bd-eblocks">'+edBlocksHtml()+'</div>':edBox('<textarea class="sc-input bd-body" placeholder="'+L('입력..','Write..')+'"></textarea>'))+
     '<div class="bd-pends">'+pendHtml()+'</div>'+attBar()+
-    '<div class="bd-fb"><label class="bd-pin"><input type="checkbox" class="bd-pinck"'+(isEd&&edit.pin?' checked':'')+'> '+L('공지','Notice')+'</label><span class="bd-sp"></span><span class="bd-msg"></span><button class="bd-btn" data-act="cancel">'+L('취소','Cancel')+'</button><button class="bd-btn" data-act="save">'+L('저장','Save')+'</button></div></div>';
+    '<div class="sc-row"><button class="sc-btn" data-act="save">'+L('저장','Save')+'</button><button class="sc-btn ghost" data-act="cancel">'+L('취소','Cancel')+'</button><label class="bd-pin"><input type="checkbox" class="bd-pinck"'+(isEd&&edit.pin?' checked':'')+'> '+L('공지','Notice')+'</label></div><div class="bd-msg"></div></div>';
 }
 function render(){
   if(!root)return;
   root.innerHTML=mode==='view'?viewHtml():mode==='form'?formHtml():listHtml();
+  if(mode==='form')fitAll();
   if(adm)hydrate();
 }
 async function hydrate(){
@@ -277,6 +288,8 @@ function onClick(e){
   const g=e.target.closest('[data-pg]');if(g){pg=+g.dataset.pg;render();return;}
   const a=e.target.closest('[data-act]');if(!a)return;
   const act=a.dataset.act,i=+a.dataset.i;
+  if(act==='char'){const ta=a.closest('.sc-ed').querySelector('textarea'),s=ta.selectionStart,t=a.textContent;
+    ta.value=ta.value.slice(0,s)+t+ta.value.slice(ta.selectionEnd);ta.selectionStart=ta.selectionEnd=s+t.length;ta.focus();fit(ta);return;}
   if(act==='new'){edit=null;pend=[];mode='form';render();}
   else if(act==='list'){mode='list';view=null;render();}
   else if(act==='cancel'){pend=[];mode=edit?'view':'list';edit=null;render();}
@@ -296,7 +309,7 @@ function onClick(e){
     if(act==='down'&&i<B.length-1)[B[i+1],B[i]]=[B[i],B[i+1]];
     if(act==='bdel')B.splice(i,1);
     if(act==='addtext')B.push({t:''});
-    root.querySelector('.bd-eblocks').innerHTML=edBlocksHtml();
+    root.querySelector('.bd-eblocks').innerHTML=edBlocksHtml();fitAll();
   }
   else if(act==='reply'){replyTo=+a.dataset.c;render();const t=root.querySelector('.bd-ct');if(t)t.focus();}
   else if(act==='ccancel'){replyTo=null;render();}
@@ -319,6 +332,7 @@ function mount(el,opt){
   root=document.createElement('div');root.className='bd';
   el.innerHTML='';el.appendChild(root);
   root.addEventListener('click',onClick);root.addEventListener('change',onChange);
+  root.addEventListener('input',e=>{if(e.target.matches('textarea.sc-input'))fit(e.target);});
   if(opt.open&&BOARDS.some(b=>b[0]===opt.open.board)){cur=opt.open.board;view=opt.open.id;mode='view';edit=null;pend=[];}
   render();
   Promise.all(BOARDS.map(b=>load(b[0]))).then(render).catch(()=>render());

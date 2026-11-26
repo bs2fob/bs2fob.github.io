@@ -49,17 +49,17 @@ html[lang="en"] .bd-vb p{text-justify:auto}
 .bd-ca a{font-size:11.5px;color:var(--text3);cursor:pointer}.bd-ca a:hover{color:var(--accent)}
 .bd-cb{font-size:14.5px;line-height:1.7;margin-top:4px}
 .bd-cw{display:flex;gap:8px;margin-top:12px}
-.bd-cw textarea,.bd-f input.bd-title,.bd-f textarea{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14.5px;padding:8px 10px;line-height:1.7}
+.bd-cw textarea,.bd-f input.bd-title{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14.5px;padding:8px 10px;line-height:1.7}
 .bd-cw textarea{flex:1;min-height:60px;resize:vertical}
 .bd-cw textarea:focus,.bd-f input:focus,.bd-f textarea:focus{outline:none;border-color:var(--accent)}
 .bd-vf{display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:14px;margin-top:26px}
-.bd-f input.bd-title{width:100%;margin-bottom:12px;font-size:15px}
-.bd-f textarea.bd-body,.bd-f textarea.bd-et{width:100%;min-height:220px;resize:vertical;margin-bottom:12px}
-.bd-f textarea.bd-et{min-height:110px;margin-bottom:6px}
+.bd-f input.bd-title{display:block;width:100%;box-sizing:border-box;margin:4px 0 2px;background:var(--surface2);font-size:17px;font-weight:600;padding:10px 12px}
+.bd-f textarea.sc-input{min-height:0}
 .bd-eb{border:1px dotted var(--border2);border-radius:var(--radius-sm);padding:8px;margin-bottom:10px}
 .bd-ec{display:flex;gap:6px;justify-content:flex-end}
 .bd-eblocks>.bd-btn{margin-bottom:12px}
 .bd-ab{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 14px}
 .bd-fb{display:flex;align-items:center;gap:8px}
 .bd-fb .bd-msg{margin:0}
-.bd-pin{font-size:12.5px;color:var(--text2);cursor:pointer}
+.bd-pin{display:flex;align-items:center;gap:5px;margin-left:auto;font-size:14px;color:var(--text2);cursor:pointer}
+.bd-pends{margin-top:10px}
