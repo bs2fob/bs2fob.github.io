@@ -40,6 +40,13 @@ async function delFile(path){
   const j=await r.json();
   await gh('/contents/'+path,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'게시판 첨부 삭제',sha:j.sha,branch:'main'})});
 }
+async function sweep(k){
+  await load(k);
+  const r=await gh('/contents/board/raw?ref=main&t='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+  const keep=new Set(((data[k]&&data[k].posts)||[]).flatMap(p=>(p.blocks||[]).filter(b=>b.f).map(b=>b.f)));
+  for(const f of await r.json())if(f.name.startsWith(k+'-')&&!keep.has(f.path))
+    await gh('/contents/'+f.path,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'게시판 첨부 삭제',sha:f.sha,branch:'main'})}).catch(()=>{});
+}
 async function fileSha(path){const r=await gh('/contents/'+path+'?ref=main&t='+Date.now(),{cache:'no-store'});return r.ok?(await r.json()).sha:null;}
 function freeSlot(list){const used=new Set(list.map(p=>p.id));let i=1;while(used.has(i))i++;return i;}
 function plan(list){
@@ -220,7 +227,7 @@ async function savePost(){
       syncEdit();
       await load(cur);
       const p=posts().find(x=>x.id===edit.id);if(!p)throw new Error(L('원본 글이 없습니다.','Post not found.'));
-      const used=Math.max(0,...(p.blocks||[]).concat(edit.blocks).filter(b=>b.f).map(b=>+(b.f.match(/_(\d+)\.[^.]+$/)||[0,0])[1]));
+      const used=Math.max(0,...(p.blocks||[]).concat(edit.blocks).filter(b=>b.f).map(b=>+(b.f.match(/_(\d{2})(?:_[0-9a-z]+)?\.[^.]+$/)||[0,0])[1]));
       const added=await upload(cur,edit.id,pend,used);
       const blocks=edit.blocks.filter(b=>b.f||b.t.trim()).concat(added);
       const gone=(p.blocks||[]).filter(b=>b.f&&!blocks.some(x=>x.f===b.f)).map(b=>b.f);
@@ -229,6 +236,7 @@ async function savePost(){
       await saveBoard(cur,d=>{const q=d.posts.find(x=>x.id===edit.id);q.title=title;q.pin=pin;q.blocks=blocks;if(link)q.link=link;if(old)d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 글 수정 '+cur+' '+edit.id);
       for(const f of gone.concat(oldFiles))await delFile(f).catch(()=>{});
       if(old)await compact(cur);
+      await sweep(cur);
       view=edit.id;
     }else{
       await load(cur);
@@ -237,6 +245,7 @@ async function savePost(){
         const files=(old.blocks||[]).filter(b=>b.f).map(b=>b.f);
         await saveBoard(cur,d=>{d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 공지 교체 삭제 '+cur+' '+old.id);
         for(const f of files)await delFile(f).catch(()=>{});
+        await sweep(cur);
       }
       const id=old?old.id:freeSlot(posts());
       const body=root.querySelector('.bd-body').value;
@@ -281,6 +290,7 @@ async function delPost(){
     msg(L('삭제했습니다. 번호 정리 중입니다.','Deleted. Renumbering.'));
     for(const f of files)await delFile(f).catch(()=>{});
     await compact(cur);
+    await sweep(cur);
     render();msg(L('삭제와 번호 정리를 마쳤습니다.','Delete and renumbering done.'));
   }catch(e){mode='list';view=null;render();msg(e.message);}
 }
