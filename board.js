@@ -41,11 +41,6 @@ async function delFile(path){
   await gh('/contents/'+path,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'게시판 첨부 삭제',sha:j.sha,branch:'main'})});
 }
 async function fileSha(path){const r=await gh('/contents/'+path+'?ref=main&t='+Date.now(),{cache:'no-store'});return r.ok?(await r.json()).sha:null;}
-async function copyFile(from,to){
-  const r=await gh('/contents/'+from+'?ref=main',{headers:{Accept:'application/vnd.github.raw'}});
-  if(!r.ok)throw new Error('HTTP '+r.status+' '+from);
-  await putFile(to,await toB64(await r.blob()),'게시판 번호 이동 '+to,await fileSha(to));
-}
 function freeSlot(list){const used=new Set(list.map(p=>p.id));let i=1;while(used.has(i))i++;return i;}
 function plan(list){
   const fixed=new Set(list.filter(p=>p.pin||(p.comments||[]).length).map(p=>p.id)),map={};let s=1;
@@ -54,14 +49,9 @@ function plan(list){
 }
 async function compact(k){
   await load(k);
-  const map=plan(posts()),moves=[],olds=new Set(),news=new Set();
-  posts().slice().sort((a,b)=>a.id-b.id).forEach(p=>{const n=map[p.id];if(n==null||n===p.id)return;
-    (p.blocks||[]).forEach(b=>{if(!b.f)return;const nf=b.f.replace(/\/\d-\d{5}_/,'/'+code(k,n)+'_');moves.push([b.f,nf]);olds.add(b.f);news.add(nf);});});
+  const map=plan(posts());
   if(!Object.keys(map).some(id=>map[id]!==+id))return;
-  for(const [a,c] of moves){msg(L('번호 정리 중','Renumbering')+' · '+c);await copyFile(a,c);}
-  await saveBoard(k,d=>{const m=plan(d.posts);d.posts.forEach(p=>{const n=m[p.id];if(n==null||n===p.id)return;
-    (p.blocks||[]).forEach(b=>{if(b.f)b.f=b.f.replace(/\/\d-\d{5}_/,'/'+code(k,n)+'_');});p.id=n;});},'게시판 번호 정리 '+k);
-  for(const f of olds)if(!news.has(f))await delFile(f).catch(()=>{});
+  await saveBoard(k,d=>{const m=plan(d.posts);d.posts.forEach(p=>{const n=m[p.id];if(n!=null)p.id=n;});},'게시판 번호 정리 '+k);
 }
 async function saveBoard(k,fn,msg){
   for(let i=0;i<2;i++){
@@ -92,7 +82,7 @@ async function upload(k,id,list,start){
     n++;
     let blob=p.file,ext=fileExt(p.file.name);
     if(p.type==='image'){const e=await encodeImage(p.file);blob=e.blob;ext=e.ext;}
-    const path='board/raw/'+code(k,id)+'_'+String(n).padStart(2,'0')+'.'+ext;
+    const path='board/raw/'+code(k,id)+'_'+String(n).padStart(2,'0')+'_'+Date.now().toString(36)+'.'+ext;
     msg(L('첨부 올리는 중','Uploading')+' '+n+' · '+p.file.name);
     await putFile(path,await toB64(blob),'게시판 첨부 '+path);
     blobs[path]=URL.createObjectURL(blob);
