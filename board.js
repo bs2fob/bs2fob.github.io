@@ -2,7 +2,7 @@
 // 게시판 탭: 세부 게시판 목록·글 보기·댓글, 관리자 토큰으로 글과 첨부를 사이트 저장소에 쓴다
 (function(){
 const REPO='https://api.github.com/repos/bs2fob/bs2fob.github.io';
-const BOARDS=[['1','자유게시','Free'],['2','유틸게시','Utils'],['0','운영메모','Notes']];
+const BOARDS=[['1','자유게시','Free'],['2','유틸게시','Utils'],['3','링크게시','Links'],['0','운영메모','Notes']];
 const PER=15;
 let root=null,adm='',lang='ko',cur='1',view=null,pg=0,mode='list',data={},sha={},pend=[],edit=null,replyTo=null,busy=false,blobs={};
 
@@ -147,7 +147,7 @@ function cwHtml(re){return '<div class="bd-cw"><textarea class="bd-ct" placehold
 function viewHtml(){
   const p=posts().find(x=>x.id===view);if(!p){if(!data[cur])return bar()+'<div class="bd-empty">…</div>';mode='list';return listHtml();}
   return bar()+'<div class="bd-vh"><div class="bd-vt">'+esc(p.title)+'</div><div class="bd-vm"><span>'+esc(p.date)+' · '+esc(bname(cur))+'</span><button class="bd-copy" data-act="copy">'+L('URL 복사','Copy URL')+'</button></div></div>'+
-    '<div class="bd-vb">'+(p.blocks||[]).map(b=>b.f?attHtml(b):textHtml(b.t)).join('')+'</div>'+commentsHtml(p)+
+    '<div class="bd-vb">'+linkHtml(p)+(p.blocks||[]).map(b=>b.f?attHtml(b):textHtml(b.t)).join('')+'</div>'+commentsHtml(p)+
     '<div class="bd-vf"><button class="bd-btn" data-act="list">'+L('목록','List')+'</button><span>'+(adm?'<button class="bd-btn" data-act="edit">'+L('수정','Edit')+'</button> <button class="bd-btn" data-act="del">'+L('삭제','Delete')+'</button>':'')+'</span></div><div class="bd-msg"></div>';
 }
 const CHARS=['✶','✦','✧','⛧','◅','▻','➢'];
@@ -178,10 +178,15 @@ function edBlocksHtml(){
     '<div class="bd-ec"><button class="bd-btn" data-act="up" data-i="'+i+'">↑</button><button class="bd-btn" data-act="down" data-i="'+i+'">↓</button><button class="bd-btn" data-act="bdel" data-i="'+i+'">✕</button></div></div>').join('')+
     '<button class="bd-btn" data-act="addtext">+ '+L('글단락','Text')+'</button>';
 }
+function linkHtml(p){
+  if(!p.link||!p.link.url)return '';
+  return '<div class="bd-link"><span class="bd-lname">'+esc(p.link.name||p.link.url)+'</span><a class="bd-btn" href="'+esc(p.link.url)+'" target="_blank" rel="noopener">'+L('새창열기','Open')+'</a></div>';
+}
 function formHtml(){
-  const isEd=!!edit;
+  const isEd=!!edit,lk=(isEd&&edit.link)||{};
   return bar()+'<div class="sc-card bd-f"><div class="sc-stamp">'+(isEd?code(cur,edit.id):qcode(new Date()))+'</div>'+
     '<input class="bd-title" placeholder="'+L('제목','Title')+'" value="'+esc(isEd?edit.title:'')+'">'+
+    (cur==='3'?'<div class="bd-lin"><input class="bd-lname-in" placeholder="'+L('링크약칭','Link name')+'" value="'+esc(lk.name||'')+'"><input class="bd-lurl-in" placeholder="https://" value="'+esc(lk.url||'')+'"></div>':'')+
     (isEd?'<div class="bd-eblocks">'+edBlocksHtml()+'</div>':edBox('<textarea class="sc-input bd-body" placeholder="'+L('입력..','Write..')+'"></textarea>'))+
     '<div class="bd-pends">'+pendHtml()+'</div>'+attBar()+
     '<div class="sc-row"><button class="sc-btn" data-act="save">'+L('저장','Save')+'</button><button class="sc-btn ghost" data-act="cancel">'+L('취소','Cancel')+'</button><label class="bd-pin"><input type="checkbox" class="bd-pinck"'+(isEd&&edit.pin?' checked':'')+'> '+L('공지','Notice')+'</label></div><div class="bd-msg"></div></div>';
@@ -210,6 +215,13 @@ async function savePost(){
   const title=root.querySelector('.bd-title').value.trim();
   if(!title){msg(L('제목을 넣으십시오.','Enter a title.'));return;}
   const pin=root.querySelector('.bd-pinck').checked;
+  let link=null;
+  if(cur==='3'){
+    const n=root.querySelector('.bd-lname-in').value.trim();let u=root.querySelector('.bd-lurl-in').value.trim();
+    if(u&&!/^https?:\/\//i.test(u))u='https://'+u;
+    if(!u){msg(L('링크를 넣으십시오.','Enter a link.'));return;}
+    link={name:n||u,url:u};
+  }
   const old=pin?posts().find(p=>p.pin&&(!edit||p.id!==edit.id)):null;
   if(old&&!confirm(L('기존 공지 「'+old.title+'」 를 지우고 새 공지를 올립니다.','The current notice "'+old.title+'" will be deleted.')))return;
   busy=true;
@@ -224,7 +236,7 @@ async function savePost(){
       const gone=(p.blocks||[]).filter(b=>b.f&&!blocks.some(x=>x.f===b.f)).map(b=>b.f);
       msg(L('저장 중','Saving'));
       const oldFiles=old?(old.blocks||[]).filter(b=>b.f).map(b=>b.f):[];
-      await saveBoard(cur,d=>{const q=d.posts.find(x=>x.id===edit.id);q.title=title;q.pin=pin;q.blocks=blocks;if(old)d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 글 수정 '+cur+' '+edit.id);
+      await saveBoard(cur,d=>{const q=d.posts.find(x=>x.id===edit.id);q.title=title;q.pin=pin;q.blocks=blocks;if(link)q.link=link;if(old)d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 글 수정 '+cur+' '+edit.id);
       for(const f of gone.concat(oldFiles))await delFile(f).catch(()=>{});
       if(old)await compact(cur);
       view=edit.id;
@@ -241,7 +253,7 @@ async function savePost(){
       const added=await upload(cur,id,pend,0);
       const blocks=(body.trim()?[{t:body}]:[]).concat(added);
       msg(L('저장 중','Saving'));
-      await saveBoard(cur,d=>{if(d.posts.some(p=>p.id===id))throw new Error(L('번호가 그사이 쓰였습니다. 다시 저장하십시오.','Number taken. Save again.'));d.posts.push({id,title,date:now(),pin,blocks,comments:[]});},'게시판 글 '+cur+' '+id);
+      await saveBoard(cur,d=>{if(d.posts.some(p=>p.id===id))throw new Error(L('번호가 그사이 쓰였습니다. 다시 저장하십시오.','Number taken. Save again.'));d.posts.push(Object.assign({id,title,date:now(),pin,blocks,comments:[]},link?{link}:{}));},'게시판 글 '+cur+' '+id);
       view=id;
     }
     pend=[];edit=null;mode='view';render();msg(L('저장했습니다. 방문자 화면 반영은 사이트 빌드 뒤입니다.','Saved. Visitors see it after the site rebuilds.'));
@@ -304,7 +316,7 @@ function onClick(e){
   else if(act==='list'){mode='list';view=null;render();}
   else if(act==='cancel'){pend=[];mode=edit?'view':'list';edit=null;render();}
   else if(act==='save')savePost();
-  else if(act==='edit'){const p=posts().find(x=>x.id===view);edit={id:p.id,title:p.title,pin:!!p.pin,blocks:JSON.parse(JSON.stringify(p.blocks||[]))};pend=[];mode='form';render();}
+  else if(act==='edit'){const p=posts().find(x=>x.id===view);edit={id:p.id,title:p.title,pin:!!p.pin,link:p.link,blocks:JSON.parse(JSON.stringify(p.blocks||[]))};pend=[];mode='form';render();}
   else if(act==='del')delPost();
   else if(act==='copy'){
     const u='https://bs2fob.com/?b='+code(cur,view)+'&lang='+lang;

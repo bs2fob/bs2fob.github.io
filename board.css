@@ -26,6 +26,13 @@
 .bd-vm{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-family:'Courier New',monospace;font-size:12px;color:var(--text3);margin-top:8px}
 .bd-vb p{font-size:13.6px;line-height:1.45;margin-bottom:.9em;text-align:justify;text-justify:inter-character;text-align-last:left;word-break:normal;overflow-wrap:anywhere;}
 html[lang="en"] .bd-vb p{text-justify:auto}
+.bd-link{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:0 0 16px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm)}
+.bd-lname{flex:1;font-size:14.5px;font-weight:600;color:var(--text);overflow-wrap:anywhere}
+.bd-link .bd-btn{text-decoration:none;flex-shrink:0}
+.bd-lin{display:flex;gap:6px;margin:6px 0 2px}
+.bd-lin input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14.5px;padding:8px 10px;min-width:0}
+.bd-lin input:focus{outline:none;border-color:var(--accent)}
+.bd-lname-in{flex:1}.bd-lurl-in{flex:2;font-family:'Courier New',monospace!important}
 .bd-att{position:relative;margin:0 0 14px}
 .bd-att img{display:block;max-width:100%;border-radius:4px}
 .bd-att audio{width:100%}
