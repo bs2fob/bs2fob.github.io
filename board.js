@@ -40,6 +40,25 @@ async function delFile(path){
   const j=await r.json();
   await gh('/contents/'+path,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'게시판 첨부 삭제',sha:j.sha,branch:'main'})});
 }
+function sharePage(k,p){
+  const c=code(k,p.id),txt=(p.blocks||[]).filter(b=>b.t).map(b=>b.t).join(' ').replace(/\s+/g,' ').trim(),d=esc(txt.length>120?txt.slice(0,120)+'…':txt);
+  const img=(p.blocks||[]).find(b=>b.f&&/\.(webp|png|jpe?g)$/i.test(b.f)),t=esc(p.title);
+  return '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>'+t+' — Bs2FoB</title>\n<meta name="description" content="'+d+'">\n'+
+    '<meta property="og:type" content="article">\n<meta property="og:site_name" content="Bs2FoB">\n<meta property="og:title" content="'+t+'">\n<meta property="og:description" content="'+d+'">\n'+
+    '<meta property="og:url" content="https://bs2fob.com/s/b/'+c+'.html">\n<meta property="og:image" content="https://bs2fob.com/'+(img?img.f:'apple-touch-icon.png')+'">\n'+
+    '<script>location.replace(\'/?b='+c+'&lang=\'+(new URLSearchParams(location.search).get(\'lang\')===\'en\'?\'en\':\'ko\'));</script>\n</head>\n<body><a href="/?b='+c+'">'+t+'</a></body>\n</html>\n';
+}
+async function blobSha(s){const b=new TextEncoder().encode(s),h=new TextEncoder().encode('blob '+b.length+'\0'),a=new Uint8Array(h.length+b.length);a.set(h);a.set(b,h.length);
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-1',a))].map(x=>x.toString(16).padStart(2,'0')).join('');}
+async function syncShare(k){
+  await load(k);
+  const r=await gh('/contents/s/b?ref=main&t='+Date.now(),{cache:'no-store'}),have={};
+  if(r.ok)for(const f of await r.json())have[f.name]=f.sha;
+  const want={};for(const p of (data[k]&&data[k].posts)||[])want[code(k,p.id)+'.html']=sharePage(k,p);
+  for(const n in want){const s=await blobSha(want[n]);if(have[n]!==s)await putFile('s/b/'+n,b64enc(want[n]),'게시판 공유 페이지 '+n,have[n]).catch(()=>{});}
+  for(const n in have)if(n.startsWith(k+'-')&&!want[n])
+    await gh('/contents/s/b/'+n,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'게시판 공유 페이지 삭제',sha:have[n],branch:'main'})}).catch(()=>{});
+}
 async function sweep(k){
   await load(k);
   const r=await gh('/contents/board/raw?ref=main&t='+Date.now(),{cache:'no-store'});if(!r.ok)return;
@@ -236,7 +255,7 @@ async function savePost(){
       await saveBoard(cur,d=>{const q=d.posts.find(x=>x.id===edit.id);q.title=title;q.pin=pin;q.blocks=blocks;if(link)q.link=link;if(old)d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 글 수정 '+cur+' '+edit.id);
       for(const f of gone.concat(oldFiles))await delFile(f).catch(()=>{});
       if(old)await compact(cur);
-      await sweep(cur);
+      await sweep(cur);await syncShare(cur);
       view=edit.id;
     }else{
       await load(cur);
@@ -245,7 +264,7 @@ async function savePost(){
         const files=(old.blocks||[]).filter(b=>b.f).map(b=>b.f);
         await saveBoard(cur,d=>{d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 공지 교체 삭제 '+cur+' '+old.id);
         for(const f of files)await delFile(f).catch(()=>{});
-        await sweep(cur);
+        await sweep(cur);await syncShare(cur);
       }
       const id=old?old.id:freeSlot(posts());
       const body=root.querySelector('.bd-body').value;
@@ -255,6 +274,7 @@ async function savePost(){
       await saveBoard(cur,d=>{if(d.posts.some(p=>p.id===id))throw new Error(L('번호가 그사이 쓰였습니다. 다시 저장하십시오.','Number taken. Save again.'));d.posts.push(Object.assign({id,title,date:now(),pin,blocks,comments:[]},link?{link}:{}));},'게시판 글 '+cur+' '+id);
       view=id;
     }
+    if(!edit)await syncShare(cur);
     pend=[];edit=null;mode='view';render();msg(L('저장했습니다. 방문자 화면 반영은 사이트 빌드 뒤입니다.','Saved. Visitors see it after the site rebuilds.'));
   }catch(e){msg(e.message);}
   busy=false;
@@ -290,7 +310,7 @@ async function delPost(){
     msg(L('삭제했습니다. 번호 정리 중입니다.','Deleted. Renumbering.'));
     for(const f of files)await delFile(f).catch(()=>{});
     await compact(cur);
-    await sweep(cur);
+    await sweep(cur);await syncShare(cur);
     render();msg(L('삭제와 번호 정리를 마쳤습니다.','Delete and renumbering done.'));
   }catch(e){mode='list';view=null;render();msg(e.message);}
 }
@@ -319,7 +339,7 @@ function onClick(e){
   else if(act==='edit'){const p=posts().find(x=>x.id===view);edit={id:p.id,title:p.title,pin:!!p.pin,link:p.link,blocks:JSON.parse(JSON.stringify(p.blocks||[]))};pend=[];mode='form';render();}
   else if(act==='del')delPost();
   else if(act==='copy'){
-    const u='https://bs2fob.com/?b='+code(cur,view)+'&lang='+lang;
+    const u='https://bs2fob.com/s/b/'+code(cur,view)+'.html?lang='+lang;
     const done=()=>{a.textContent=L('복사됨','Copied');a.classList.add('done');setTimeout(()=>{a.textContent=L('URL 복사','Copy URL');a.classList.remove('done');},1500);};
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(done,()=>prompt('URL',u));else prompt('URL',u);
   }
