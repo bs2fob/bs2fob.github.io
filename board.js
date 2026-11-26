@@ -48,7 +48,7 @@ async function copyFile(from,to){
 }
 function freeSlot(list){const used=new Set(list.map(p=>p.id));let i=1;while(used.has(i))i++;return i;}
 function plan(list){
-  const fixed=new Set(list.filter(p=>(p.comments||[]).length).map(p=>p.id)),map={};let s=1;
+  const fixed=new Set(list.filter(p=>p.pin||(p.comments||[]).length).map(p=>p.id)),map={};let s=1;
   list.filter(p=>!fixed.has(p.id)).sort((a,b)=>a.id-b.id).forEach(p=>{while(fixed.has(s))s++;map[p.id]=s++;});
   return map;
 }
@@ -210,6 +210,8 @@ async function savePost(){
   const title=root.querySelector('.bd-title').value.trim();
   if(!title){msg(L('제목을 넣으십시오.','Enter a title.'));return;}
   const pin=root.querySelector('.bd-pinck').checked;
+  const old=pin?posts().find(p=>p.pin&&(!edit||p.id!==edit.id)):null;
+  if(old&&!confirm(L('기존 공지 「'+old.title+'」 를 지우고 새 공지를 올립니다.','The current notice "'+old.title+'" will be deleted.')))return;
   busy=true;
   try{
     if(edit){
@@ -221,12 +223,20 @@ async function savePost(){
       const blocks=edit.blocks.filter(b=>b.f||b.t.trim()).concat(added);
       const gone=(p.blocks||[]).filter(b=>b.f&&!blocks.some(x=>x.f===b.f)).map(b=>b.f);
       msg(L('저장 중','Saving'));
-      await saveBoard(cur,d=>{const q=d.posts.find(x=>x.id===edit.id);q.title=title;q.pin=pin;q.blocks=blocks;},'게시판 글 수정 '+cur+' '+edit.id);
-      for(const f of gone)await delFile(f);
+      const oldFiles=old?(old.blocks||[]).filter(b=>b.f).map(b=>b.f):[];
+      await saveBoard(cur,d=>{const q=d.posts.find(x=>x.id===edit.id);q.title=title;q.pin=pin;q.blocks=blocks;if(old)d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 글 수정 '+cur+' '+edit.id);
+      for(const f of gone.concat(oldFiles))await delFile(f).catch(()=>{});
+      if(old)await compact(cur);
       view=edit.id;
     }else{
       await load(cur);
-      const id=freeSlot(posts());
+      if(old){
+        msg(L('기존 공지 삭제 중','Deleting old notice'));
+        const files=(old.blocks||[]).filter(b=>b.f).map(b=>b.f);
+        await saveBoard(cur,d=>{d.posts=d.posts.filter(x=>x.id!==old.id);},'게시판 공지 교체 삭제 '+cur+' '+old.id);
+        for(const f of files)await delFile(f).catch(()=>{});
+      }
+      const id=old?old.id:freeSlot(posts());
       const body=root.querySelector('.bd-body').value;
       const added=await upload(cur,id,pend,0);
       const blocks=(body.trim()?[{t:body}]:[]).concat(added);
