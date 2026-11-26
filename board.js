@@ -97,10 +97,10 @@ function listHtml(){
 }
 function attHtml(b){
   const f=src(b.f),k=kindOf(b.f),nm=esc(b.name||b.f.split('/').pop());
-  if(k==='image')return '<div class="bd-att"><img src="'+esc(f)+'" alt="'+nm+'" loading="lazy"></div>';
-  if(k==='audio')return '<div class="bd-att"><audio controls preload="none" src="'+esc(f)+'"></audio><div class="bd-an">'+nm+'</div></div>';
-  if(k==='pdf')return '<div class="bd-att"><iframe class="bd-pdf" src="'+esc(f)+'#view=FitH" loading="lazy" title="'+nm+'"></iframe><a class="bd-an bd-pdfl" href="'+esc(f)+'" target="_blank" rel="noopener">PDF · '+nm+' · '+L('새 창에서 열기','Open in new tab')+'</a></div>';
-  return '<div class="bd-att"><a class="bd-file" href="'+esc(f)+'" download="'+nm+'">'+(k==='zip'?'ZIP':L('파일','File'))+' · '+nm+' '+L('내려받기','Download')+'</a></div>';
+  if(k==='image')return '<div class="bd-att"><img data-f="'+esc(b.f)+'" src="'+esc(f)+'" alt="'+nm+'" loading="lazy"></div>';
+  if(k==='audio')return '<div class="bd-att"><audio data-f="'+esc(b.f)+'" controls preload="none" src="'+esc(f)+'"></audio><div class="bd-an">'+nm+'</div></div>';
+  if(k==='pdf')return '<div class="bd-att"><iframe class="bd-pdf" data-f="'+esc(b.f)+'" src="'+esc(f)+'#view=FitH" loading="lazy" title="'+nm+'"></iframe><a class="bd-an bd-pdfl" data-f="'+esc(b.f)+'" href="'+esc(f)+'" target="_blank" rel="noopener">PDF · '+nm+' · '+L('새 창에서 열기','Open in new tab')+'</a></div>';
+  return '<div class="bd-att"><a class="bd-file" data-f="'+esc(b.f)+'" href="'+esc(f)+'" download="'+nm+'">'+(k==='zip'?'ZIP':L('파일','File'))+' · '+nm+' '+L('내려받기','Download')+'</a></div>';
 }
 function textHtml(t){return String(t).split(/\n{2,}/).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');}
 function depth(p,c){let d=0,x=c;while(x.parent){x=(p.comments||[]).find(y=>y.id===x.parent);if(!x)break;d++;}return d;}
@@ -154,6 +154,18 @@ function formHtml(){
 function render(){
   if(!root)return;
   root.innerHTML=mode==='view'?viewHtml():mode==='form'?formHtml():listHtml();
+  if(adm)hydrate();
+}
+async function hydrate(){
+  const els=[...root.querySelectorAll('[data-f]')];
+  for(const el of els){
+    const f=el.dataset.f;if(blobs[f])continue;
+    const h=await fetch(f,{method:'HEAD'}).catch(()=>null);if(h&&h.ok)continue;
+    const r=await gh('/contents/'+f+'?ref=main',{headers:{Accept:'application/vnd.github.raw'}});if(!r.ok)continue;
+    const bl=await r.blob(),t={pdf:'application/pdf',webp:'image/webp',png:'image/png',jpg:'image/jpeg',mp3:'audio/mpeg',m4a:'audio/mp4',zip:'application/zip'}[fileExt(f)]||bl.type;
+    blobs[f]=URL.createObjectURL(new Blob([bl],{type:t}));
+    root.querySelectorAll('[data-f="'+f+'"]').forEach(x=>{const a=x.tagName==='A'?'href':'src';x.setAttribute(a,blobs[f]+(x.tagName==='IFRAME'?'#view=FitH':''));});
+  }
 }
 function syncEdit(){if(!edit)return;root.querySelectorAll('.bd-et').forEach(t=>{edit.blocks[+t.dataset.i].t=t.value;});const ti=root.querySelector('.bd-title');if(ti)edit.title=ti.value;}
 
