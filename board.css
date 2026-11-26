@@ -24,7 +24,7 @@
 .bd-copy{flex-shrink:0;background:none;border:none;padding:0;color:var(--text3);font-family:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .bd-copy:hover,.bd-copy.done{color:var(--text2)}
 .bd-vm{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-family:'Courier New',monospace;font-size:12px;color:var(--text3);margin-top:8px}
-.bd-vb p{text-align:justify;text-justify:inter-character;text-align-last:left;word-break:normal;overflow-wrap:anywhere;margin-bottom:1.1em}
+.bd-vb p{font-size:13.6px;line-height:1.45;margin-bottom:.9em;text-align:justify;text-justify:inter-character;text-align-last:left;word-break:normal;overflow-wrap:anywhere;}
 html[lang="en"] .bd-vb p{text-justify:auto}
 .bd-att{position:relative;margin:0 0 14px}
 .bd-att img{display:block;max-width:100%;border-radius:4px}

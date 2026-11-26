@@ -146,7 +146,7 @@ function commentsHtml(p){
 function cwHtml(re){return '<div class="bd-cw"><textarea class="bd-ct" placeholder="'+(re?L('답글 입력','Reply'):L('댓글 입력','Comment'))+'"></textarea><button class="bd-btn" data-act="csave">'+L('등록','Post')+'</button>'+(re?'<button class="bd-btn" data-act="ccancel">'+L('취소','Cancel')+'</button>':'')+'</div>';}
 function viewHtml(){
   const p=posts().find(x=>x.id===view);if(!p){if(!data[cur])return bar()+'<div class="bd-empty">…</div>';mode='list';return listHtml();}
-  return bar()+'<div class="bd-vh"><div class="bd-vt">'+esc(p.title)+'</div><div class="bd-vm"><span>'+code(cur,p.id)+' · '+esc(p.date)+' · '+esc(bname(cur))+'</span><button class="bd-copy" data-act="copy">'+L('URL 복사','Copy URL')+'</button></div></div>'+
+  return bar()+'<div class="bd-vh"><div class="bd-vt">'+esc(p.title)+'</div><div class="bd-vm"><span>'+esc(p.date)+' · '+esc(bname(cur))+'</span><button class="bd-copy" data-act="copy">'+L('URL 복사','Copy URL')+'</button></div></div>'+
     '<div class="bd-vb">'+(p.blocks||[]).map(b=>b.f?attHtml(b):textHtml(b.t)).join('')+'</div>'+commentsHtml(p)+
     '<div class="bd-vf"><button class="bd-btn" data-act="list">'+L('목록','List')+'</button><span>'+(adm?'<button class="bd-btn" data-act="edit">'+L('수정','Edit')+'</button> <button class="bd-btn" data-act="del">'+L('삭제','Delete')+'</button>':'')+'</span></div><div class="bd-msg"></div>';
 }
