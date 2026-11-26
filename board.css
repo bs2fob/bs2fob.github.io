@@ -29,7 +29,7 @@ html[lang="en"] .bd-vb p{text-justify:auto}
 .bd-att{position:relative;margin:0 0 14px}
 .bd-att img{display:block;max-width:100%;border-radius:4px}
 .bd-att audio{width:100%}
-.bd-an{font-family:'Courier New',monospace;font-size:5.75px;line-height:1.4;color:var(--text3);margin-top:4px}
+.bd-an{font-family:'Courier New',monospace;font-size:8.050px;line-height:1.4;color:var(--text3);margin-top:4px}
 .bd-pdf{display:block;width:100%;height:80vh;border:1px solid var(--border2);border-radius:4px;background:#fff}
 .bd-pdfl{display:block;text-decoration:none}.bd-pdfl:hover{color:var(--accent)}
 .bd-file{display:block;font-size:14px;color:var(--accent);padding:14px 0;text-align:center;border:1px dashed var(--border2);border-radius:4px;text-decoration:none}
