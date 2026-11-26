@@ -36,11 +36,11 @@ async function putFile(path,b64,msg,s){
   return r.json();
 }
 async function delFile(path){
-  const r=await gh('/contents/'+path+'?ref=main');if(!r.ok)return;
+  const r=await gh('/contents/'+path+'?ref=main&t='+Date.now(),{cache:'no-store'});if(!r.ok)return;
   const j=await r.json();
   await gh('/contents/'+path,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'게시판 첨부 삭제',sha:j.sha,branch:'main'})});
 }
-async function fileSha(path){const r=await gh('/contents/'+path+'?ref=main');return r.ok?(await r.json()).sha:null;}
+async function fileSha(path){const r=await gh('/contents/'+path+'?ref=main&t='+Date.now(),{cache:'no-store'});return r.ok?(await r.json()).sha:null;}
 async function copyFile(from,to){
   const r=await gh('/contents/'+from+'?ref=main',{headers:{Accept:'application/vnd.github.raw'}});
   if(!r.ok)throw new Error('HTTP '+r.status+' '+from);
@@ -61,7 +61,7 @@ async function compact(k){
   for(const [a,c] of moves){msg(L('번호 정리 중','Renumbering')+' · '+c);await copyFile(a,c);}
   await saveBoard(k,d=>{const m=plan(d.posts);d.posts.forEach(p=>{const n=m[p.id];if(n==null||n===p.id)return;
     (p.blocks||[]).forEach(b=>{if(b.f)b.f=b.f.replace(/\/\d-\d{5}_/,'/'+code(k,n)+'_');});p.id=n;});},'게시판 번호 정리 '+k);
-  for(const f of olds)if(!news.has(f))await delFile(f);
+  for(const f of olds)if(!news.has(f))await delFile(f).catch(()=>{});
 }
 async function saveBoard(k,fn,msg){
   for(let i=0;i<2;i++){
@@ -254,10 +254,12 @@ async function delPost(){
   const pid=view;let files=[];
   try{
     await saveBoard(cur,d=>{const p=d.posts.find(x=>x.id===pid);files=(p.blocks||[]).filter(b=>b.f).map(b=>b.f);d.posts=d.posts.filter(x=>x.id!==pid);},'게시판 글 삭제 '+cur+' '+pid);
-    for(const f of files)await delFile(f);
-    await compact(cur);
     mode='list';view=null;render();
-  }catch(e){msg(e.message);}
+    msg(L('삭제했습니다. 번호 정리 중입니다.','Deleted. Renumbering.'));
+    for(const f of files)await delFile(f).catch(()=>{});
+    await compact(cur);
+    render();msg(L('삭제와 번호 정리를 마쳤습니다.','Delete and renumbering done.'));
+  }catch(e){mode='list';view=null;render();msg(e.message);}
 }
 async function clip(){
   try{
