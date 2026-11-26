@@ -313,8 +313,9 @@ function onChange(e){
 }
 
 function mount(el,opt){
+  const stay=root&&root.isConnected;
   adm=opt.admin||'';lang=opt.lang||'ko';
-  if(!adm&&mode==='form'){mode='list';edit=null;}
+  if(!stay||(!adm&&mode==='form')){mode='list';view=null;edit=null;pend=[];replyTo=null;pg=0;}
   root=document.createElement('div');root.className='bd';
   el.innerHTML='';el.appendChild(root);
   root.addEventListener('click',onClick);root.addEventListener('change',onChange);
