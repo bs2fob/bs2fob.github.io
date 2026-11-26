@@ -99,7 +99,7 @@ function attHtml(b){
   const f=src(b.f),k=kindOf(b.f),nm=esc(b.name||b.f.split('/').pop());
   if(k==='image')return '<div class="bd-att"><img data-f="'+esc(b.f)+'" src="'+esc(f)+'" alt="'+nm+'" loading="lazy"></div>';
   if(k==='audio')return '<div class="bd-att"><audio data-f="'+esc(b.f)+'" controls preload="none" src="'+esc(f)+'"></audio><div class="bd-an">'+nm+'</div></div>';
-  if(k==='pdf')return '<div class="bd-att"><iframe class="bd-pdf" data-f="'+esc(b.f)+'" src="'+esc(f)+'#view=FitH" loading="lazy" title="'+nm+'"></iframe><a class="bd-an bd-pdfl" data-f="'+esc(b.f)+'" href="'+esc(f)+'" target="_blank" rel="noopener">PDF · '+nm+' · '+L('새 창에서 열기','Open in new tab')+'</a></div>';
+  if(k==='pdf')return '<div class="bd-att"><iframe class="bd-pdf" data-f="'+esc(b.f)+'" src="'+esc(f)+'#navpanes=0&view=FitH" loading="lazy" title="'+nm+'"></iframe><a class="bd-an bd-pdfl" data-f="'+esc(b.f)+'" href="'+esc(f)+'" target="_blank" rel="noopener">PDF · '+nm+' · '+L('새 창에서 열기','Open in new tab')+'</a></div>';
   return '<div class="bd-att"><a class="bd-file" data-f="'+esc(b.f)+'" href="'+esc(f)+'" download="'+nm+'">'+(k==='zip'?'ZIP':L('파일','File'))+' · '+nm+' '+L('내려받기','Download')+'</a></div>';
 }
 function textHtml(t){return String(t).split(/\n{2,}/).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');}
@@ -135,7 +135,7 @@ function attBar(){
 function pendHtml(){
   return pend.map((p,i)=>{
     const u=p.url,nm=esc(p.file.name);
-    const inner=p.type==='image'?'<img src="'+u+'">':p.type==='audio'?'<audio controls src="'+u+'"></audio>':p.type==='pdf'?'<iframe class="bd-pdf" src="'+u+'#view=FitH"></iframe>':'<div class="bd-file">ZIP · '+nm+'</div>';
+    const inner=p.type==='image'?'<img src="'+u+'">':p.type==='audio'?'<audio controls src="'+u+'"></audio>':p.type==='pdf'?'<iframe class="bd-pdf" src="'+u+'#navpanes=0&view=FitH"></iframe>':'<div class="bd-file">ZIP · '+nm+'</div>';
     return '<div class="bd-att bd-pend">'+inner+'<div class="bd-an">'+nm+' · '+Math.ceil(p.file.size/1024)+'KB</div><button class="bd-x" data-act="pdel" data-i="'+i+'">✕</button></div>';
   }).join('');
 }
@@ -164,7 +164,7 @@ async function hydrate(){
     const r=await gh('/contents/'+f+'?ref=main',{headers:{Accept:'application/vnd.github.raw'}});if(!r.ok)continue;
     const bl=await r.blob(),t={pdf:'application/pdf',webp:'image/webp',png:'image/png',jpg:'image/jpeg',mp3:'audio/mpeg',m4a:'audio/mp4',zip:'application/zip'}[fileExt(f)]||bl.type;
     blobs[f]=URL.createObjectURL(new Blob([bl],{type:t}));
-    root.querySelectorAll('[data-f="'+f+'"]').forEach(x=>{const a=x.tagName==='A'?'href':'src';x.setAttribute(a,blobs[f]+(x.tagName==='IFRAME'?'#view=FitH':''));});
+    root.querySelectorAll('[data-f="'+f+'"]').forEach(x=>{const a=x.tagName==='A'?'href':'src';x.setAttribute(a,blobs[f]+(x.tagName==='IFRAME'?'#navpanes=0&view=FitH':''));});
   }
 }
 function syncEdit(){if(!edit)return;root.querySelectorAll('.bd-et').forEach(t=>{edit.blocks[+t.dataset.i].t=t.value;});const ti=root.querySelector('.bd-title');if(ti)edit.title=ti.value;}
