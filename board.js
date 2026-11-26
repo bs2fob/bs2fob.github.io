@@ -2,7 +2,7 @@
 // 게시판 탭: 세부 게시판 목록·글 보기·댓글, 관리자 토큰으로 글과 첨부를 사이트 저장소에 쓴다
 (function(){
 const REPO='https://api.github.com/repos/bs2fob/bs2fob.github.io';
-const BOARDS=[['1','자유게시판','Free Board'],['2','유틸게시판','Utilities'],['0','운영자메모','Admin Notes']];
+const BOARDS=[['1','자유게시','Free'],['2','유틸게시','Utils'],['0','운영메모','Notes']];
 const PER=15;
 let root=null,adm='',lang='ko',cur='1',view=null,pg=0,mode='list',data={},sha={},pend=[],edit=null,replyTo=null,busy=false,blobs={};
 
@@ -107,7 +107,7 @@ function sorted(){const a=posts().slice().sort((x,y)=>y.id-x.id);return a.filter
 
 function bar(){
   return '<div class="bd-bar">'+BOARDS.map(b=>'<button class="bd-sub'+(b[0]===cur?' on':'')+'" data-sub="'+b[0]+'">'+esc(lang==='en'?b[2]:b[1])+'</button>').join('')+
-    '<span class="bd-sp"></span>'+(adm&&mode==='list'?'<button class="bd-btn" data-act="new">'+L('글쓰기','Write')+'</button>':'')+'</div>';
+    '<span class="bd-sp"></span>'+(adm&&mode==='list'?'<button class="bd-btn" data-act="new">'+L('작성','Write')+'</button>':'')+'</div>';
 }
 function listHtml(){
   const a=sorted(),pc=Math.max(1,Math.ceil(a.length/PER));pg=Math.min(pg,pc-1);
