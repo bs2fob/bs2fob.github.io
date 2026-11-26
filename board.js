@@ -120,8 +120,8 @@ function commentsHtml(p){
 }
 function cwHtml(re){return '<div class="bd-cw"><textarea class="bd-ct" placeholder="'+(re?L('답글 입력','Reply'):L('댓글 입력','Comment'))+'"></textarea><button class="bd-btn" data-act="csave">'+L('등록','Post')+'</button>'+(re?'<button class="bd-btn" data-act="ccancel">'+L('취소','Cancel')+'</button>':'')+'</div>';}
 function viewHtml(){
-  const p=posts().find(x=>x.id===view);if(!p){mode='list';return listHtml();}
-  return bar()+'<div class="bd-vh"><div class="bd-vt">'+esc(p.title)+'</div><div class="bd-vm">'+esc(p.date)+' · '+esc(bname(cur))+'</div></div>'+
+  const p=posts().find(x=>x.id===view);if(!p){if(!data[cur])return bar()+'<div class="bd-empty">…</div>';mode='list';return listHtml();}
+  return bar()+'<div class="bd-vh"><div class="bd-vt">'+esc(p.title)+'</div><div class="bd-vm"><span>'+esc(p.date)+' · '+esc(bname(cur))+'</span><button class="copy-link" data-act="copy">'+L('URL 복사','Copy URL')+'</button></div></div>'+
     '<div class="bd-vb">'+(p.blocks||[]).map(b=>b.f?attHtml(b):textHtml(b.t)).join('')+'</div>'+commentsHtml(p)+
     '<div class="bd-vf"><button class="bd-btn" data-act="list">'+L('목록','List')+'</button><span>'+(adm?'<button class="bd-btn" data-act="edit">'+L('수정','Edit')+'</button> <button class="bd-btn" data-act="del">'+L('삭제','Delete')+'</button>':'')+'</span></div><div class="bd-msg"></div>';
 }
@@ -255,6 +255,11 @@ function onClick(e){
   else if(act==='save')savePost();
   else if(act==='edit'){const p=posts().find(x=>x.id===view);edit={id:p.id,title:p.title,pin:!!p.pin,blocks:JSON.parse(JSON.stringify(p.blocks||[]))};pend=[];mode='form';render();}
   else if(act==='del')delPost();
+  else if(act==='copy'){
+    const u='https://bs2fob.com/?b='+cur+'.'+view+'&lang='+lang;
+    const done=()=>{a.textContent=L('복사됨','Copied');a.classList.add('done');setTimeout(()=>{a.textContent=L('URL 복사','Copy URL');a.classList.remove('done');},1500);};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(done,()=>prompt('URL',u));else prompt('URL',u);
+  }
   else if(act==='clip')clip();
   else if(act==='pdel'){pend.splice(i,1);root.querySelector('.bd-pends').innerHTML=pendHtml();}
   else if(act==='up'||act==='down'||act==='bdel'||act==='addtext'){
@@ -285,6 +290,7 @@ function mount(el,opt){
   root=document.createElement('div');root.className='bd';
   el.innerHTML='';el.appendChild(root);
   root.addEventListener('click',onClick);root.addEventListener('change',onChange);
+  if(opt.open&&BOARDS.some(b=>b[0]===opt.open.board)){cur=opt.open.board;view=opt.open.id;mode='view';edit=null;pend=[];}
   render();
   Promise.all(BOARDS.map(b=>load(b[0]))).then(render).catch(()=>render());
 }

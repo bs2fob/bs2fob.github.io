@@ -20,7 +20,7 @@
 <link rel="stylesheet" href="post.css?v=24">
 <link rel="stylesheet" href="vox.css?v=3">
 <link rel="stylesheet" href="tabula.css?v=27">
-<link rel="stylesheet" href="board.css?v=2">
+<link rel="stylesheet" href="board.css?v=3">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
@@ -329,8 +329,11 @@
     .then(function(d){
       posts = d;
       posts.sort(function(a, b){ return (b.stamp || '').localeCompare(a.stamp || ''); });
-      var shared = sharedPost();
-      if (shared) {
+      var shared = sharedPost(), sb = sharedBoard();
+      if (sb) {
+        boardOpen = sb;
+        history.replaceState({ stamp: null, tab: 'board', page: 0 }, '', location.pathname);
+      } else if (shared) {
         history.replaceState({ stamp: shared.stamp, tab: tabOf(shared), page: 0 }, '', location.pathname);
       } else if (!history.state) {
         history.replaceState({ stamp: null, tab: DEFAULT_TAB, page: 0, home: true }, '', location.pathname);
@@ -342,6 +345,16 @@
     });
 
   // 공유 중간 페이지(s/)가 넘겨준 ?p=스탬프&lang=언어 로 들어오면 그 글을 열고 주소창은 사이트 주소만 남긴다
+  // ?b=게시판.글번호&lang=언어 로 들어오면 게시판 탭에서 그 글을 연다
+  var boardOpen = null;
+  function sharedBoard(){
+    var q = new URLSearchParams(location.search), m = (q.get('b') || '').match(/^(\w+)\.(\d+)$/);
+    if (!m) return null;
+    var want = q.get('lang');
+    if ((want === 'ko' || want === 'en') && want !== lang) { lang = want; paintChrome(); }
+    return { board: m[1], id: +m[2] };
+  }
+
   function sharedPost(){
     var q = new URLSearchParams(location.search);
     var post = q.get('p') ? find(q.get('p')) : null;
@@ -710,7 +723,7 @@
     pagerEl.innerHTML = '';
     renderTabs();
     if (tab === 'tabula') { Tabula.mount(listEl); return; }
-    if (tab === 'board') { Board.mount(listEl, { admin: adminToken(), lang: lang }); return; }
+    if (tab === 'board') { Board.mount(listEl, { admin: adminToken(), lang: lang, open: boardOpen }); boardOpen = null; return; }
 
     var mine = tabPosts();
     if (!mine.length) {
@@ -1396,7 +1409,7 @@
 })();
 </script>
 <script src="tabula.js?v=38"></script>
-<script src="board.js?v=4"></script>
+<script src="board.js?v=5"></script>
 <script data-goatcounter="https://bs2fob.goatcounter.com/count"
         data-goatcounter-settings='{"no_onload": true}'
         async src="//gc.zgo.at/count.js"></script>

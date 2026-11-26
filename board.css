@@ -20,7 +20,7 @@
 .bd-msg{font-size:12px;color:var(--text3);margin-top:8px;min-height:1em}
 .bd-vh{border-bottom:1px solid var(--border2);padding-bottom:14px;margin-bottom:22px}
 .bd-vt{font-size:24px;font-weight:700;line-height:1.4}
-.bd-vm{font-family:'Courier New',monospace;font-size:12px;color:var(--text3);margin-top:8px}
+.bd-vm{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-family:'Courier New',monospace;font-size:12px;color:var(--text3);margin-top:8px}
 .bd-vb p{text-align:justify;text-justify:inter-character;text-align-last:left;word-break:normal;overflow-wrap:anywhere;margin-bottom:1.1em}
 html[lang="en"] .bd-vb p{text-justify:auto}
 .bd-att{position:relative;margin:0 0 14px}
