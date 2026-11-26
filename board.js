@@ -40,6 +40,29 @@ async function delFile(path){
   const j=await r.json();
   await gh('/contents/'+path,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'게시판 첨부 삭제',sha:j.sha,branch:'main'})});
 }
+async function fileSha(path){const r=await gh('/contents/'+path+'?ref=main');return r.ok?(await r.json()).sha:null;}
+async function copyFile(from,to){
+  const r=await gh('/contents/'+from+'?ref=main',{headers:{Accept:'application/vnd.github.raw'}});
+  if(!r.ok)throw new Error('HTTP '+r.status+' '+from);
+  await putFile(to,await toB64(await r.blob()),'게시판 번호 이동 '+to,await fileSha(to));
+}
+function freeSlot(list){const used=new Set(list.map(p=>p.id));let i=1;while(used.has(i))i++;return i;}
+function plan(list){
+  const fixed=new Set(list.filter(p=>(p.comments||[]).length).map(p=>p.id)),map={};let s=1;
+  list.filter(p=>!fixed.has(p.id)).sort((a,b)=>a.id-b.id).forEach(p=>{while(fixed.has(s))s++;map[p.id]=s++;});
+  return map;
+}
+async function compact(k){
+  await load(k);
+  const map=plan(posts()),moves=[],olds=new Set(),news=new Set();
+  posts().slice().sort((a,b)=>a.id-b.id).forEach(p=>{const n=map[p.id];if(n==null||n===p.id)return;
+    (p.blocks||[]).forEach(b=>{if(!b.f)return;const nf=b.f.replace(/\/\d-\d{5}_/,'/'+code(k,n)+'_');moves.push([b.f,nf]);olds.add(b.f);news.add(nf);});});
+  if(!Object.keys(map).some(id=>map[id]!==+id))return;
+  for(const [a,c] of moves){msg(L('번호 정리 중','Renumbering')+' · '+c);await copyFile(a,c);}
+  await saveBoard(k,d=>{const m=plan(d.posts);d.posts.forEach(p=>{const n=m[p.id];if(n==null||n===p.id)return;
+    (p.blocks||[]).forEach(b=>{if(b.f)b.f=b.f.replace(/\/\d-\d{5}_/,'/'+code(k,n)+'_');});p.id=n;});},'게시판 번호 정리 '+k);
+  for(const f of olds)if(!news.has(f))await delFile(f);
+}
 async function saveBoard(k,fn,msg){
   for(let i=0;i<2;i++){
     await load(k);
@@ -192,12 +215,12 @@ async function savePost(){
       view=edit.id;
     }else{
       await load(cur);
-      const id=Math.max(0,...posts().map(p=>p.id))+1;
+      const id=freeSlot(posts());
       const body=root.querySelector('.bd-body').value;
       const added=await upload(cur,id,pend,0);
       const blocks=(body.trim()?[{t:body}]:[]).concat(added);
       msg(L('저장 중','Saving'));
-      await saveBoard(cur,d=>{d.posts.push({id,title,date:now(),pin,blocks,comments:[]});},'게시판 글 '+cur+' '+id);
+      await saveBoard(cur,d=>{if(d.posts.some(p=>p.id===id))throw new Error(L('번호가 그사이 쓰였습니다. 다시 저장하십시오.','Number taken. Save again.'));d.posts.push({id,title,date:now(),pin,blocks,comments:[]});},'게시판 글 '+cur+' '+id);
       view=id;
     }
     pend=[];edit=null;mode='view';render();msg(L('저장했습니다. 방문자 화면 반영은 사이트 빌드 뒤입니다.','Saved. Visitors see it after the site rebuilds.'));
@@ -232,6 +255,7 @@ async function delPost(){
   try{
     await saveBoard(cur,d=>{const p=d.posts.find(x=>x.id===pid);files=(p.blocks||[]).filter(b=>b.f).map(b=>b.f);d.posts=d.posts.filter(x=>x.id!==pid);},'게시판 글 삭제 '+cur+' '+pid);
     for(const f of files)await delFile(f);
+    await compact(cur);
     mode='list';view=null;render();
   }catch(e){msg(e.message);}
 }
