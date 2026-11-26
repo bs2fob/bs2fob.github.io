@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="post.css?v=24">
 <link rel="stylesheet" href="vox.css?v=3">
 <link rel="stylesheet" href="tabula.css?v=27">
+<link rel="stylesheet" href="board.css?v=1">
 <link rel="alternate" type="application/rss+xml" hreflang="ko" title="Bs2FoB (KO)" href="feed.ko.xml">
 <link rel="alternate" type="application/rss+xml" hreflang="en" title="Bs2FoB (EN)" href="feed.en.xml">
 <style>
@@ -228,7 +229,7 @@
     <div class="admin-box">
       <b>관리자 로그인</b>
       <input id="admin-token" type="password" placeholder="github_pat_..." autocomplete="off">
-      <div class="hint">Fine-grained token → bs2fob.github.io 저장소 Actions: Read and write, tabula 저장소 Contents: Read and write. 토큰은 이 기기에만 저장됩니다.</div>
+      <div class="hint">Fine-grained token → bs2fob.github.io 저장소 Actions·Contents: Read and write, tabula 저장소 Contents: Read and write. 토큰은 이 기기에만 저장됩니다.</div>
       <div class="err" id="admin-err" hidden></div>
       <div class="admin-row">
         <button class="pg" id="admin-cancel">취소</button>
@@ -250,7 +251,7 @@
 (function(){
   var STORE = 'bs2fob-lang';
   var PER_PAGE = 5;
-  var TABS = ['write', 'vox', 'snap', 'code'];
+  var TABS = ['write', 'vox', 'snap', 'code', 'board'];
   var DEFAULT_TAB = 'write';
 
   var UI = {
@@ -258,12 +259,12 @@
           empty: '아직 게시된 글이 없습니다.',
           fail: '목록을 불러오지 못했습니다.',
           fallback: '한국어 원문', del: '삭제', edit: '수정', copy: 'URL 복사', copied: '복사됨', pending: '반영 중', latest: '최근 글', back: '← 목록', prev: '이전 글', next: '다음 글',
-          tab: { write: '작문', vox: '복스', snap: '스냅', code: '코딩', tabula: '서판' } },
+          tab: { write: '작문', vox: '복스', snap: '스냅', code: '코딩', board: '게시판', tabula: '서판' } },
     en: { sub: 'Established footholds',
           empty: 'No posts yet.',
           fail: 'Failed to load the index.',
           fallback: 'Korean original', del: 'Del', edit: 'Edit', copy: 'Copy URL', copied: 'Copied', pending: 'Publishing', latest: 'Latest', back: '← Index', prev: 'Previous', next: 'Next',
-          tab: { write: 'Writing', vox: 'Vox', snap: 'Snap', code: 'Code', tabula: 'Tabula' } }
+          tab: { write: 'Writing', vox: 'Vox', snap: 'Snap', code: 'Code', board: 'Board', tabula: 'Tabula' } }
   };
 
   var clockEl = document.getElementById('clock');
@@ -709,6 +710,7 @@
     pagerEl.innerHTML = '';
     renderTabs();
     if (tab === 'tabula') { Tabula.mount(listEl); return; }
+    if (tab === 'board') { Board.mount(listEl, { admin: adminToken(), lang: lang }); return; }
 
     var mine = tabPosts();
     if (!mine.length) {
@@ -1394,6 +1396,7 @@
 })();
 </script>
 <script src="tabula.js?v=38"></script>
+<script src="board.js?v=1"></script>
 <script data-goatcounter="https://bs2fob.goatcounter.com/count"
         data-goatcounter-settings='{"no_onload": true}'
         async src="//gc.zgo.at/count.js"></script>
