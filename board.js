@@ -124,7 +124,7 @@ function attHtml(b){
   const f=src(b.f),k=kindOf(b.f),nm=esc(b.name||b.f.split('/').pop());
   if(k==='image')return '<div class="bd-att"><img data-f="'+esc(b.f)+'" src="'+esc(f)+'" alt="'+nm+'" loading="lazy"></div>';
   if(k==='audio')return '<div class="bd-att"><audio data-f="'+esc(b.f)+'" controls preload="none" src="'+esc(f)+'"></audio><div class="bd-an">'+nm+'</div></div>';
-  if(k==='pdf')return '<div class="bd-att"><iframe class="bd-pdf" data-f="'+esc(b.f)+'" src="'+esc(f)+'#navpanes=0&view=FitH" loading="lazy" title="'+nm+'"></iframe><a class="bd-an bd-pdfl" data-f="'+esc(b.f)+'" href="'+esc(f)+'" target="_blank" rel="noopener">PDF · '+nm+' · '+L('새 창에서 열기','Open in new tab')+'</a></div>';
+  if(k==='pdf')return '<div class="bd-att"><iframe class="bd-pdf" data-f="'+esc(b.f)+'" src="'+esc(f)+'#navpanes=0&view=FitH" loading="lazy" title="'+nm+'"></iframe><a class="bd-an bd-pdfl" data-f="'+esc(b.f)+'" href="'+esc(f)+'" target="_blank" rel="noopener">PDF · '+nm+' · '+L('새창열기','Open')+'</a></div>';
   return '<div class="bd-att"><a class="bd-file" data-f="'+esc(b.f)+'" href="'+esc(f)+'" download="'+nm+'">'+(k==='zip'?'ZIP':L('파일','File'))+' · '+nm+' '+L('내려받기','Download')+'</a></div>';
 }
 function textHtml(t){return String(t).split(/\n{2,}/).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');}
