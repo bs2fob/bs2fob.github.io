@@ -2,7 +2,7 @@
 // 게시판 탭: 세부 게시판 목록·글 보기·댓글, 관리자 토큰으로 글과 첨부를 사이트 저장소에 쓴다
 (function(){
 const REPO='https://api.github.com/repos/bs2fob/bs2fob.github.io';
-const BOARDS=[['1','자유게시','Free'],['2','유틸게시','Utils'],['3','링크게시','Links'],['0','운영메모','Notes']];
+const BOARDS=[['1','자유','Free'],['2','유틸','Utils'],['3','링크','Links'],['0','운영','Notes']];
 const PER=15;
 let root=null,adm='',lang='ko',cur='1',view=null,pg=0,mode='list',data={},sha={},pend=[],edit=null,replyTo=null,busy=false,blobs={};
 
