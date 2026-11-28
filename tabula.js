@@ -320,7 +320,7 @@ async function saveOrder(){
 // ── 첨부 ──
 function fileExt(name){const m=name.match(/\.([^.]+)$/);return m?m[1].toLowerCase():'bin';}
 const MIME={webp:'image/webp',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',
-  mp3:'audio/mpeg',m4a:'audio/mp4',pdf:'application/pdf'};
+  mp3:'audio/mpeg',m4a:'audio/mp4',pdf:'application/pdf',md:'text/markdown'};
 
 // 이미지는 WebP 90 으로 바꾸고, 인코딩을 못 하는 브라우저는 JPEG 로 물러선다
 function encodeImage(file){
@@ -388,8 +388,9 @@ function hydrate(){
   if(!live())return;
   root.querySelectorAll('[data-fn]:not([data-got])').forEach(el=>{
     el.dataset.got='1';
-    if(el.tagName!=='IMG'&&el.tagName!=='AUDIO')return;
-    blobUrl(el.dataset.fn).then(u=>{el.src=u;}).catch(()=>{
+    const md=el.classList.contains('md-doc');
+    if(el.tagName!=='IMG'&&el.tagName!=='AUDIO'&&!md)return;
+    blobUrl(el.dataset.fn).then(u=>{if(md){el.dataset.src=u;MdView.fill(el.parentNode);}else el.src=u;}).catch(()=>{
       const w=el.closest('.sc-img-wrap')||el;
       w.outerHTML=`<div class="sc-broken">불러올 수 없는 첨부 <code>${esc(el.dataset.fn)}</code></div>`;
     });
@@ -427,6 +428,7 @@ function attItemHtml(a,i,id,kw){
   const name=highlight(a.origName||a.filename,kw);
   if(a.type==='audio')return `<div class="sc-media"><audio controls data-fn="${esc(a.filename)}"></audio><div class="sc-fname">${name}${del}</div></div>`;
   if(a.type==='pdf')return `<div class="sc-fname"><button class="sc-pdf" data-act="pdf" data-fn="${esc(a.filename)}">PDF</button>${name}${del}</div>`;
+  if(a.type==='md')return `<div class="sc-media"><div class="md-doc" data-fn="${esc(a.filename)}"></div><div class="sc-fname">${name}${del}</div></div>`;
   return '';
 }
 // 글단락과 첨부를 보이는 순서대로 편다. blocks 가 없는 옛 메모는 본문·첨부·아래 글 순서로 읽는다
@@ -823,7 +825,7 @@ function tailTaHtml(v,cls){
 }
 function previewHtml(list,act,base=0){
   return list.map((a,i)=>`<div class="sc-pv">
-    ${a.type==='image'?`<img src="${a.url}" alt="">`:`<span class="sc-pv-ic">${a.type==='pdf'?'PDF':'♪'}</span>`}
+    ${a.type==='image'?`<img src="${a.url}" alt="">`:`<span class="sc-pv-ic">${a.type==='pdf'?'PDF':a.type==='md'?'MD':'♪'}</span>`}
     <div class="sc-pv-info"><div>${esc(a.file.name)}</div><small>${(a.file.size/1024).toFixed(0)}KB</small></div>
     <button class="sc-x" data-act="${act}" data-i="${base+i}">✕</button>
   </div>`).join('');
@@ -1098,6 +1100,7 @@ function attachBarHtml(){
     <label class="sc-btn ghost">이미지<input type="file" accept="image/*" multiple data-type="image"></label>
     <label class="sc-btn ghost">오디오<input type="file" accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" multiple data-type="audio"></label>
     <label class="sc-btn ghost">PDF<input type="file" accept="application/pdf" multiple data-type="pdf"></label>
+    <label class="sc-btn ghost">MD<input type="file" accept=".md,text/markdown" multiple data-type="md"></label>
   </div>`;
 }
 

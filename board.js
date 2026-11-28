@@ -14,7 +14,7 @@ function gh(path,opt){opt=opt||{};opt.headers=Object.assign({Authorization:'Bear
 function b64enc(s){return btoa(unescape(encodeURIComponent(s)));}
 function b64dec(s){return decodeURIComponent(escape(atob(s.replace(/\n/g,''))));}
 function fileExt(n){const m=n.match(/\.([^.]+)$/);return m?m[1].toLowerCase():'bin';}
-function kindOf(n){const e=fileExt(n);return /^(webp|jpg|jpeg|png|gif)$/.test(e)?'image':/^(mp3|m4a)$/.test(e)?'audio':e==='pdf'?'pdf':e==='zip'?'zip':'file';}
+function kindOf(n){const e=fileExt(n);return /^(webp|jpg|jpeg|png|gif)$/.test(e)?'image':/^(mp3|m4a)$/.test(e)?'audio':e==='pdf'?'pdf':e==='zip'?'zip':e==='md'?'md':'file';}
 function src(f){return blobs[f]||f;}
 function no5(id){return String(id).padStart(5,'0');}
 function code(k,id){return k+'-'+no5(id);}
@@ -141,6 +141,7 @@ function attHtml(b){
   if(k==='image')return '<div class="bd-att"><img data-f="'+esc(b.f)+'" src="'+esc(f)+'" alt="'+nm+'" loading="lazy"></div>';
   if(k==='audio')return '<div class="bd-att"><audio data-f="'+esc(b.f)+'" controls preload="none" src="'+esc(f)+'"></audio><div class="bd-an">'+nm+'</div></div>';
   if(k==='pdf')return '<div class="bd-att"><iframe class="bd-pdf" data-f="'+esc(b.f)+'" src="'+esc(f)+'#navpanes=0&view=FitH" loading="lazy" title="'+nm+'"></iframe><a class="bd-an bd-pdfl" data-f="'+esc(b.f)+'" href="'+esc(f)+'" target="_blank" rel="noopener">PDF · '+nm+' · '+L('새창열기','Open')+'</a></div>';
+  if(k==='md')return '<div class="bd-att"><div class="md-doc" data-f="'+esc(b.f)+'" data-src="'+esc(f)+'"></div><a class="bd-an bd-pdfl" data-f="'+esc(b.f)+'" href="'+esc(f)+'" download="'+nm+'">MD · '+nm+' · '+L('내려받기','Download')+'</a></div>';
   return '<div class="bd-att"><a class="bd-file" data-f="'+esc(b.f)+'" href="'+esc(f)+'" download="'+nm+'">'+(k==='zip'?'ZIP':L('파일','File'))+' · '+nm+' '+L('내려받기','Download')+'</a></div>';
 }
 function textHtml(t){return String(t).split(/\n{2,}/).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');}
@@ -180,12 +181,13 @@ function attBar(){
     '<label class="sc-btn ghost">'+L('이미지','Image')+'<input type="file" multiple accept="image/*" data-type="image"></label>'+
     '<label class="sc-btn ghost">'+L('오디오','Audio')+'<input type="file" multiple accept=".mp3,.m4a,audio/mpeg,audio/mp4,audio/x-m4a" data-type="audio"></label>'+
     '<label class="sc-btn ghost">PDF<input type="file" multiple accept="application/pdf" data-type="pdf"></label>'+
+    '<label class="sc-btn ghost">MD<input type="file" multiple accept=".md,text/markdown" data-type="md"></label>'+
     '<label class="sc-btn ghost">ZIP<input type="file" multiple accept=".zip,application/zip,application/x-zip-compressed" data-type="zip"></label></div>';
 }
 function pendHtml(){
   return pend.map((p,i)=>{
     const u=p.url,nm=esc(p.file.name);
-    const inner=p.type==='image'?'<img src="'+u+'">':p.type==='audio'?'<audio controls src="'+u+'"></audio>':p.type==='pdf'?'<iframe class="bd-pdf" src="'+u+'#navpanes=0&view=FitH"></iframe>':'<div class="bd-file">ZIP · '+nm+'</div>';
+    const inner=p.type==='image'?'<img src="'+u+'">':p.type==='audio'?'<audio controls src="'+u+'"></audio>':p.type==='pdf'?'<iframe class="bd-pdf" src="'+u+'#navpanes=0&view=FitH"></iframe>':p.type==='md'?'<div class="md-doc" data-src="'+u+'"></div>':'<div class="bd-file">ZIP · '+nm+'</div>';
     return '<div class="bd-att bd-pend">'+inner+'<div class="bd-an">'+nm+' · '+Math.ceil(p.file.size/1024)+'KB</div><button class="bd-x" data-act="pdel" data-i="'+i+'">✕</button></div>';
   }).join('');
 }
@@ -211,6 +213,7 @@ function render(){
   if(!root)return;
   root.innerHTML=mode==='view'?viewHtml():mode==='form'?formHtml():listHtml();
   if(mode==='form')fitAll();
+  MdView.fill(root);
   if(adm)hydrate();
 }
 async function hydrate(){
@@ -219,9 +222,10 @@ async function hydrate(){
     const f=el.dataset.f;if(blobs[f])continue;
     const h=await fetch(f,{method:'HEAD'}).catch(()=>null);if(h&&h.ok)continue;
     const r=await gh('/contents/'+f+'?ref=main',{headers:{Accept:'application/vnd.github.raw'}});if(!r.ok)continue;
-    const bl=await r.blob(),t={pdf:'application/pdf',webp:'image/webp',png:'image/png',jpg:'image/jpeg',mp3:'audio/mpeg',m4a:'audio/mp4',zip:'application/zip'}[fileExt(f)]||bl.type;
+    const bl=await r.blob(),t={pdf:'application/pdf',webp:'image/webp',png:'image/png',jpg:'image/jpeg',mp3:'audio/mpeg',m4a:'audio/mp4',zip:'application/zip',md:'text/markdown'}[fileExt(f)]||bl.type;
     blobs[f]=URL.createObjectURL(new Blob([bl],{type:t}));
-    root.querySelectorAll('[data-f="'+f+'"]').forEach(x=>{const a=x.tagName==='A'?'href':'src';x.setAttribute(a,blobs[f]+(x.tagName==='IFRAME'?'#navpanes=0&view=FitH':''));});
+    root.querySelectorAll('[data-f="'+f+'"]').forEach(x=>{if(x.classList.contains('md-doc')){x.dataset.src=blobs[f];return;}const a=x.tagName==='A'?'href':'src';x.setAttribute(a,blobs[f]+(x.tagName==='IFRAME'?'#navpanes=0&view=FitH':''));});
+    MdView.fill(root);
   }
 }
 function syncEdit(){if(!edit)return;root.querySelectorAll('.bd-et').forEach(t=>{edit.blocks[+t.dataset.i].t=t.value;});const ti=root.querySelector('.bd-title');if(ti)edit.title=ti.value;}
@@ -364,7 +368,7 @@ function onChange(e){
     if(inp.dataset.type==='audio'&&!/^(mp3|m4a)$/.test(fileExt(f.name))){msg(L('오디오는 mp3·m4a 만 받습니다.','Audio: mp3 or m4a only.'));continue;}
     pend.push({file:f,type:inp.dataset.type,url:URL.createObjectURL(f)});
   }
-  inp.value='';root.querySelector('.bd-pends').innerHTML=pendHtml();
+  inp.value='';root.querySelector('.bd-pends').innerHTML=pendHtml();MdView.fill(root);
 }
 
 function mount(el,opt){
